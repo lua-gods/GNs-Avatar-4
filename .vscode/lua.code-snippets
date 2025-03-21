@@ -1,0 +1,9 @@
+{
+	"benchmark": {
+		"prefix": "benchmark",
+		"body": [
+			"local benchmark = avatar:getCurrentInstructions() -- START OF BENCHMARK",
+			"${1:host:setActionbar(avatar:getCurrentInstructions()-benchmark-5) -- END OF BENCHMARK}"
+		]
+	},
+}
