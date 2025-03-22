@@ -82,3 +82,19 @@ figuraMetatables.Event.__index.getRegisteredCount = function(self, name)
 		return ogRegisteredCount(self, name)
 	end
 end
+
+-- patch remove
+local ogRemove = figuraMetatables.Event.__index.remove
+figuraMetatables.Event.__index.remove = function(self, name)
+	local subs = subscribers[lastEvent]
+	if subs then
+		for _, layerID in ipairs(subs.layers) do
+			for key, hook in pairs(subs.subs[layerID]) do
+				if key == name then
+					subs.subs[layerID][key] = nil
+				end
+			end
+		end
+	end
+	return ogRemove(self, name)
+end
