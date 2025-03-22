@@ -1,7 +1,15 @@
-for _, path in pairs(listFiles("class")) do require(path) end
-for _, path in pairs(listFiles("primitive")) do require(path) end
-for _, path in pairs(listFiles("generic")) do require(path) end
-
-if host:isHost() then
-	for _, path in pairs(listFiles("host")) do require(path) end
+local isHost = host:isHost() and false
+local function loadFiles(path)
+	for key, script in pairs(listFiles(path)) do
+		if isHost then
+			require(script)
+		else
+			if not script:find("%.%$[^$]+$") then
+				require(script)
+			end
+		end
+	end
 end
+loadFiles("class")
+loadFiles("primitive")
+loadFiles("generic")
