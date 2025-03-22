@@ -1,7 +1,7 @@
 local GNUI = require"library.GNUI.main"
 local TextField = require"library.GNUI.element.textField"
 
-local screen = GNUI.getScreenCanvas()
+local screen = Screen.getScreen()
 --GNUI.showBoundingBoxes()
 
 local input = TextField.new(screen,true)
