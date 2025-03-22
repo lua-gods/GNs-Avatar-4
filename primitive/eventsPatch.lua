@@ -27,16 +27,20 @@ figuraMetatables.Event.__index.register = function(self, func, name)
 		}
 		subscribers[lastEvent] = event
 		print(lastEvent)
+		local registeredEvent = lastEvent
 		ogEventsIndexRegister(self, function (...)
+			local flush = {}
 			if lastEvent == "KEY_PRESS" then
 				print("Event: " .. lastEvent)
 				printTable(subscribers[lastEvent])
 			end
 			for _, layerID in ipairs(event.layers) do
 				for _, hook in pairs(event.subs[layerID]) do
-					hook(...)
+					local result = {hook(...)}
+					flush = #result > 0 and result or flush -- if result has elements, use it, otherwise use flush
 				end
 			end
+			return table.unpack(flush)
 		end)
 	end
 	-- if priority doesn't exist, insertion sort it.
