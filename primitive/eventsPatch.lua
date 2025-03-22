@@ -16,7 +16,7 @@ figuraMetatables.Event.__index.register = function(self, func, name)
 	
 	-- get priority if it exists
 	if name then
-		priority = tonumber(name:match("^(-?[0-9]+):"))
+		priority = tonumber(name:match("^(-?[0-9]+):")) or 0
 	end
 	
 	-- if event doesn't exist, create it
