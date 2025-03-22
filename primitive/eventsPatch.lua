@@ -56,10 +56,19 @@ figuraMetatables.Event.__index.register = function(self, func, name)
 	return self
 end
 
-events.TICK:register(function ()
-	host:setActionbar("blue")
-end,"1:lmao")
-
-events.TICK:register(function ()
-	host:setActionbar("orange")
-end,"7:lmao")
+-- patch getRegisteredCount
+local ogRegisteredCount = figuraMetatables.Event.__index.getRegisteredCount
+figuraMetatables.Event.__index.getRegisteredCount = function(self, name)
+	local subs = subscribers[lastEvent]
+	if subs then
+		local c = 0
+		for _, layerID in ipairs(subs.layers) do
+			for _, _ in pairs(subs.subs[layerID]) do
+				c = c + 1
+			end
+		end
+		return c
+	else
+		return ogRegisteredCount(self, name)
+	end
+end
