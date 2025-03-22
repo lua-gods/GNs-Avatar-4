@@ -1,0 +1,3 @@
+[submodule "library/GNUI"]
+	path = library/GNUI
+	url = https://github.com/lua-gods/GNUI
