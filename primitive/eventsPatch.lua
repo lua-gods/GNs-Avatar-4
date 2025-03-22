@@ -26,8 +26,6 @@ figuraMetatables.Event.__index.register = function(self, func, name)
 			layers={priority},
 		}
 		subscribers[lastEvent] = event
-		print(lastEvent)
-		local registeredEvent = lastEvent
 		ogEventsIndexRegister(self, function (...)
 			local flush = {}
 			if lastEvent == "KEY_PRESS" then
