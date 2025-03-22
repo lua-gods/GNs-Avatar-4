@@ -287,7 +287,8 @@
       //;"unused-vararg",
 
       // Unknown
-      "inject-field"
+      "inject-field",
+            "lowercase-global"
     ],
 
     // Group severity is not used by the docs.
