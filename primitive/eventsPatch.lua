@@ -26,8 +26,12 @@ figuraMetatables.Event.__index.register = function(self, func, name)
 			layers={priority},
 		}
 		subscribers[lastEvent] = event
-		
+		print(lastEvent)
 		ogEventsIndexRegister(self, function (...)
+			if lastEvent == "KEY_PRESS" then
+				print("Event: " .. lastEvent)
+				printTable(subscribers[lastEvent])
+			end
 			for _, layerID in ipairs(event.layers) do
 				for _, hook in pairs(event.subs[layerID]) do
 					hook(...)
@@ -40,8 +44,10 @@ figuraMetatables.Event.__index.register = function(self, func, name)
 		local layers = subscribers[lastEvent].layers
 		local inserted = false
 		for i = 1, #layers, 1 do
-			if layers[i] > priority then
-				table.insert(layers, i, priority)
+			if layers[i] >= priority then
+				if layers[i] ~= priority then -- if the priority doesn't exist
+					table.insert(layers, i, priority)
+				end
 				inserted = true
 				break
 			end
@@ -52,7 +58,7 @@ figuraMetatables.Event.__index.register = function(self, func, name)
 	end
 	
 	subscribers[lastEvent].subs[priority] = subscribers[lastEvent].subs[priority] or {}
-	subscribers[lastEvent].subs[priority][name or #subscribers[lastEvent].subs[priority] + 1	] = func
+	subscribers[lastEvent].subs[priority][name or #subscribers[lastEvent].subs[priority] + 1] = func
 	return self
 end
 
