@@ -21,7 +21,7 @@ local function shade(clr,w)
 	return math.lerp(dark,clr,w)
 end
 
-local lastState = 4
+local lastState = 5
 events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 	local state = ctx == "BLOCK" and 1 or ctx == "HEAD" and 2 or ctx == "OTHER" and 4 or 3
 	if lastState ~= state then
