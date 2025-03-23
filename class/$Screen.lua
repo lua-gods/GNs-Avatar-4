@@ -66,6 +66,7 @@ function ScreenAPI.setScreen(name)
 			currentScreen.ON_EXIT:invoke()
 		end
 		renderer:setPostEffect(screen.background and "blur" or nil)
+		renderer:setRenderHUD(not screen.background)
 		currentScreen = screen
 		
 		currentScreen.ON_ENTER:invoke()
