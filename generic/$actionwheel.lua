@@ -9,8 +9,10 @@ function key.press()
 	local currentScreen = Screen.getCurrentScreen()
 	if currentScreen.name == "default" then
 		Screen.setScreen("actionwheel")
-	elseif currentScreen.name == "actionwheel" then
+		host:setUnlockCursor(true)
+	else
 		Screen.setScreen("default")
+		host:setUnlockCursor(false)
 	end
 	return true
 end
