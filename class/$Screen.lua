@@ -10,7 +10,7 @@ local currentScreen
 local ScreenAPI = {}
 ScreenAPI.__index = ScreenAPI
 
----@class GNUI.Screen : GNUI.Box
+---@class Screen : GNUI.Box
 ---@field name string
 ---@field ON_ENTER Signal
 ---@field ON_EXIT Signal
@@ -22,7 +22,7 @@ end
 
 ---@param name string
 ---@param background boolean?
----@return GNUI.Screen
+---@return Screen
 function ScreenAPI.new(name,background)
 	if type(background) == "nil" then background = true end
 	
@@ -31,16 +31,18 @@ function ScreenAPI.new(name,background)
 	new.ON_ENTER = Signal.new()
 	new.ON_EXIT = Signal.new()
 	new.background = background and true or false
+	
 	if screens[name] then
 		error("A page with the name '"..name.."' already exists.",2)
 	end
+	
+	new = table.makeReadOnly(setmetatable(new,Screen))
 	screens[name] = new
-	setmetatable(new,Screen)
 	return new
 end
 
 
-function ScreenAPI.setPage(name)
+function ScreenAPI.setScreen(name)
 	local screen = screens[name]
 	if not screens[name] then
 		screen = screens.default
@@ -58,14 +60,13 @@ function ScreenAPI.setPage(name)
 		currentScreen:setVisible(true)
 	end
 end
-
 ScreenAPI.new("default")
-ScreenAPI.setPage("default")
+ScreenAPI.setScreen("default")
 
 
 ---Returns the page with the given name, or the default page if no name is given.
 ---@param name string?
----@return GNUI.Screen
+---@return Screen
 function ScreenAPI.getScreen(name)
 	return screens[name or "default"]
 end
@@ -79,6 +80,11 @@ function ScreenAPI.getScreens()
 		table.insert(names,name)
 	end
 	return names
+end
+
+---@return Screen
+function ScreenAPI.getCurrentScreen()
+	return currentScreen
 end
 
 _G.Screen = ScreenAPI
