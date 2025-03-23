@@ -1,6 +1,6 @@
 
 renderer:setShadowRadius(0.4)
---models.player:setPrimaryRenderType("CUTOUT") -- enables more shader compatibility
+models:setPrimaryRenderType("CUTOUT") -- enables more shader compatibility
 
 avatar:store("color","#5ac54f")
 avatar:store("hair_color","#5ac54f")
