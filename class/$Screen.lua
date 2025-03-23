@@ -16,8 +16,15 @@ ScreenAPI.__index = ScreenAPI
 ---@field ON_EXIT Signal
 ---@field background boolean
 local Screen = {}
+Screen.__type = "Screen"
 Screen.__index = function (self, key)
 	return rawget(self, key) or Box[key]
+end
+
+---@param a Screen
+---@param b Screen
+function Screen.__eq(a, b)
+	return a.name == b.name
 end
 
 ---@param name string
@@ -36,7 +43,7 @@ function ScreenAPI.new(name,background)
 		error("A page with the name '"..name.."' already exists.",2)
 	end
 	
-	new = table.makeReadOnly(setmetatable(new,Screen))
+	new = setmetatable(new,Screen)
 	screens[name] = new
 	return new
 end
