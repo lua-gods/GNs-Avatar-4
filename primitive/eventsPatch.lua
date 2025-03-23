@@ -96,3 +96,24 @@ figuraMetatables.Event.__index.remove = function(self, name)
 	end
 	return ogRemove(self, name)
 end
+
+-->==========[ Extra APIs ]==========<--
+
+local ogevents = events
+
+local eventsExtraAPI = {}
+eventsExtraAPI.__index = function(table, key)
+	return rawget(eventsExtraAPI, key) or ogevents[key]
+end
+
+eventsExtraAPI.__newindex = function(table, key, value)
+	print("b")
+	--ogevents[key]
+end
+
+eventsExtraAPI.lmao = function ()
+	print("BOOM")
+end
+
+---@type EventsAPI
+events = setmetatable({},eventsExtraAPI)
