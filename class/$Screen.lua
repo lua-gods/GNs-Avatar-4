@@ -3,12 +3,15 @@ local GNUI = require"library.GNUI.main"
 local canvas = GNUI.getScreenCanvas()
 local Box = require"library.GNUI.primitives.box"
 
+
 local screens = {}
 local currentScreen
+
 
 ---@class ScreenAPI
 local ScreenAPI = {}
 ScreenAPI.__index = ScreenAPI
+
 
 ---@class Screen : GNUI.Box
 ---@field name string
@@ -21,11 +24,13 @@ Screen.__index = function (self, key)
 	return rawget(self, key) or Box[key]
 end
 
+
 ---@param a Screen
 ---@param b Screen
 function Screen.__eq(a, b)
 	return a.name == b.name
 end
+
 
 ---@param name string
 ---@param background boolean?
@@ -60,15 +65,19 @@ function ScreenAPI.setScreen(name)
 			currentScreen:setVisible(false)
 			currentScreen.ON_EXIT:invoke()
 		end
-		
+		renderer:setPostEffect(screen.background and "blur" or nil)
 		currentScreen = screen
 		
 		currentScreen.ON_ENTER:invoke()
 		currentScreen:setVisible(true)
 	end
 end
-ScreenAPI.new("default")
+
+
+
+ScreenAPI.new("default",false)
 ScreenAPI.setScreen("default")
+
 
 
 ---Returns the page with the given name, or the default page if no name is given.
@@ -88,6 +97,7 @@ function ScreenAPI.getScreens()
 	end
 	return names
 end
+
 
 ---@return Screen
 function ScreenAPI.getCurrentScreen()
