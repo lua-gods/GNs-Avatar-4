@@ -10,6 +10,6 @@ local function loadFiles(path)
 		end
 	end
 end
-loadFiles("class")
 loadFiles("primitive")
+loadFiles("class")
 loadFiles("generic")
