@@ -15,8 +15,6 @@ ScreenAPI.__index = ScreenAPI
 
 ---@class Screen : GNUI.Box
 ---@field name string
----@field ON_ENTER Signal
----@field ON_EXIT Signal
 ---@field background boolean
 local Screen = {}
 Screen.__type = "Screen"

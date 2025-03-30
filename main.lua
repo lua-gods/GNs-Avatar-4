@@ -1,6 +1,6 @@
 local isHost = host:isHost() and true
 local function loadFiles(path)
-	for key, script in pairs(listFiles(path,true)) do
+	for key, script in pairs(listFiles(path)) do
 		if isHost then
 			require(script)
 		else
