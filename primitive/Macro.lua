@@ -1,10 +1,12 @@
 ---@class MacroAPI
 local MacrosAPI = {}
 
+require("primitive.Signal")
 
 ---@class Macros
 ---@field isActive boolean
 ---@field events MacroEventsAPI
+---@field id string
 ---@field package init fun(events: MacroEventsAPI)
 local Macros = {}
 Macros.__index = Macros
@@ -16,6 +18,19 @@ function Macros:toggle(active)
 		self.isActive = active
 		if active then
 			self.init(self.events)
+			for name, value in pairs(self.events) do
+				if events[name] then
+					events[name]:register(function (...)
+						value:invoke(...)
+					end, self.id)
+				end
+			end
+		else
+			for name in pairs(self.events) do
+				if events[name] then
+					events[name]:remove(self.id)
+				end
+			end
 		end
 	end
 end
@@ -32,6 +47,7 @@ function MacrosAPI.new(init)
 	local new = {
 		init = init,
 		isActive = false,
+		id = client.intUUIDToString(client.generateUUID()),
 		events = setmetatable({
 			ON_FREE = Signal.new()
 		}, MacroEventsAPI),
@@ -51,10 +67,3 @@ end
 
 ---@type MacroAPI
 _G.Macros = MacrosAPI
-
-local test = MacrosAPI.new(function (events)
-	print(events.TICK.register(events.TICK,function () end))
-	--events.TICK:register(function ()end)
-end)
-
-test:toggle(true)
