@@ -5,7 +5,7 @@ local Box = require"library.GNUI.primitives.box"
 
 
 local screens = {}
-local currentScreen
+local currentScreen ---@type Screen
 
 
 ---@class ScreenAPI
@@ -15,6 +15,7 @@ ScreenAPI.__index = ScreenAPI
 
 ---@class Screen : GNUI.Box
 ---@field name string
+---@field events Macros
 ---@field background boolean
 local Screen = {}
 Screen.__type = "Screen"
@@ -22,6 +23,9 @@ Screen.__index = function (self, key)
 	return rawget(self, key) or Box[key]
 end
 
+---@class Screen.metadata
+---@field name string
+---@field background boolean?
 
 ---@param a Screen
 ---@param b Screen
@@ -30,24 +34,29 @@ function Screen.__eq(a, b)
 end
 
 
----@param name string
----@param background boolean?
+---@param init fun(events: MacroEventsAPI)?
+---@param meta Screen.metadata
 ---@return Screen
-function ScreenAPI.new(name,background)
-	if type(background) == "nil" then background = true end
+function ScreenAPI.new(meta,init)
+	init = init or function () end
+	meta = meta or {}
+	
+	local background = true
+	if type(meta.background) ~= "nil" and meta.background == false then
+		background = false
+	end
 	
 	local new = GNUI.newBox(canvas):setAnchorMax()
-	new.name = name
-	new.ON_ENTER = Signal.new()
-	new.ON_EXIT = Signal.new()
-	new.background = background and true or false
+	new.name = meta.name
+	new.events = Macros.new(init)
+	new.background = background
 	
-	if screens[name] then
-		error("A page with the name '"..name.."' already exists.",2)
+	if screens[new.name] then
+		error("A page with the name '"..new.name.."' already exists.",2)
 	end
 	
 	new = setmetatable(new,Screen)
-	screens[name] = new
+	screens[new.name] = new
 	return new
 end
 
@@ -61,20 +70,20 @@ function ScreenAPI.setScreen(name)
 	if currentScreen ~= screen then
 		if currentScreen then
 			currentScreen:setVisible(false)
-			currentScreen.ON_EXIT:invoke()
+			currentScreen.events:toggle(false)
 		end
 		renderer:setPostEffect(screen.background and "blur" or nil)
 		renderer:setRenderHUD(not screen.background)
 		currentScreen = screen
 		
-		currentScreen.ON_ENTER:invoke()
+		currentScreen.events:toggle(true)
 		currentScreen:setVisible(true)
 	end
 end
 
 
 
-ScreenAPI.new("default",false)
+ScreenAPI.new({name="default",background=false})
 ScreenAPI.setScreen("default")
 
 

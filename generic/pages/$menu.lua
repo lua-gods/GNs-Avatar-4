@@ -1,1 +1,3 @@
-Screen.new("menu")
+Screen.new({
+	name = "menu"
+})
