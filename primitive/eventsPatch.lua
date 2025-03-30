@@ -4,7 +4,6 @@ require"primitive.Signal"
 ---@type table<string, {subs: table<number, table<any, fun(...)>>, layers: table<number>}>[]
 local subscribers = {}
 -- patch index
-local lastContainer ---@type ContainedEventsAPI
 local lastEvent ---@type string
 local id = 0 ---@type integer
 local extraEvents = {
@@ -29,12 +28,7 @@ events.WORLD_RENDER:register(function ()
 end)
 local registryOverride = function (ogRegistry)
 	return function(self, func, name)
-		local subs
-		if lastContainer and lastContainer.subscribers then
-			subs = lastContainer.subscribers
-		else
-			subs = subscribers
-		end
+		local subs = subscribers
 		local priority = 0
 		
 		-- get priority if it exists
@@ -62,7 +56,7 @@ local registryOverride = function (ogRegistry)
 					end
 				end
 				return table.unpack(flush)
-			end,lastContainer and lastContainer.id or nil)
+			end)
 		end
 		-- if priority doesn't exist, insertion sort it.
 		if not subs[lastEvent].layers[priority] then
@@ -87,17 +81,9 @@ local registryOverride = function (ogRegistry)
 		return self
 	end
 end
+local ogRegister = figuraMetatables.Event.__index.register
 -- patch register
-figuraMetatables.Event.__index.register = registryOverride(figuraMetatables.Event.__index.register)
-
--- patch ENTITY_EXIT
-local EntityExitAPI = {
-	register = registryOverride(extraEvents.ENTITY_EXIT.register)
-}
-extraEvents.ENTITY_EXIT = setmetatable({},{__index = function (table, key)
-	lastEvent = "ENTITY_EXIT"
-	return EntityExitAPI[key] or rawget(extraEvents.ENTITY_EXIT, key) or Signal[key]
-end})
+figuraMetatables.Event.__index.register = registryOverride(ogRegister)
 
 
 -- patch getRegisteredCount
@@ -146,64 +132,3 @@ end
 -- patch remove
 local ogRemove = figuraMetatables.Event.__index.remove
 figuraMetatables.Event.__index.remove = removeOverride(figuraMetatables.Event.__index.remove)
-
--- patch ENTITY_EXIT
-EntityExitAPI.remove = removeOverride(extraEvents.ENTITY_EXIT.remove)
-
-extraEvents.ENTITY_EXIT = setmetatable({},{__index = function (table, key)
-	return EntityExitAPI[key] or rawget(extraEvents.ENTITY_EXIT, key) or Signal[key]
-end})
-
--->==========[ Extra APIs ]==========<--
-local ogEvents = events
-
----@class EventsAPI
----@field ENTITY_EXIT Event
-local eventsExtraAPI = {}
-eventsExtraAPI.__index = function(table, key)
-	lastContainer = nil
-	return rawget(eventsExtraAPI, key) or ogEvents[key]
-end
-
-
----@class ContainedEventsAPI : EventsAPI
-local ContainedEventsAPI = {}
-
-function ContainedEventsAPI.__index(table, key)
-	lastContainer = table
-	return rawget(table, key) or ContainedEventsAPI[key] or ogEvents[key]
-end
-
--- Deletes all the registered events for the container.
-function ContainedEventsAPI:free()
-	for eventName, _ in pairs(self.subscribers) do
-		if eventName == "ENTITY_EXIT" then
-			for key, subscriber in pairs(extraEvents.ENTITY_EXIT) do
-				if subscriber[1] == self.id then
-					subscriber[2]()
-					break
-				end
-			end
-		end
-		if type(events[eventName]) == "Event" then
-			ogRemove(events[eventName],self.id) -- Figura Events
-		else
-			events[lastEvent]:remove(events[eventName],self.id) -- Lua Events
-		end
-	end
-end
-
-
----@return ContainedEventsAPI
-eventsExtraAPI.newContainer = function ()
-	id = id + 1
-	local container = {
-		id = "proxy"..id,
-		subscribers = {}
-	}
-	
-	return setmetatable(container,ContainedEventsAPI)
-end
-
----@type EventsAPI
-events = setmetatable({},eventsExtraAPI)
