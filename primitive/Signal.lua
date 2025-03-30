@@ -20,8 +20,6 @@ function Signal:getRegisteredCount(name)
 	return c
 end
 
-function Signal:__len() return #self end
-
 function Signal:__call(...)
 	local flush = {}
 	for _, func in pairs(self) do flush[#flush + 1] = {func(...)} end
