@@ -7,17 +7,17 @@ require("primitive.Signal")
 ---@field isActive boolean
 ---@field events MacroEventsAPI
 ---@field id string
----@field package init fun(events: MacroEventsAPI)
+---@field package init fun(events: MacroEventsAPI,...)
 local Macros = {}
 Macros.__index = Macros
 
 
 
-function Macros:toggle(active)
+function Macros:toggle(active,...)
 	if self.isActive ~= active then
 		self.isActive = active
 		if active then
-			self.init(self.events)
+			self.init(self.events,...)
 			for name, value in pairs(self.events) do
 				if events[name] then
 					events[name]:register(function (...)
@@ -26,6 +26,8 @@ function Macros:toggle(active)
 				end
 			end
 		else
+			---@diagnostic disable-next-line: undefined-field
+			self.events.ON_FREE:invoke(...)
 			for name in pairs(self.events) do
 				if events[name] then
 					events[name]:remove(self.id)
@@ -41,7 +43,7 @@ end
 local MacroEventsAPI = {}
 
 
----@param init fun(events: MacroEventsAPI)
+---@param init fun(events: MacroEventsAPI,...)
 ---@return Macros
 function MacrosAPI.new(init)
 	local new = {

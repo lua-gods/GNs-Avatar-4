@@ -20,7 +20,7 @@ ScreenAPI.__index = ScreenAPI
 local Screen = {}
 Screen.__type = "Screen"
 Screen.__index = function (self, key)
-	return rawget(self, key) or Box[key]
+	return rawget(self, key) or Screen[key] or Box[key]
 end
 
 ---@class Screen.metadata
@@ -34,7 +34,7 @@ function Screen.__eq(a, b)
 end
 
 
----@param init fun(events: MacroEventsAPI)?
+---@param init fun(events: MacroEventsAPI,screen: Screen)?
 ---@param meta Screen.metadata
 ---@return Screen
 function ScreenAPI.new(meta,init)
@@ -61,6 +61,16 @@ function ScreenAPI.new(meta,init)
 end
 
 
+function Screen:setActive(active)
+	if active then
+		self.events:toggle(true,self)
+	else
+		self.events:toggle(false,self)
+		self:purgeAllChildren()
+	end
+end
+
+
 function ScreenAPI.setScreen(name)
 	local screen = screens[name]
 	if not screens[name] then
@@ -69,15 +79,13 @@ function ScreenAPI.setScreen(name)
 	end
 	if currentScreen ~= screen then
 		if currentScreen then
-			currentScreen:setVisible(false)
-			currentScreen.events:toggle(false)
+			currentScreen:setActive(false)
 		end
 		renderer:setPostEffect(screen.background and "blur" or nil)
 		renderer:setRenderHUD(not screen.background)
 		currentScreen = screen
 		
-		currentScreen.events:toggle(true)
-		currentScreen:setVisible(true)
+		currentScreen:setActive(true)
 	end
 end
 
@@ -85,8 +93,6 @@ end
 
 ScreenAPI.new({name="default",background=false})
 ScreenAPI.setScreen("default")
-
-
 
 ---Returns the page with the given name, or the default page if no name is given.
 ---@param name string?
