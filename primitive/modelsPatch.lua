@@ -36,4 +36,5 @@ end
 ---@param func fun(model:ModelPart)
 function ModelsAPI:applyFunc(func)
 	applyFunc(self,func)
+	return self
 end

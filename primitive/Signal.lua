@@ -22,7 +22,7 @@ end
 
 function Signal:__call(...)
 	local flush = {}
-	for _, func in pairs(self) do flush[#flush + 1] = {func[1](...)} end
+	for _, func in pairs(self) do flush[#flush + 1] = {func[2](...)} end
 	return flush
 end
 

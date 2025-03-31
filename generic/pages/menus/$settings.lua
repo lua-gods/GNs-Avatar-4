@@ -1,0 +1,3 @@
+Screen.new({
+	name = "menu"
+})
