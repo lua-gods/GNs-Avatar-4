@@ -91,7 +91,6 @@ Screen.new({
 	end)
 	end
 	--#endregion
-	
 	do
 		local c = #menus
 		
@@ -130,7 +129,9 @@ Screen.new({
 				end
 				if lastScreenMenu then
 					lastScreenMenu:setActive(false)
-					menuScreen:removeChild(lastScreenMenu)
+					if lastScreenMenu.Parent == menuScreen then
+						menuScreen:removeChild(lastScreenMenu)
+					end
 				end
 				local newScreen = Screen.getScreen(menus[id].screen)
 				menuScreen:addChild(newScreen:setAnchorMax())
@@ -138,6 +139,12 @@ Screen.new({
 				lastScreenMenu = newScreen
 			end
 		end
+		
+		events.ON_FREE:register(function ()
+			if lastScreenMenu.Parent then
+				lastScreenMenu.Parent:removeChild(lastScreenMenu)
+			end
+		end)
 		
 		for i, button in ipairs(menuButtons) do
 			button.PRESSED:register(function ()
@@ -148,4 +155,4 @@ Screen.new({
 	end
 end)
 
-Screen.setScreen("menu")
+--Screen.setScreen("menu")
