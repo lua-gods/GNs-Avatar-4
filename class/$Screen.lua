@@ -18,7 +18,7 @@ ScreenAPI.__index = ScreenAPI
 ---@field events Macros
 ---@field background boolean
 local Screen = {}
-Screen.__type = "Screen"
+Screen.__type = "GNUI.Screen"
 Screen.__index = function (self, key)
 	return rawget(self, key) or Screen[key] or Box[key]
 end
@@ -46,7 +46,7 @@ function ScreenAPI.new(meta,init)
 		background = false
 	end
 	
-	local new = GNUI.newBox(canvas):setAnchorMax()
+	local new = GNUI.newBox():setAnchorMax()
 	new.name = meta.name
 	new.events = Macros.new(init)
 	new.background = background
@@ -61,6 +61,7 @@ function ScreenAPI.new(meta,init)
 end
 
 
+---@param active boolean
 function Screen:setActive(active)
 	if active then
 		self.events:toggle(true,self)
@@ -80,11 +81,13 @@ function ScreenAPI.setScreen(name)
 	if currentScreen ~= screen then
 		if currentScreen then
 			currentScreen:setActive(false)
+			canvas:removeChild(currentScreen)
 		end
 		renderer:setPostEffect(screen.background and "blur" or nil)
 		renderer:setRenderHUD(not screen.background)
 		currentScreen = screen
 		
+		canvas:addChild(currentScreen)
 		currentScreen:setActive(true)
 	end
 end

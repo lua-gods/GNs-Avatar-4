@@ -1,3 +1,3 @@
 Screen.new({
-	name = "menu"
+	name = "menu.macros"
 })

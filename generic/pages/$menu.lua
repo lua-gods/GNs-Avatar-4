@@ -6,22 +6,28 @@ local Button = require"library.GNUI.element.button"
 local quickTween = require"library.quickTween"
 
 
-
 local menus = {
 	{
-		name="Status",
-		path="generic.pages.menus.$macros",
-	},
-	{
-		name="Macros",
-		path="generic.pages.menus.$settings",
-	},
-	{
-		name=":open_folder_paper:Settings",
+		name=":paper: Status",
 		path="generic.pages.menus.$statistics",
+		screen="menu.statistics",
+	},
+	{
+		name=":cd: Macros",
+		path="generic.pages.menus.$macros",
+		screen="menu.macros",
+	},
+	{
+		name=":hammer_big: Settings",
+		path="generic.pages.menus.$settings",
+		screen="menu.settings",
 	},
 }
 
+
+for key, value in pairs(menus) do
+	require(value.path)
+end
 
 
 Screen.new({
@@ -35,7 +41,6 @@ Screen.new({
 		local wardrobe = GNUI.newBox(screen)
 		wardrobe:setAnchor(0.7,0,1,1)
 		Theme.style(wardrobe,"Background")
-		
 		Button.new(wardrobe,"Secondary")
 		:setAnchor(0,1,1,1)
 		:setDimensions(0,-20,0,0)
@@ -49,9 +54,7 @@ Screen.new({
 		:setAnchor(1,0,1,0)
 		:setDimensions(-20,0,0,20)
 		:setText(":pencil:")
-		:setTextBehavior("NONE")
-		:setTextAlign(0,0)
-		:setTextOffset(5,5)
+		:setTextOffset(-1,0)
 		
 		local statueAnchor = GNUI.newBox(wardrobe):setAnchor(0.5,0.5)
 		local statue = models.player:deepCopy():applyFunc(function (model)
@@ -98,12 +101,11 @@ Screen.new({
 		Theme.style(menuTabs,"Background")
 		quickTween.up(menuTabs,100)
 		
-		
-		local menuPage = GNUI.newBox(screen)
+		local menuScreen = GNUI.newBox(screen)
 		:setAnchor(0,0,0.7,1)
 		:setDimensions(0,30,-20,0)
-		Theme.style(menuPage,"Background")
-		quickTween.down(menuPage,100)
+		Theme.style(menuScreen,"Background")
+		quickTween.down(menuScreen,100)
 		
 		
 		local menuButtons = {} ---@type GNUI.Button[]
@@ -118,6 +120,7 @@ Screen.new({
 			menuButtons[i] = button
 		end
 		
+		local lastScreenMenu = nil ---@type Screen?
 		local function setMenu(id)
 			if currentMenu ~= id then
 				currentMenu = id
@@ -125,8 +128,17 @@ Screen.new({
 					button:setToggle(i ~= id)
 					button:setPressed(i ~= id)
 				end
+				if lastScreenMenu then
+					lastScreenMenu:setActive(false)
+					menuScreen:removeChild(lastScreenMenu)
+				end
+				local newScreen = Screen.getScreen(menus[id].screen)
+				menuScreen:addChild(newScreen:setAnchorMax())
+				newScreen:setActive(true)
+				lastScreenMenu = newScreen
 			end
 		end
+		
 		for i, button in ipairs(menuButtons) do
 			button.PRESSED:register(function ()
 				setMenu(i)

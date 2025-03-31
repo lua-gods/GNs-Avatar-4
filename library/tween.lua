@@ -470,6 +470,7 @@ local function process()
 		else
 			ease.tick(ease.to,1)
 			free(id)
+			activeTweens = math.max(activeTweens,0)
 			setActive(activeTweens < 1)
 		end
 	end
