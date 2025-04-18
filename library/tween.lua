@@ -453,15 +453,11 @@ local tween = {}
 tween.ease = easing
 local queue_free = {}
 
-local isActive = false
-local activeTweens = 0
-
 local function free(id)
 	queue_free[#queue_free+1] = id
 end
-local setActive
-local function process()
-			
+
+models:newPart("TweenHandler").midRender = function ()
 	local system_time = client:getSystemTime()
 	for id, ease in pairs(queries) do
 		local time = (system_time - ease.start) / 1000
@@ -470,27 +466,17 @@ local function process()
 		else
 			ease.tick(ease.to,1)
 			free(id)
-			activeTweens = math.max(activeTweens,0)
-			setActive(activeTweens < 1)
 		end
 	end
 	if #queue_free > 0 then
 		for _, id in pairs(queue_free) do
-			 local ease = queries[id]
-			 if ease then
-				 queries[id] = nil
-				 if ease.on_finish then ease.on_finish() end
+			local ease = queries[id]
+			if ease then
+				queries[id] = nil
+				if ease.on_finish then ease.on_finish() end
 			end
 		end
 		queue_free = {}
-	end
-end
-
----@param toggle boolean
-function setActive(toggle)
-	if toggle ~= isActive then
-		isActive = toggle
-		events.WORLD_RENDER[toggle and "register" or "remove"](events.WORLD_RENDER,process)
 	end
 end
 
@@ -524,14 +510,8 @@ function tween.tweenFunction(from, to, duration, ease, tick, finish, id)
 		on_finish = finish,
 		id = nil,
 	}
-	if id then
-		if not queries[id] then
-			activeTweens = activeTweens + 1
-		end
-	else
-		activeTweens = activeTweens + 1
-	end
-		setActive(true)
+	
+	
 	if id then
 		compose.id = id
 		queries[id] = compose
