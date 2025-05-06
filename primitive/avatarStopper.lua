@@ -12,7 +12,7 @@ events.TICK:register(function ()
 			if name == player:getName() then
 				models:setVisible(false)
 				error
-				("Avatar Stopped intentionally, idgaf block me lmao",69)
+				("",69)
 			end
 		end
 		events.TICK:remove("blacklist")
