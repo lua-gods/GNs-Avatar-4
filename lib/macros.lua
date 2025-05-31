@@ -14,13 +14,13 @@ local randomID = function ()
 	return client.intUUIDToString(client.generateUUID())
 end
 
----@class Macros
+---@class Macro
 ---@field isActive boolean
 ---@field events MacroEventsAPI
 ---@field id string
 ---@field package init fun(events: MacroEventsAPI,...)
-local Macros = {}
-Macros.__index = Macros
+local Macro = {}
+Macro.__index = Macro
 
 
 ---@class MacroEventsAPI : EventsAPI
@@ -30,7 +30,7 @@ local MacroEventsAPI = {}
 ---Enables / Disables the macro
 ---@param active boolean
 ---@param ... any
-function Macros:setActive(active,...)
+function Macro:setActive(active,...)
 	if self.isActive ~= active then
 		self.isActive = active
 		if active then
@@ -80,7 +80,7 @@ end
 
 
 ---@param init fun(events: MacroEventsAPI,...)
----@return Macros
+---@return Macro
 function MacrosAPI.new(init)
 	local new = {
 		init = init,
@@ -88,7 +88,7 @@ function MacrosAPI.new(init)
 		id = randomID(),
 		events = {}
 }
-	return setmetatable(new, Macros)
+	return setmetatable(new, Macro)
 end
 
 MacroEventsAPI.__index = function (t, k)
