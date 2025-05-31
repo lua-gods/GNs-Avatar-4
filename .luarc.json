@@ -288,7 +288,8 @@
 
       // Unknown
       "inject-field",
-            "lowercase-global"
+            "lowercase-global",
+            "redefined-local"
     ],
 
     // Group severity is not used by the docs.

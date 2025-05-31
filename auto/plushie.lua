@@ -1,10 +1,10 @@
----@diagnostic disable: param-type-mismatch
+local Color = require("lib.color")
 
 local BASE = models.playerHead:setParentType("SKULL")
-local BLOCK = models.playerHead.plushie:setVisible(false)
-local HEAD = models.playerHead.head:setVisible(false)
-local ITEM = models.playerHead.item:setVisible(false)
-local OTHER = models.playerHead.hud:setVisible(false):setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
+local BLOCK = BASE.plushie:setVisible(false)
+local HEAD = BASE.head:setVisible(false)
+local ITEM = BASE.item:setVisible(false)
+local OTHER = BASE.hud:setVisible(false):setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
 
 local STATES = {
 	BLOCK,

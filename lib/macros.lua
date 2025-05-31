@@ -1,7 +1,7 @@
 ---@class MacroAPI
 local MacrosAPI = {}
 
-require("primitive.Signal")
+require("event")
 
 ---@class Macros
 ---@field isActive boolean
@@ -51,7 +51,7 @@ function MacrosAPI.new(init)
 		isActive = false,
 		id = client.intUUIDToString(client.generateUUID()),
 		events = setmetatable({
-			ON_FREE = Signal.new()
+			ON_FREE = Events.new()
 		}, MacroEventsAPI),
 }
 	return setmetatable(new, Macros)
@@ -59,7 +59,7 @@ end
 
 MacroEventsAPI.__index = function (t, k)
 	if not rawget(t, k) then
-		local signal = Signal.new()
+		local signal = Events.new()
 		rawset(t, k, signal)
 		--if v and type(v) == "function" then signal:register(v) end
 	end
