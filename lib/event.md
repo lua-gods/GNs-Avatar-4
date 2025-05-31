@@ -2,29 +2,14 @@
 acts the same way as Figura events, but as instantiatable objects
 
 ```lua
-local Macros = require("lib.macros")
-
-local macro = Macros.new(function (events, ...)
-	-- triggers when the player is loaded and the macro is enabled
-	events.ENTITY_INIT:register(function ()
-		print("INIT")
-	end)
-	
-	events.RENDER:register(function ()
-		print("tick")
-	end)
-	
-	-- triggers when the macro is disabled
-	events.ON_EXIT:register(function ()
-		print("end")
-	end)
+-- create an event object
+local EXPLODE = Event.new()
+-- register a listener
+EXPLODE:register(function ()
+	print("BOOM!")
 end)
-
-
-events.TICK:register(function ()
-	-- enable the macro when the player sneaks
-	macro:setActive(player:isSneaking())
-end)
+-- call the event
+EXPLODE:invoke()
 ```
 
 # Methods

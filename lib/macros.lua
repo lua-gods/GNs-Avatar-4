@@ -6,7 +6,9 @@
 ---@class MacroAPI
 local MacrosAPI = {}
 
-local Event = require("lib.event")
+-- DEPENDENCIES
+local Event = require("./event")
+
 
 local randomID = function ()
 	return client.intUUIDToString(client.generateUUID())
