@@ -20,6 +20,9 @@ local s = require("./nineslice") ---@type Nineslice
 local ca = require("./primitives/canvas") ---@type GNUI.Canvas
 local bx = require("./primitives/box") ---@type GNUI.Box
 
+api.box = bx
+api.canvas = ca
+api.nineslice = s
 
 ---Creates a new Box.  
 ---A canvas can be given as a parameter to automatically add child it to that
