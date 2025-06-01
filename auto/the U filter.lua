@@ -10,8 +10,8 @@ local replace = {
 	--o = "о",
 	--p = "р",
 	
-	u = "ս",
-	U = "⋃",
+	gnui = "gnսi",
+	GNUI = "GN⋃I",
 	--v = "ν",
 	--x = "х",
 	--y = "у",

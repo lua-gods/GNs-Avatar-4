@@ -1,5 +1,5 @@
 local asyncPairs = require("lib.asyncPairs")
 
-asyncPairs(listFiles("auto"), function (path)
+for key, path in ipairs(listFiles("auto")) do
 	require(path)
-end)
+end

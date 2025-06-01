@@ -1,6 +1,6 @@
 local i = 0
 
-return function (array, callback)
+return function (array, callback, finishCallback)
 	i = i + 1
 	local last = nil
 	local part = models:newPart(i,"WORLD")
@@ -10,6 +10,7 @@ return function (array, callback)
 			last = n
 			callback(data)
 		else
+			finishCallback()
 			part:remove()
 		end
 	end
