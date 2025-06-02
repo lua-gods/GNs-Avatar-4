@@ -50,7 +50,7 @@ local Motorcycle = Macros.new(function (events, vehicle)
 	
 	events.TICK:register(function ()
 		lvel = vel
-		vel = vectors.rotateAroundAxis(player:getBodyYaw(),vehicle:getVelocity(),vec(0,1,0))
+		vel = math.lerp(vectors.rotateAroundAxis(player:getBodyYaw(),vehicle:getVelocity(),vec(0,1,0)),vel,0.8)
 		
 		ltravel = travel
 		travel = travel + vel.z
@@ -78,11 +78,11 @@ local Motorcycle = Macros.new(function (events, vehicle)
 			
 			recoilSpring.vel = recoilSpring.vel + accel * 2
 			recoil = math.clamp(recoilSpring.pos * 3,-0.5,2)
-			if accel > 0 then -- is Throttling
+			if accel > -0.01 then -- is Throttling
 				engineRPM = math.lerp(0.3,1.7,pitch(vel.xz:length()))
 				
 				local block = world.getBlockState(mat:apply(0,-0.01,-0.5))
-				if block:hasCollision() then
+				if block:getTextures().PARTICLE then
 					particles:newParticle("minecraft:block "..block.id,mat:apply((math.random()-0.5)*0.5,0,-0.5))
 				end
 			else
@@ -110,5 +110,5 @@ end)
 
 events.TICK:register(function ()
 	local vehicle = player:getVehicle()
-	Motorcycle:setActive(vehicle and true or false, vehicle)
+	Motorcycle:setActive((vehicle and vehicle:getType() == "minecraft:boat") and true or false, vehicle)
 end)

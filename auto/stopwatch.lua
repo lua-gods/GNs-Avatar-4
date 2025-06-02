@@ -1,0 +1,27 @@
+local Macros = require("lib.macros")
+local keybind = keybinds:newKeybind("Start Timer","key.keyboard.g")
+
+local stopwatch = Macros.new(function (events, vehicle)
+	local startTime = client:getSystemTime()
+	local text = ""
+	
+	events.WORLD_RENDER:register(function (delta)
+		local currentTime = client:getSystemTime()
+		
+		local time = (currentTime - startTime)/1000
+		local minutes = math.floor(time/60)
+		local seconds = math.floor(time - minutes*60)
+		local miliseconds = math.floor((time - minutes*60 - seconds)*1000)
+		
+		text = "Time: " .. string.format("%02d:%02d.%03d", minutes, seconds, miliseconds)
+		host:setActionbar(text)
+	end)
+	
+	events.ON_EXIT:register(function ()
+		print(text)
+	end)
+end)
+
+keybind.press = function ()
+	stopwatch:setActive(not stopwatch.isActive)
+end

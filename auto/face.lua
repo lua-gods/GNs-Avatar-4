@@ -1,0 +1,136 @@
+--TODO: convert to animation, this is over complicated
+--WARNING: this is over complicated
+
+local face = models.player.Base.Torso.Head.Face
+
+local leftSclera = face.Leye.LSclera
+local leftEyelid = face.Leye.LEyelid
+local leftEyebrow = face.Leye.LEyebrow
+local leftIris = face.Leye.LIris
+
+local rightSclera = face.Reye.RSclera
+local rightEyelid = face.Reye.REyelid
+local rightEyebrow = face.Reye.REyebrow
+local rightIris = face.Reye.RIris
+
+local stareDir = vec(0,0)
+
+
+local leftBlink = 0
+local rightBlink = 0
+
+---@class Eyes
+---@field sclera ModelPart
+---@field eyelid ModelPart
+---@field eyebrow ModelPart
+---@field iris ModelPart
+---@field dir Vector2
+---@field dirRange Vector2
+---@field heightResolution number
+---@field blink number
+---@field eyeHeight number
+---@field private angle number
+---@field private scale number
+---@field private scale2 number
+---@field private bleg number
+---@field private bleg2 number
+---@field private margin number
+local Eyes = {}
+Eyes.__index = Eyes
+
+---@param eyeHeight number
+---@param margin number
+---@param iris ModelPart
+---@param sclera ModelPart
+---@param eyelid ModelPart
+---@param eyebrow ModelPart
+---@return Eyes
+function Eyes.new(eyeHeight,margin,dirRange,heightResolution,iris,sclera,eyelid,eyebrow)
+	local angle = (eyeHeight/64)*45
+	local scale = eyeHeight/math.cos(math.rad(angle))
+	local scale2 = eyeHeight/math.cos(math.rad(angle*2))
+	local bleg = math.sqrt(scale^2-eyeHeight^2)
+	local bleg2 = math.sqrt(scale2^2-eyeHeight^2)
+	
+	local self = {
+		iris = iris,
+		sclera = sclera,
+		eyelid = eyelid,
+		eyebrow = eyebrow,
+		
+		eyeHeight = eyeHeight,
+		dirRange = dirRange,
+		heightResolution = heightResolution,
+		
+		dir = vec(0,0),
+		angle = angle,
+		blink = 1,
+		
+		scale = scale,
+		scale2 = scale2,
+		
+		bleg = bleg,
+		bleg2 = bleg2,
+		
+		margin = margin
+	}
+	return setmetatable(self,Eyes)
+end
+
+function Eyes:update()
+	self.sclera
+	:pos(0,0,self.margin-self.blink*self.bleg)
+	:rot(self.angle,0,0)
+	:scale(1,self.scale,1)
+	
+	self.iris
+	:pos(self.dir.x,0,(self.margin*2-(self.blink*self.bleg2)))
+	:rot(self.angle * 2,0,0)
+	:scale(1,self.scale2,1)
+	:setUVPixels(0,self.dir.y*self.heightResolution)
+	self.eyelid:setPos(0,(self.blink-1)*self.eyeHeight,0)
+end
+
+function Eyes:setDir(x,y)
+	self.dir = vec(
+		x*self.dirRange.x,
+		y*self.dirRange.y
+	)
+	self:update()
+end
+
+function Eyes:setBlink(y)
+	if self.blink ~= y then
+		self.blink = y
+		self:update()
+	end
+end
+
+local left = Eyes.new(1,0.025,vec(3.5/4,1),4,leftIris,leftSclera,leftEyelid,leftEyebrow)
+local right = Eyes.new(1,0.025,vec(3.5/4,1),4,rightIris,rightSclera,rightEyelid,rightEyebrow)
+
+local blinkTimer = 0
+events.TICK:register(function ()
+	blinkTimer = blinkTimer - 1
+	if blinkTimer <= 0 then
+		blinkTimer = math.random(2,20)*20
+		animations.player.blink:play()
+	end
+end)
+
+animations.player.gaze:play()
+
+local blinkControllerModel = models.player.FaceControl.Blink
+local dirControllerModel = models.player.FaceControl.Iris
+
+models.player.FaceControl.preRender = function (delta, context, part)
+	if context ~= "OTHER" then
+		local blink = (blinkControllerModel:getAnimPos().y/2+1)
+		right:setBlink(blink)
+		left:setBlink(blink)
+		
+		local dir = dirControllerModel:getAnimPos()
+		right:setDir(dir.x-0.4,dir.y)
+		left:setDir(dir.x+0.4,dir.y)
+	end
+end
