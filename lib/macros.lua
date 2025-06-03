@@ -25,6 +25,8 @@ Macro.__index = Macro
 
 ---@class MacroEventsAPI : EventsAPI
 ---@field ON_EXIT Event
+---@field ON_ENTITY_UNLOAD Event
+---@field ON_ENTITY_LOAD Event
 local MacroEventsAPI = {}
 
 ---Enables / Disables the macro
@@ -37,10 +39,13 @@ function Macro:setActive(active,...)
 			self.events = setmetatable({
 				ENTITY_INIT = Event.new(),
 				ON_EXIT = Event.new(),
+				ON_ENTITY_UNLOAD = Event.new(),
+				ON_ENTITY_LOAD = Event.new(),
 			}, MacroEventsAPI)
 			self.init(self.events,...)
 			
 			local hasInit = false
+			local hasLoadEvent = false
 			for name, value in pairs(self.events) do
 				if events[name] then
 					events[name]:register(function (...)
@@ -49,6 +54,9 @@ function Macro:setActive(active,...)
 				end
 				if name == "ENTITY_INIT" then
 					hasInit = true
+				end
+				if name == "ON_ENTITY_LOAD" or name == "ON_ENTITY_UNLOAD" then
+					hasLoadEvent = true
 				end
 			end
 			
@@ -63,6 +71,20 @@ function Macro:setActive(active,...)
 						events.TICK:remove(initName)
 					end,initName)
 				end
+			end
+			local wasLoaded = 5
+			if hasLoadEvent then
+				events.WORLD_TICK:register(function ()
+					local isLoaded = player:isLoaded()
+					if isLoaded ~= wasLoaded then
+						wasLoaded = isLoaded
+						if isLoaded then
+							self.events.ON_ENTITY_LOAD:invoke()
+						else
+							self.events.ON_ENTITY_UNLOAD:invoke()
+						end
+					end
+				end)
 			end
 		else
 			for name in pairs(self.events) do

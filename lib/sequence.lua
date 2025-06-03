@@ -4,13 +4,13 @@
 / /_/ / /|  / 
 \____/_/ |_/ Source: https://github.com/lua-gods/GNs-Avatar-3/blob/main/libraries/sequence.lua]]
 local n = 0
-local eventLib = require(... ..".eventLib")
+local eventLib = require(... ..".event")
 
 ---@class Sequence
 ---@field keyframes {time:integer,func:function}[]
 ---@field trackingKeyframe integer
 ---@field time integer
----@field ON_COMPLETE eventLib
+---@field ON_COMPLETE Event
 ---@field rid integer
 ---@field isActive boolean
 local Seq = {}

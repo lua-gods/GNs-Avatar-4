@@ -4,13 +4,13 @@ local BASE = models.playerHead:setParentType("SKULL")
 local BLOCK = BASE.plushie:setVisible(false)
 local HEAD = BASE.head:setVisible(false)
 local ITEM = BASE.item:setVisible(false)
-local OTHER = BASE.hud:setVisible(false):setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
+local HUD = BASE.hud:setVisible(false):setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
 
 local STATES = {
 	BLOCK,
 	HEAD,
 	ITEM,
-	OTHER,
+	HUD,
 	BASE:newPart("placeholder","NONE"),
 }
 

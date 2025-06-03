@@ -10,7 +10,9 @@ return function (array, callback, finishCallback)
 			last = n
 			callback(data)
 		else
-			finishCallback()
+			if finishCallback then
+				finishCallback()
+			end
 			part:remove()
 		end
 	end

@@ -130,7 +130,7 @@ models.player.FaceControl.preRender = function (delta, context, part)
 		left:setBlink(blink)
 		
 		local dir = dirControllerModel:getAnimPos()
-		right:setDir(dir.x-0.4,dir.y)
-		left:setDir(dir.x+0.4,dir.y)
+		right:setDir(dir.x-0.8,dir.y)
+		left:setDir(dir.x+0.8,dir.y)
 	end
 end

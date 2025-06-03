@@ -27,7 +27,7 @@ end
 ---@param events MacroEventsAPI
 ---@param vehicle Entity
 local Motorcycle = Macros.new(function (events, vehicle)
-	local engine = sounds["engine"]:loop(true):play()
+	local engine
 	model:setVisible(true)
 	models.player:setPos(0,12,-2):setRot(0,0,0)
 	
@@ -38,6 +38,8 @@ local Motorcycle = Macros.new(function (events, vehicle)
 	models.player.Base.RightLeg:setRot(-20,0,0)
 	models.player.Base.Torso.Head:setRot(25,0,0)
 	model:setRot(0,0,0)
+	
+	renderer:offsetCameraPivot(0,0.7,0)
 	
 	local lvel = vec(0,0,0)
 	local vel = vec(0,0,0)
@@ -72,7 +74,7 @@ local Motorcycle = Macros.new(function (events, vehicle)
 			models.boat.SwingArm.Wheel2:setRot(t * -128 * 1.2, 0, 0)
 			models.boat.SwingArm:setRot(recoil*-15,0,0)
 			models.boat.Hed.ShockAbsorber:setPos(0,math.max(recoil*-10,0.1),0)
-			engine:pos(ppos)
+			
 			
 			local accel = vel.xz:length()-lvel.xz:length()
 			
@@ -88,13 +90,27 @@ local Motorcycle = Macros.new(function (events, vehicle)
 			else
 				engineRPM = math.max(engineRPM-0.01,0.3)
 			end
-			engine:pitch(engineRPM)
+			if engine then
+				engine:pitch(engineRPM):pos(ppos)
+			end
 			models.player:setRot(-math.abs(tilt)*0.5 + recoil*15,-tilt,tilt)
 			models.boat:setRot(-math.abs(tilt)*0.5 + recoil*15,-tilt,tilt)
+			
+			if host:isHost() and player:isLoaded() then
+				if renderer:isFirstPerson() then
+					models.boat:setParentType("WORLD")
+					models.boat:setPos(player:getPos(delta) * 16 + vec(0,8,0)):setRot(-math.abs(tilt)*0.5 + recoil*15,-tilt-vehicle:getRot(delta).y+180,tilt)
+					
+				else
+					models.boat:setPos(0,8,0)
+					models.boat:setParentType("Model")
+				end
+			end
 		end
 	end)
 	
 	events.ON_EXIT:register(function ()
+		renderer:offsetCameraPivot()
 		models.player:setPos(0,0,0)
 		model:setVisible(false)
 		engine:stop()
@@ -105,6 +121,13 @@ local Motorcycle = Macros.new(function (events, vehicle)
 		models.player.Base.LeftLeg:setRot()
 		models.player.Base.RightLeg:setRot()
 		models.player.Base.Torso.Head:setRot()
+	end)
+	
+	events.ON_ENTITY_UNLOAD:register(function ()
+		engine:stop()
+	end)
+	events.ON_ENTITY_LOAD:register(function ()
+		engine = sounds["engine"]:loop(true):play()
 	end)
 end)
 

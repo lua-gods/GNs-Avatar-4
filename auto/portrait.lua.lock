@@ -1,0 +1,16 @@
+local portrait = models.playerHead.plushie
+:copy("port")
+:setVisible(true)
+:setParentType("Portrait")
+:scale(1,0.5,1)
+models:addChild(portrait)
+
+events.TICK:register(function ()
+	if player:isLoaded() then
+		local dir = client:getCameraPos()-player:getPos()
+		local crot = client:getCameraRot()
+		portrait:rot(0,crot.y-math.deg(math.atan2(dir.z,dir.x)-90))
+	else
+		portrait:rot(0,world.getTime())
+	end
+end)
