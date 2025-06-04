@@ -2,17 +2,6 @@ local SkullAPI = require("lib.skull")
 local SkullUtils = require("lib.skullUtils")
 local MiniMacro = require("lib.MiniMacro")
 
-
-function hash(str)
-	local hash = 0
-	for i = 1, #str do
-		local c = str:byte(i)
-		hash = (hash * math.pi + c) % 100000 -- keep it within 5 digits
-	end
-	return hash
-end
-
-
 local identity = SkullAPI.registerIdentity{
 	name = "Default",
 	modelBlock = models.skull.block,
@@ -21,15 +10,23 @@ local identity = SkullAPI.registerIdentity{
 	modelItem = models.skull.entity,
 	
 	processBlock = MiniMacro.new(
-		function (skull, model)end,
-	
+	--- INIT
 	---@param skull SkullInstanceBlock
 	---@param model ModelPart
-	function (skull, model,delta)
-		--local t = world.getTime(delta)/20 + hash(skull.pos.x..skull.pos.z)
-		--model:setRot(0,t*90,0)
-		--:setScale(1,math.abs((t)%2-1)*0.25+0.75,1)
+		function (skull, model)
+			model:setColor(1,0,0)
+		end,
+	
+	--- PROCESS
+	---@param skull SkullInstanceBlock
+	---@param model ModelPart
+	function (skull, model)
+		model:setRot(0,world.getTime(),0)
 	end,
+	
+	-- EXIT
+	---@param skull SkullInstanceBlock
+	---@param model ModelPart
 	function (skull, model)
 	end)
 }

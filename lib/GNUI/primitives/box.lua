@@ -962,7 +962,6 @@ function Box:_update()
 	 cr.y = cr.y + as.y
 	 cr.z = cr.z + as.z
 	 cr.w = cr.w + as.w
-	 
 	 size = vec(
 		math.floor((cr.z - cr.x) * 100 + 0.5) / 100,
 		math.floor((cr.w - cr.y) * 100 + 0.5) / 100

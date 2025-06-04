@@ -72,11 +72,11 @@ local screenCanvas
 ---Gets a canvas for the screen. Quick startup for putting UI elements onto the screen.
 ---@return GNUI.Canvas
 function api.getScreenCanvas()
+	if not host:isHost() then error("Attempted to get screen canvas on non host") end
 	if not screenCanvas then
 		screenCanvas = ca.new(true)
 		models:addChild(screenCanvas.modelPart)
 		screenCanvas.modelPart:setParentType("HUD")
-		
 		local lastWindowSize = vec(0,0)
 		events.WORLD_RENDER:register(function (delta)
 			local windowSize = client:getScaledWindowSize()

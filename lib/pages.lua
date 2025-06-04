@@ -10,6 +10,7 @@ local Book = {}
 Book.__index = function(t,k)
 	return rawget(t,k) or Book[k] or GNUI.box[k]
 end
+Book.__type = "GNUI.Book"
 
 ---@return GNUI.Book
 function Book.newBook()
@@ -27,11 +28,17 @@ Page.__index = function(t,k)
 end
 
 ---@param name string
----@param init fun(events: MacroEventsAPI,...)
+---@param init fun(events: MacroEventsAPI,...)|Macro
 ---@return GNUI.Page
 function Book:newPage(name,init)
+	local macro
+	if type(init) ~= "function" then
+		macro = init
+	else
+		macro = Macros.new(init)
+	end
 	local page = {
-		macro = Macros.new(init),
+		macro = macro,
 	}
 	
 	setmetatable(page,Page)
@@ -49,17 +56,15 @@ function Book:setPage(name)
 	end
 	self.currentPage = self.pages[name]
 	if self.currentPage then
-		local screen = GNUI.newBox({
-			anchorMax = true,
-			parent = self
-		})
+		local screen = GNUI.newBox()
+		self:addChild(screen)
+		screen:setAnchorMax()
 		self.currentPage.screen = screen
 		self.currentPage.macro:setActive(true,screen)
 	end
-	
 	local hasPage = self.currentPage and true or false
-	renderer:setPostEffect(hasPage and "blur" or nil)
-	renderer:setRenderHUD(not hasPage)
+	--renderer:setPostEffect(hasPage and "blur" or nil)
+	--renderer:setRenderHUD(not hasPage)
 	host:setUnlockCursor(hasPage)
 	
 	return self

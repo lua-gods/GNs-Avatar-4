@@ -50,7 +50,7 @@ theme.Button = {
 	---@param box GNUI.Button
 	Default = function (box)
 		box.textOffset = vec(0,2)
-		box.HoverBox:setDimensions(0,-2,0,-2)
+		--box.HoverBox:setDimensions(0,-2,0,-2)
 		local spriteNormal = GNUI.newNineslice(atlas,7,1,11,7 ,2,2,2,4, 2)
 		local spritePressed = GNUI.newNineslice(atlas,13,2,17,6 ,2,2,2,2)
 		
@@ -65,7 +65,7 @@ theme.Button = {
 					:setTextOffset(box.textOffset + vec(0,2))
 					:setChildrenOffset(0,2)
 					if not forced then
-						GNUI.playSound("minecraft:ui.button.click",1) -- click
+						--GNUI.playSound("minecraft:ui.button.click",1) -- click
 					end
 				else
 					box:setTexture(spriteNormal)
@@ -79,7 +79,7 @@ theme.Button = {
 	end,
 	Secondary = function (box)
 		box.textOffset = vec(0,2)
-		box.HoverBox:setDimensions(0,-2,0,-2)
+		--box.HoverBox:setDimensions(0,-2,0,-2)
 		local spriteNormal = GNUI.newNineslice(atlas,13,15,17,21 ,2,2,2,4, 2)
 		local spritePressed = GNUI.newNineslice(atlas,19,17,23,21 ,2,2,2,2)
 		
@@ -109,7 +109,7 @@ theme.Button = {
 	end,
 	Tertiary = function (box)
 		box.textOffset = vec(0,2)
-		box.HoverBox:setDimensions(0,-2,0,-2)
+		--box.HoverBox:setDimensions(0,-2,0,-2)
 		local spriteNormal = GNUI.newNineslice(atlas,29,11,31,13 ,1,1,1,1)
 		local spritePressed = GNUI.newNineslice(atlas,29,15,31,17 ,1,1,1,1)
 		
