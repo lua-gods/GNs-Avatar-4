@@ -1,3 +1,4 @@
+---@diagnostic disable: discard-returns
 local SkullAPI = require("lib.skull")
 local SkullUtils = require("lib.skullUtils")
 local MiniMacro = require("lib.MiniMacro")
@@ -14,29 +15,41 @@ end
 
 
 local identity = SkullAPI.registerIdentity{
-	name = "Default",
+	name = "minecraft:observer",
 	modelBlock = models.skull.block,
 	modelHat = models.skull.hat,
 	modelHud = SkullUtils.makeIcon(models.skull.icon:getTextures()[1]),
 	modelItem = models.skull.entity,
 	
 	processBlock = MiniMacro.new(
-	
-	---@param skull SkullInstanceBlock
-	---@param model ModelPart
-	function (skull, model)
-		if skull.isWall then
-			model:rot(-90,0,180):pos(0,4,4)
-		end
-	end,
+		---@param skull SkullInstanceBlock
+		---@param model ModelPart
+		function (skull, model)
+			model:setColor(1,0,0)
+			skull.billBoard = model:newPart("billBoard"):scale(0.25,0.25,0.25):pos(0,16,0)
+
+		end,
 	
 	---@param skull SkullInstanceBlock
 	---@param model ModelPart
 	function (skull, model,delta)
-		--local t = world.getTime(delta)/20 + hash(skull.pos.x..skull.pos.z)
-		--model:setRot(0,t*90,0)
-		--:setScale(1,math.abs((t)%2-1)*0.25+0.75,1)
+		model.ht:setRot(math.random(-5,5),math.random(-5,5),math.random(-5,5))
+		local skulls = SkullAPI.getSkullBlockInstances()
+		skull.billBoard:removeTask():setRot(0,90-client:getCameraRot().y)
+		
+		local i = 0
+		
+		---@param id string
+		---@param targetSkull SkullInstanceBlock
+		for id, targetSkull in pairs(skulls) do
+			i = i + 1
+			skull.billBoard:newText(id):pos(-25,i*10-50,0):text(id)
+		end
+		
 	end,
+	
+	---@param skull SkullInstanceBlock
+	---@param model ModelPart
 	function (skull, model)
 	end)
 }
