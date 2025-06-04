@@ -1,3 +1,9 @@
+--[[______   __
+  / ____/ | / /  by: GNanimates / https://gnon.top / discord: @gn68s
+ / / __/  |/ / name: name: 
+/ /_/ / /|  /  desc:  desc: 
+\____/_/ |_/ source: link ]]
+
 local MiniMacro = require("lib.MiniMacro")
 local modelUtils = require("lib.modelUtils")
 local DiffTable = require("lib.diffTable")
@@ -148,7 +154,9 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 		if lastInstance then
 			lastInstance.model:setVisible(false)
 		end
-		if state == 1 then -- BLOCK
+		
+		
+		if state == 1 then --[────────────────────-< BLOCK >-────────────────────]--
 			local pos = block:getPos()
 			local id = pos.x .. "," .. pos.y .. "," .. pos.z
 			

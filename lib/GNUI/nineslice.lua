@@ -1,7 +1,7 @@
 ---@diagnostic disable: param-type-mismatch
 --[[______  __
   / ____/ | / / by: GNamimates | Discord: "@gn8." | Youtube: @GNamimates
- / / __/  |/ / Sprite Library, specifically made for GNUI.
+ / / __/  |/ / name: Sprite Library, specifically made for GNUI.
 / /_/ / /|  /
 \____/_/ |_/]]
 local default_texture = textures["1x1white"] or textures:newTexture("1x1white",1,1):setPixel(0,0,vec(1,1,1))

@@ -1,8 +1,8 @@
 ---@diagnostic disable: assign-type-mismatch
 --[[______  __ NOTE: Figura trims off all comments automatically by default. so all of this comment will be stripped out before being processed by Figura.
   / ____/ | / / by: GNamimates | Discord: "@gn8." | Youtube: @GNamimates
- / / __/  |/ / Tween Library
-/ /_/ / /|  / Complete set of Easing Equations 
+ / / __/  |/ / name: Tween Library
+/ /_/ / /|  /  desc: Complete set of Easing Equations 
 \____/_/ |_/ https://github.com/lua-gods/GNs-Avatar-3/blob/main/libraries/tween.lua
 Disclaimer for Robert Penner's Easing Equations license:
 

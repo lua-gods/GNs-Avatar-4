@@ -1,7 +1,7 @@
 --[[______   __
-	/ ____/ | / / By: GNamimates | https://gnon.top | Discord: @gn8.
- / / __/  |/ / The Slider Class.
-/ /_/ / /|  / a number range box.
+	/ ____/ | / / By: GNamimates / https://gnon.top / Discord: @gn68s
+ / / __/  |/ / name: The Slider Class.
+/ /_/ / /|  /  desc: a number range box.
 \____/_/ |_/ Source: link]]
 ---@diagnostic disable: assign-type-mismatch
 local Box = require("./../primitives/box") ---@type GNUI.Box

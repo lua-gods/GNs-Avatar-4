@@ -1,8 +1,8 @@
 --[[______   __
-  / ____/ | / / By: GNamimates | https://gnon.top | Discord: @gn8.
- / / __/  |/ / Macros Library
-/ /_/ / /|  / lets you contain Figura events and toggle them
-\____/_/ |_/ Source: https://github.com/lua-gods/GNs-Figura-Avatar-4/blob/main/lib/macros.lua]]
+  / ____/ | / /  by: GNanimates / https://gnon.top / discord: @gn68s
+ / / __/  |/ / name: Macros Library
+/ /_/ / /|  /  desc: lets you contain Figura events and toggle them
+\____/_/ |_/ Source: https://github.com/lua-gods/GNs-Figura-Avatar-4/blob/main/lib/macros.lua  ]]
 ---@class MacroAPI
 local MacrosAPI = {}
 

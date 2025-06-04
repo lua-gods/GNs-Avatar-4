@@ -1,7 +1,7 @@
 --[[______   __
-  / ____/ | / / By: GNamimates | https://gnon.top | Discord: @gn8.
- / / __/  |/ / Event Library
-/ /_/ / /|  / acts the same way as Figura events, but as instantiatable objects
+  / ____/ | / /  by: GNanimates / https://gnon.top / discord: @gn68s
+ / / __/  |/ / name: Event Library
+/ /_/ / /|  /  desc: acts the same way as Figura events, but as instantiatable objects
 \____/_/ |_/ Source: https://github.com/lua-gods/GNs-Figura-Avatar-4/blob/main/lib/event.lua]]
 
 ---A Event is a list of functions that can be invoked.

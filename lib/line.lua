@@ -1,8 +1,8 @@
 
 --[[______  __
   / ____/ | / / By: GNamimates
- / / __/  |/ / GNlineLib v2.0.2
-/ /_/ / /|  / Allows you to draw lines in the world at ease.
+ / / __/  |/ / name: GNlineLib v2.0.2
+/ /_/ / /|  /  desc: Allows you to draw lines in the world at ease.
 \____/_/ |_/ https://github.com/lua-gods/GNs-Avatar-3/blob/main/lib/line.lua]]
 ---@diagnostic disable: param-type-mismatch
 -->==========[ Config ]==========<--

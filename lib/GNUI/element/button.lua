@@ -1,7 +1,7 @@
 --[[______   __
-  / ____/ | / / By: GNamimates | https://gnon.top | Discord: @gn8.
- / / __/  |/ / The Button Class.
-/ /_/ / /|  / The base class for all clickable buttons.
+  / ____/ | / /  by: GNanimates / https://gnon.top / discord: @gn68s
+ / / __/  |/ / name: The Button Class.
+/ /_/ / /|  /  desc: The base class for all clickable buttons.
 \____/_/ |_/ Source: link]]
 
 ---@diagnostic disable: assign-type-mismatch

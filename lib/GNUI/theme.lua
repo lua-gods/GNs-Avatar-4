@@ -1,7 +1,7 @@
 --[[______   __
-  / ____/ | / / By: GNamimates | https://gnon.top | Discord: @gn8.
- / / __/  |/ / Theme Class Handler
-/ /_/ / /|  / the script that manages how every class looks.
+  / ____/ | / /  by: GNanimates / https://gnon.top / discord: @gn68s
+ / / __/  |/ / name: Theme Class Handler
+/ /_/ / /|  /  desc: the script that manages how every class looks.
 \____/_/ |_/ Source: link]]
 
 ---@alias GNUI.Theme table<string,table<string|"default",fun(box:GNUI.Box)>>

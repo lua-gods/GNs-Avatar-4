@@ -1,8 +1,8 @@
 ---@diagnostic disable: undefined-doc-name, undefined-field
 --[[______   __
-	/ ____/ | / / By: GNamimates | https://gnon.top | Discord: @gn8.
- / / __/  |/ / Theme File
-/ /_/ / /|  / Contains how to theme specific classes
+	/ ____/ | / / By: GNamimates / https://gnon.top / Discord: @gn68s
+ / / __/  |/ / name: Theme File
+/ /_/ / /|  /  desc: Contains how to theme specific classes
 \____/_/ |_/ Source: link]]
 
 --[[ Layout --------

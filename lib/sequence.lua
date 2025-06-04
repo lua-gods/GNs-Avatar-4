@@ -1,7 +1,7 @@
 --[[______  __
   / ____/ | / / by: GNamimates, Discord: "@gn8.", Youtube: @GNamimates
- / / __/  |/ / A library that makes it easier to create sequences.
-/ /_/ / /|  / 
+ / / __/  |/ / name: A library that makes it easier to create sequences.
+/ /_/ / /|  /  desc: 
 \____/_/ |_/ Source: https://github.com/lua-gods/GNs-Avatar-3/blob/main/libraries/sequence.lua]]
 local n = 0
 local eventLib = require(... ..".event")

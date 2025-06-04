@@ -198,12 +198,16 @@ end
 
 local Macro = require("lib.macros")
 
+local book
+
+if host:isHost() then
+	book = require("auto.screen")
+end
 
 
 local GUITAR = Macro.new(function (events, screen)
 	if host:isHost() then
 		
-		local book = require("auto.screen")
 		local GNUI = require("lib.GNUI.main")
 		local Button = require("lib.GNUI.element.button")
 		

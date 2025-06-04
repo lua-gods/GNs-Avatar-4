@@ -1,7 +1,7 @@
 --[[______   __
-  / ____/ | / / By: GNamimates | https://gnon.top | Discord: @gn8.
- / / __/  |/ / The TextField Class.
-/ /_/ / /|  / an editable text box.
+  / ____/ | / /  by: GNanimates / https://gnon.top / discord: @gn68s
+ / / __/  |/ / name: The TextField Class.
+/ /_/ / /|  /  desc: an editable text box.
 \____/_/ |_/ Source: link]]
 ---@diagnostic disable: assign-type-mismatch
 local Box = require("./../primitives/box") ---@type GNUI.Box

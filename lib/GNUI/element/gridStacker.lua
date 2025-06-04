@@ -1,7 +1,7 @@
 --[[______   __
-  / ____/ | / / By: GNamimates | https://gnon.top | Discord: @gn8.
- / / __/  |/ / The GridStacker Class.
-/ /_/ / /|  / A type of stacker that aranges its children onto a grid.
+  / ____/ | / /  by: GNanimates / https://gnon.top / discord: @gn68s
+ / / __/  |/ / name: The GridStacker Class.
+/ /_/ / /|  /  desc: A type of stacker that aranges its children onto a grid.
 \____/_/ |_/ Source: link]]
 ---@diagnostic disable: assign-type-mismatch
 local Box = require("./../primitives/box") ---@type GNUI.Box

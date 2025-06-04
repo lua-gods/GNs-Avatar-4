@@ -1,6 +1,6 @@
 --[[______   __
   / ____/ | / / by: GNamimates, Discord: "@gn8.", Youtube: @GNamimates
- / / __/  |/ / Quaternion
+ / / __/  |/ / name: Quaternion
 / /_/ / /|  /
 \____/_/ |_/ Source: link]]
 local epsilon = 2.22044604925031308e-16
