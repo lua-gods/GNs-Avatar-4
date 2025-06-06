@@ -8,6 +8,7 @@ local MiniMacro = require("lib.MiniMacro")
 local modelUtils = require("lib.modelUtils")
 
 
+local ZERO = vec(0,0,0)
 local FORWARD = vec(0,0,1)
 local UP = vec(0,1,0)
 
@@ -33,9 +34,11 @@ local SkullAPI = {}
 ---@field identity SkullIdentity
 ---@field model ModelPart
 ---@field lastSeen integer
+---@field matrix Matrix4
 ---@field [any] any
 local SkullInstance = {}
 SkullInstance.__index = SkullInstance
+
 
 --[────────-< Entity Instance >-────────]--
 ---@class SkullInstanceEntity : SkullInstance
@@ -43,6 +46,7 @@ SkullInstance.__index = SkullInstance
 
 --[────────-< Block Instance >-────────]--
 ---@class SkullInstanceBlock : SkullInstance
+---@field blockModel ModelPart
 ---@field block BlockState
 ---@field pos Vector3
 ---@field isWall boolean
@@ -162,16 +166,29 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 		if not instance then -- new instance
 			local isWall = block.id:find("wall_head$") and true or false
 			local rot = isWall and (({north=180,south=0,east=90,west=270})[block.properties.facing]) or ((tonumber(block.properties.rotation) * -22.5 + 180) % 360)
-			local dir = vectors.rotateAroundAxis(rot,FORWARD,UP)
+			local matrix = matrices.mat4():rotateY(rot):translate(pos)
+			local dir = matrix:applyDir(0,0,1)
 			
 			local support = world.getBlockState(pos - (isWall and dir or UP))
 			local identity = skullIdentities[support.id] or skullIdentities.Default
 			instance = identity:newBlockInstance() ---@type SkullInstanceBlock
-			instance.block = block
-			instance.pos = pos
-			instance.isWall = isWall
-			instance.rot = rot
-			instance.dir = dir
+			
+			
+			instance.support = support
+			instance.block   = block
+			instance.pos     = pos
+			instance.isWall  = isWall
+			instance.rot     = rot
+			instance.dir     = dir
+			instance.matrix  = matrix
+			
+			local blockModel = instance.model
+			:newPart("blockModelArm")
+			:rot(0,-rot)
+			:newPart("blockModel")
+			:pos(vec(-8,0,-8) + (isWall and matrix:applyDir(0,-4,-4) or ZERO))
+			instance.blockModel = blockModel
+			
 			blockInstances[id] = instance
 			
 			instance.identity.processBlock.ON_ENTER(instance,instance.model,delta)

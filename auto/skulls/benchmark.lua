@@ -26,7 +26,7 @@ local identity = SkullAPI.registerIdentity{
 		---@param model ModelPart
 		function (skull, model)
 			model:setColor(1,0,0)
-			skull.billBoard = model:newPart("billBoard"):scale(0.25,0.25,0.25):pos(0,16,0)
+			skull.billBoard = skull.blockModel:newPart("billBoard"):scale(0.25,0.25,0.25):pos(0,16,0)
 
 		end,
 	
@@ -35,7 +35,7 @@ local identity = SkullAPI.registerIdentity{
 	function (skull, model,delta)
 		model.ht:setRot(math.random(-5,5),math.random(-5,5),math.random(-5,5))
 		local skulls = SkullAPI.getSkullBlockInstances()
-		skull.billBoard:removeTask():setRot(0,90-client:getCameraRot().y)
+		skull.billBoard:removeTask():setRot(0,180-client:getCameraRot().y)
 		
 		local i = 0
 		

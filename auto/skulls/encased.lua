@@ -11,9 +11,8 @@ function hash(str)
 	end
 	return hash
 end
-
 local identity = SkullAPI.registerIdentity{
-	name = "minecraft:observer",
+	name = "minecraft:gold_block",
 	modelBlock = models.skull.block,
 	modelHat = models.skull.hat,
 	modelHud = SkullUtils.makeIcon(models.skull.icon:getTextures()[1]),
@@ -23,15 +22,13 @@ local identity = SkullAPI.registerIdentity{
 		---@param skull SkullInstanceBlock
 		---@param model ModelPart
 		function (skull, model)
-			model:setColor(1,0,0)
+			skull.blockModel:newBlock("encasing"):block("minecraft:white_stained_glass")
+			skull.blockModel:newBlock("encasing2"):block("minecraft:black_concrete"):scale(-0.99,0.99,0.99):pos(15.99,0.01,0.01)
 		end,
 	
 	---@param skull SkullInstanceBlock
 	---@param model ModelPart
 	function (skull, model,delta)
-		--local t = world.getTime(delta)/20 + hash(skull.pos.x..skull.pos.z)
-		--model:setRot(0,t*90,0)
-		--:setScale(1,math.abs((t)%2-1)*0.25+0.75,1)
 	end,
 	
 	---@param skull SkullInstanceBlock
