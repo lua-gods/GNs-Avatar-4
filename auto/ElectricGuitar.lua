@@ -84,7 +84,7 @@ local function play(chord)
 	if player:isLoaded() then
 		for i, midi in ipairs(notes) do
 			local audio,offset = getAudio(midi)
-			playingAudio[i] = sounds[audio]:pos(player:getPos()):pitch(2^(((midi-offset)) / 12+OCTAVE_SHIFT)):play()
+			playingAudio[i] = sounds[audio]:pos(player:getPos()):volume(0.2):pitch(2^(((midi-offset)) / 12+OCTAVE_SHIFT)):play()
 		end
 		animations.player.guitarIdle:stop()
 		animations.player.guitarStrum:stop():play()
@@ -276,7 +276,7 @@ local GUITAR = Macro.new(function (events, screen)
 					
 					---@param value Sound
 					for key, value in pairs(playingNotes[key]) do
-						Tween.tweenFunction(1,0,2,"outQuad",function (t)
+						Tween.tweenFunction(0.2,0,2,"outQuad",function (t)
 							value:setVolume(t)
 						end,function() 
 							value:stop()
