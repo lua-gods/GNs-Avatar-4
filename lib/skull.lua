@@ -20,7 +20,7 @@ local skullIdentities = {}        ---@type table<string,SkullIdentity>
 local skullSupportIdentities = {} ---@type table<string,SkullIdentity>
 
 local time = client:getSystemTime()
-local startupStall = 5
+local startupStall = 20
 
 ---@class SkullAPI
 local SkullAPI = {}
@@ -97,8 +97,8 @@ function SkullAPI.registerIdentity(cfg)
 	local root = models:newPart(cfg.name.."root")
 	
 	local identity = {
-		name = cfg.name,
-		support = cfg.support or "minecraft:aer",
+		name = cfg.name:lower(),
+		support = cfg.support,
 		
 		modelBlock = modelIdentityPeprocess(cfg.modelBlock),
 		modelHat   = modelIdentityPeprocess(cfg.modelHat),
@@ -116,8 +116,10 @@ function SkullAPI.registerIdentity(cfg)
 	root:addChild(identity.modelItem)
 	
 	setmetatable(identity,SkullIdentity)
-	skullIdentities[cfg.name] = identity
-	skullSupportIdentities[identity.support] = identity
+	skullIdentities[cfg.name:lower()] = identity
+	if identity.support then
+		skullSupportIdentities[identity.support] = identity
+	end
 	return identity
 end
 
@@ -138,12 +140,15 @@ end
 --[────────-< Entity Instance >-────────]--
 ---@class SkullInstanceEntity : SkullInstance
 ---@field entity Entity
+---@field isFirstPerson boolean
+---@field isHand boolean
 
 ---@class SkullProcessEntity
 ---@field ON_ENTER fun(skull: SkullInstanceEntity, model: ModelPart)?
 ---@field ON_PROCESS fun(skull: SkullInstanceEntity, model: ModelPart, delta: number)?
 ---@field ON_EXIT fun(skull: SkullInstanceEntity, model: ModelPart)?
 
+---@return SkullInstanceEntity
 function SkullIdentity:newEntityInstance()
 	local instance = {
 		identity = self,
@@ -240,6 +245,7 @@ end)
 local lastInstance ---@type SkullInstance
 
 events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
+	
 	if startupStall then return end
 	if lastInstance then
 		lastInstance.model:setVisible(false)
@@ -262,7 +268,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 			local dir = matrix:applyDir(0,0,1)
 			
 			local support = world.getBlockState(pos - (isWall and dir or UP))
-			local identity = skullSupportIdentities[support.id] or skullIdentities.Default
+			local identity = skullSupportIdentities[support.id] or skullIdentities.default
 			instance = identity:newBlockInstance() ---@type SkullInstanceBlock
 			
 			
@@ -289,12 +295,12 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 		end
 	elseif ctx == "HEAD" then --[────────────────────────-< HAT / HEAD >-────────────────────────]--
 		local uuid = entity:getUUID()
-		local name = item:getName()
+		local name = item:getName():lower()
 		local identify = uuid..","..name
 		instance = hatInstances[identify] ---@cast instance SkullInstanceEntity
 		
 		if not instance then -- new instance
-			instance = skullIdentities[name] or skullIdentities.Default
+			instance = skullIdentities[name] or skullIdentities.default
 			instance = instance:newHatInstance()
 			instance.entity = entity
 			instance.vars = playerVars[uuid] or {}
@@ -307,17 +313,17 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 			instance.lastSeen = time
 		end
 	elseif ctx == "ITEM_ENTITY" or ctx:find("HAND$") then
-		local uuid = entity:getType() ~= "minecraft:player" and entity:getUUID() or item:getName()
+		local uuid = entity:getType() ~= "minecraft:player" and entity:getUUID() or item:getName():lower()
 		instance = entityInstances[uuid] ---@cast instance SkullInstanceEntity
 		
 		if not instance then -- new instance
 			local parameters = {}
-			for param in item:getName():gmatch("([^,]+)") do
+			for param in item:getName():lower():gmatch("([^,]+)") do
 				parameters[#parameters+1] = tonumber(param) or param
 			end
 			local name = parameters[1]
 			table.remove(parameters,1)
-			instance = skullIdentities[name] or skullIdentities.Default
+			instance = skullIdentities[name] or skullIdentities.default
 			
 			instance = instance:newEntityInstance()
 			instance.entity = entity
@@ -331,12 +337,11 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 			instance.lastSeen = time
 		end
 	else --[────────────────────────-< HUD >-────────────────────────]--
-	local name = item:getName():match("^([^,]+)")
-		name = skullIdentities[name] and name or "Default"
+	local name = item:getName():lower():match("^([^,]+)")
+		name = skullIdentities[name] and name or "default"
 		instance = hudInstances[name] ---@cast instance SkullInstanceEntity
 		if not instance then -- new instance
 			instance = skullIdentities[name]
-			
 			instance = instance:newHudInstance()
 			instance.item = item
 			instance.identity.processHud.ON_ENTER(instance,instance.model)
@@ -433,6 +438,11 @@ function SkullAPI.getSkull(pos)
 	if block and not block.queueFree then
 		return block
 	end
+end
+
+
+function SkullAPI.getSkullIdentities()
+	return skullIdentities
 end
 
 
