@@ -292,7 +292,13 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 		instance = hatInstances[uuid] ---@cast instance SkullInstanceEntity
 		
 		if not instance then -- new instance
-			instance = skullIdentities[item:getName()] or skullIdentities.Default
+			local parameters = {}
+			for param in item:getName():gmatch("([^,]+)") do
+				parameters[#parameters+1] = tonumber(param) or param
+			end
+			local name = parameters[1]
+			table.remove(parameters,1)
+			instance = skullIdentities[name] or skullIdentities.Default
 			instance = instance:newHatInstance()
 			instance.entity = entity
 			instance.vars = playerVars[uuid] or {}
@@ -309,7 +315,13 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 		instance = entityInstances[uuid] ---@cast instance SkullInstanceEntity
 		
 		if not instance then -- new instance
-			instance = skullIdentities[item:getName()] or skullIdentities.Default
+			local parameters = {}
+			for param in item:getName():gmatch("([^,]+)") do
+				parameters[#parameters+1] = tonumber(param) or param
+			end
+			local name = parameters[1]
+			table.remove(parameters,1)
+			instance = skullIdentities[name] or skullIdentities.Default
 			
 			instance = instance:newEntityInstance()
 			instance.entity = entity
@@ -323,8 +335,8 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 			instance.lastSeen = time
 		end
 	else --[────────────────────────-< HUD >-────────────────────────]--
-	local name = item:getName()
-		name = skullIdentities[item:getName()] and name or "Default"
+	local name = item:getName():match("^([^,]+)")
+		name = skullIdentities[name] and name or "Default"
 		instance = hudInstances[name] ---@cast instance SkullInstanceEntity
 		if not instance then -- new instance
 			instance = skullIdentities[name]
