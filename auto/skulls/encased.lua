@@ -1,6 +1,4 @@
-local SkullAPI = require("lib.skull")
-local SkullUtils = require("lib.skullUtils")
-local MiniMacro = require("lib.MiniMacro")
+local Skull = require("lib.skull")
 
 
 function hash(str)
@@ -11,29 +9,30 @@ function hash(str)
 	end
 	return hash
 end
-local identity = SkullAPI.registerIdentity{
+local identity = Skull.registerIdentity{
 	name = "minecraft:gold_block",
 	modelBlock = models.skull.block,
 	modelHat = models.skull.hat,
-	modelHud = SkullUtils.makeIcon(models.skull.icon:getTextures()[1]),
+	modelHud = Skull.makeIcon(models.skull.icon),
 	modelItem = models.skull.entity,
 	
-	processBlock = MiniMacro.new(
+	processBlock = {
 		---@param skull SkullInstanceBlock
 		---@param model ModelPart
-		function (skull, model)
+		ON_ENTER = function (skull, model)
 			skull.blockModel:newBlock("encasing"):block("minecraft:white_stained_glass")
 			skull.blockModel:newBlock("encasing2"):block("minecraft:black_concrete"):scale(-0.99,0.99,0.99):pos(15.99,0.01,0.01)
 		end,
 	
-	---@param skull SkullInstanceBlock
-	---@param model ModelPart
-	function (skull, model,delta)
-	end,
-	
-	---@param skull SkullInstanceBlock
-	---@param model ModelPart
-	function (skull, model)
-	end)
+		---@param skull SkullInstanceBlock
+		---@param model ModelPart
+		ON_PROCESS = function (skull, model,delta)
+		end,
+		
+		---@param skull SkullInstanceBlock
+		---@param model ModelPart
+		ON_EXIT = function (skull, model)
+		end
+	}
 }
 

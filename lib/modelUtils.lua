@@ -2,6 +2,9 @@ local utils = {}
 
 local function deepCopy(part)
 	local copy = part:copy(part:getName())
+	for key, value in pairs(part:getTask()) do
+		copy:addTask(value)
+	end
 	for _, child in ipairs(part:getChildren()) do
 		copy:removeChild(child)
 		deepCopy(child):moveTo(copy)

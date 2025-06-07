@@ -4,21 +4,20 @@
 / /_/ / /|  /  desc: handles all the skull instances
 \____/_/ |_/ source: https://github.com/lua-gods/GNs-Figura-Avatar-4/blob/main/lib/skull.lua ]]
 
-local MiniMacro = require("lib.MiniMacro")
 local modelUtils = require("lib.modelUtils")
 
 
 local ZERO = vec(0,0,0)
-local FORWARD = vec(0,0,1)
 local UP = vec(0,1,0)
+local SKULL_DECAY_TIME = 100000
 
 -- this is used to avoid using world render when I am offline
 local SKULL_PROCESS = models:newPart("SkullRenderer","SKULL")
 SKULL_PROCESS:newBlock("forceRenderer"):scale(0,0,0):block("minecraft:emerald_block")
 
----@type table<string,SkullIdentity>
-local skullIdentities = {}
 
+local skullIdentities = {}        ---@type table<string,SkullIdentity>
+local skullSupportIdentities = {} ---@type table<string,SkullIdentity>
 
 local time = client:getSystemTime()
 local startupStall = 5
@@ -27,11 +26,25 @@ local startupStall = 5
 local SkullAPI = {}
 
 
+local id = 0
+---@param iconModelTextureSource ModelPart
+function SkullAPI.makeIcon(iconModelTextureSource)
+	id = id + 1
+	local model = models:newPart("Icon"..id)
+	model:setParentType("SKULL")
+	:rot(38,-45,0)
+	:pos(5.58,13.65,5.58)
+	model:newSprite("Icon"):texture(textures[next(iconModelTextureSource:getAllVertices())],16,16):setRenderType("CUTOUT_EMISSIVE_SOLID")
+	return model
+end
+
+
 --[────────────────────────-< Instance Class Declarations >-────────────────────────]--
 
 
 ---@class SkullInstance
 ---@field identity SkullIdentity
+---@field queueFree boolean
 ---@field model ModelPart
 ---@field lastSeen integer
 ---@field matrix Matrix4
@@ -40,46 +53,23 @@ local SkullInstance = {}
 SkullInstance.__index = SkullInstance
 
 
---[────────-< Entity Instance >-────────]--
----@class SkullInstanceEntity : SkullInstance
----@field itemEntity Entity
-
---[────────-< Block Instance >-────────]--
----@class SkullInstanceBlock : SkullInstance
----@field blockModel ModelPart
----@field block BlockState
----@field pos Vector3
----@field isWall boolean
----@field rot number
----@field dir Vector3
----@field offset Vector3
----@field support BlockState
-
---[────────-< Hat Instance >-────────]--
----@class SkullInstanceHat : SkullInstance
----@field entity Entity
----@field vars table
-
---[────────-< HUD Instance >-────────]--
----@class SkullInstanceHud : SkullInstance
----@field item ItemStack
-
-
 --[────────────────────────────────────────-< Skull Identity >-────────────────────────────────────────]--
 
 
 ---@class SkullIdentity
 ---@field name string
+---@field support Minecraft.blockID
 ---
 ---@field modelBlock ModelPart
 ---@field modelHat ModelPart
 ---@field modelHud ModelPart
 ---@field modelItem ModelPart
 ---
----@field processBlock MiniMacro
----@field processHat MiniMacro
----@field processHud MiniMacro
----@field processItem MiniMacro
+---@field processBlock SkullProcessBlock
+---@field processHat SkullProcessHat
+---@field processHud SkullProcessHud
+---@field processEntity SkullProcessEntity
+---@field [any] any
 local SkullIdentity = {}
 SkullIdentity.__index = SkullIdentity
 
@@ -88,21 +78,37 @@ local function modelIdentityPeprocess(model)
 	return model:setParentType("SKULL"):setVisible(false)
 end
 
+local PROCESS_PLACEHOLDER = {
+	ON_ENTER = function ()end,
+	ON_PROCESS = function ()end,
+	ON_EXIT = function ()end
+}
+
+local function applyPlaceholders(tbl)
+	tbl = tbl or {}
+	tbl.ON_ENTER = tbl.ON_ENTER or PROCESS_PLACEHOLDER.ON_ENTER
+	tbl.ON_PROCESS = tbl.ON_PROCESS or PROCESS_PLACEHOLDER.ON_PROCESS
+	tbl.ON_EXIT = tbl.ON_EXIT or PROCESS_PLACEHOLDER.ON_EXIT
+	return tbl
+end
+
 ---@param cfg SkullIdentity|{}
 function SkullAPI.registerIdentity(cfg)
 	local root = models:newPart(cfg.name.."root")
 	
 	local identity = {
 		name = cfg.name,
+		support = cfg.support or "minecraft:aer",
+		
 		modelBlock = modelIdentityPeprocess(cfg.modelBlock),
 		modelHat   = modelIdentityPeprocess(cfg.modelHat),
 		modelHud   = modelIdentityPeprocess(cfg.modelHud),
 		modelItem  = modelIdentityPeprocess(cfg.modelItem),
 		
-		processBlock = cfg.processBlock or MiniMacro.new(),
-		processHat   = cfg.processHat   or MiniMacro.new(),
-		processHud   = cfg.processHud   or MiniMacro.new(),
-		processItem  = cfg.processItem  or MiniMacro.new(),
+		processBlock =   applyPlaceholders(cfg.processBlock),
+		processHat   =   applyPlaceholders(cfg.processHat),
+		processHud   =   applyPlaceholders(cfg.processHud),
+		processEntity  = applyPlaceholders(cfg.processEntity),
 	}
 	root:addChild(identity.modelBlock)
 	root:addChild(identity.modelHat)
@@ -111,6 +117,7 @@ function SkullAPI.registerIdentity(cfg)
 	
 	setmetatable(identity,SkullIdentity)
 	skullIdentities[cfg.name] = identity
+	skullSupportIdentities[identity.support] = identity
 	return identity
 end
 
@@ -128,6 +135,42 @@ function SkullIdentity:newInstance()
 end
 
 
+--[────────-< Entity Instance >-────────]--
+---@class SkullInstanceEntity : SkullInstance
+---@field entity Entity
+
+---@class SkullProcessEntity
+---@field ON_ENTER fun(skull: SkullInstanceEntity, model: ModelPart)?
+---@field ON_PROCESS fun(skull: SkullInstanceEntity, model: ModelPart, delta: number)?
+---@field ON_EXIT fun(skull: SkullInstanceEntity, model: ModelPart)?
+
+function SkullIdentity:newEntityInstance()
+	local instance = {
+		identity = self,
+		lastSeen = time,
+		model = modelUtils.deepCopy(self.modelItem):setVisible(true):moveTo(models),
+	}
+	setmetatable(instance,SkullInstance)
+	return instance
+end
+
+--[────────-< Block Instance >-────────]--
+---@class SkullInstanceBlock : SkullInstance
+---@field blockModel ModelPart
+---@field block BlockState
+---@field pos Vector3
+---@field isWall boolean
+---@field rot number
+---@field dir Vector3
+---@field offset Vector3
+---@field support BlockState
+
+---@class SkullProcessBlock
+---@field ON_ENTER fun(skull: SkullInstanceBlock, model: ModelPart)?
+---@field ON_PROCESS fun(skull: SkullInstanceBlock, model: ModelPart, delta: number)?
+---@field ON_EXIT fun(skull: SkullInstanceBlock, model: ModelPart)?
+
+--- Creates an instance with the only data being nessesary to a block.
 ---@return SkullInstanceBlock
 function SkullIdentity:newBlockInstance()
 	local instance = {
@@ -139,9 +182,56 @@ function SkullIdentity:newBlockInstance()
 	return instance
 end
 
+--[────────-< Hat Instance >-────────]--
+---@class SkullInstanceHat : SkullInstance
+---@field item ItemStack
+---@field entity Entity
+---@field uuid string
+---@field vars table
+
+---@class SkullProcessHat
+---@field ON_ENTER fun(skull: SkullInstanceHat, model: ModelPart)?
+---@field ON_PROCESS fun(skull: SkullInstanceHat, model: ModelPart, delta: number)?
+---@field ON_EXIT fun(skull: SkullInstanceHat, model: ModelPart)?
+
+function SkullIdentity:newHatInstance()
+	local instance = {
+		identity = self,
+		lastSeen = time,
+		model = modelUtils.deepCopy(self.modelHat):setVisible(true):moveTo(models),
+	}
+	setmetatable(instance,SkullInstance)
+	return instance
+end
+
+--[────────-< HUD Instance >-────────]--
+---@class SkullInstanceHud : SkullInstance
+---@field item ItemStack
+
+---@class SkullProcessHud
+---@field ON_ENTER fun(skull: SkullInstanceHud, model: ModelPart)?
+---@field ON_PROCESS fun(skull: SkullInstanceHud, model: ModelPart, delta: number)?
+---@field ON_EXIT fun(skull: SkullInstanceHud, model: ModelPart)?
+
+function SkullIdentity:newHudInstance()
+	local instance = {
+		identity = self,
+		lastSeen = time,
+		model = modelUtils.deepCopy(self.modelHud):setVisible(true):moveTo(models),
+	}
+	setmetatable(instance,SkullInstance)
+	return instance
+end
+
+
+--[────────────────────────────────────────-< PROCESSING >-────────────────────────────────────────]--
 
 local blockInstances = {}
+local hatInstances = {}
+local hudInstances = {}
+local entityInstances = {}
 
+local playerVars = {}
 
 events.WORLD_RENDER:register(function ()
 	SKULL_PROCESS:setVisible(true)
@@ -155,12 +245,14 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 		lastInstance.model:setVisible(false)
 	end
 	
+	local instance
+	
 	if ctx == "BLOCK" then --[────────────────────-< BLOCK >-────────────────────]--
 		
 		local pos = block:getPos()
 		local id = pos.x.. "," ..pos.y .. "," .. pos.z
 		
-		local instance = blockInstances[id] ---@cast instance SkullInstanceBlock
+		instance = blockInstances[id] ---@cast instance SkullInstanceBlock
 		
 		
 		if not instance then -- new instance
@@ -170,7 +262,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 			local dir = matrix:applyDir(0,0,1)
 			
 			local support = world.getBlockState(pos - (isWall and dir or UP))
-			local identity = skullIdentities[support.id] or skullIdentities.Default
+			local identity = skullSupportIdentities[support.id] or skullIdentities.Default
 			instance = identity:newBlockInstance() ---@type SkullInstanceBlock
 			
 			
@@ -191,17 +283,70 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 			
 			blockInstances[id] = instance
 			
-			instance.identity.processBlock.ON_ENTER(instance,instance.model,delta)
+			instance.identity.processBlock.ON_ENTER(instance,instance.model)
 		else
 			instance.lastSeen = time
 		end
-		instance.model:setVisible(true)
-		lastInstance = instance
+	elseif ctx == "HEAD" then --[────────────────────────-< HAT / HEAD >-────────────────────────]--
+		local uuid = entity:getUUID()
+		instance = hatInstances[uuid] ---@cast instance SkullInstanceEntity
+		
+		if not instance then -- new instance
+			instance = skullIdentities[item:getName()] or skullIdentities.Default
+			instance = instance:newHatInstance()
+			instance.entity = entity
+			instance.vars = playerVars[uuid] or {}
+			instance.item = item
+			instance.uuid = uuid
+			instance.identity.processHat.ON_ENTER(instance,instance.model)
+			hatInstances[uuid] = instance
+			lastInstance = instance
+		else
+			instance.lastSeen = time
+		end
+	elseif ctx == "ITEM_ENTITY" or ctx:find("HAND$") then
+		local uuid = entity:getType() ~= "minecraft:player" and entity:getUUID() or item:getName()
+		instance = entityInstances[uuid] ---@cast instance SkullInstanceEntity
+		
+		if not instance then -- new instance
+			instance = skullIdentities[item:getName()] or skullIdentities.Default
+			
+			instance = instance:newEntityInstance()
+			instance.entity = entity
+			instance.vars = playerVars[uuid] or {}
+			instance.item = item
+			instance.uuid = uuid
+			instance.identity.processEntity.ON_ENTER(instance,instance.model)
+			entityInstances[uuid] = instance
+			lastInstance = instance
+		else
+			instance.lastSeen = time
+		end
+	else --[────────────────────────-< HUD >-────────────────────────]--
+	local name = item:getName()
+		name = skullIdentities[item:getName()] and name or "Default"
+		instance = hudInstances[name] ---@cast instance SkullInstanceEntity
+		if not instance then -- new instance
+			instance = skullIdentities[name]
+			
+			instance = instance:newHudInstance()
+			instance.item = item
+			instance.identity.processHud.ON_ENTER(instance,instance.model)
+			hudInstances[name] = instance
+			lastInstance = instance
+		else
+			instance.lastSeen = time
+		end
 	end
+	if instance then
+		instance.model:setVisible(true)
+	end
+	lastInstance = instance
 end)
 
 
 SKULL_PROCESS.postRender = function (delta, context, part)
+	playerVars = world.avatarVars()
 	SKULL_PROCESS:setVisible(false)
 	time = client:getSystemTime()
 	delta = client:getFrameTime()
@@ -209,12 +354,56 @@ SKULL_PROCESS.postRender = function (delta, context, part)
 	if next(blockInstances) then
 		---@param instance SkullInstanceBlock
 		for key, instance in pairs(blockInstances) do
-			if time - instance.lastSeen > 1000 or (not world.getBlockState(instance.pos).id:find("head$")) then
-				instance.identity.processBlock.ON_EXIT(instance,instance.model,delta)
+			if time - instance.lastSeen > SKULL_DECAY_TIME or (not world.getBlockState(instance.pos).id:find("head$")) then
+				instance.queueFree = true
+				instance.identity.processBlock.ON_EXIT(instance,instance.model)
 				instance.model:remove()
 				blockInstances[key] = nil
 			end
-			instance.identity.processBlock.PROCESS(instance,instance.model,delta)
+			instance.identity.processBlock.ON_PROCESS(instance,instance.model,delta)
+		end
+	end
+	
+	if next(hatInstances) then
+		---@param instance SkullInstanceHat
+		for key, instance in pairs(hatInstances) do
+			if time - instance.lastSeen > SKULL_DECAY_TIME then
+				instance.queueFree = true
+				instance.identity.processHat.ON_EXIT(instance,instance.model)
+				instance.model:remove()
+				hatInstances[key] = nil
+			end
+			instance.matrix = instance.model:partToWorldMatrix()
+			instance.vars = playerVars[instance.uuid] or {}
+			instance.identity.processHat.ON_PROCESS(instance,instance.model,delta)
+		end
+	end
+	
+	if next(entityInstances) then
+		---@param instance SkullInstanceEntity
+		for key, instance in pairs(entityInstances) do
+			if time - instance.lastSeen > SKULL_DECAY_TIME then
+				instance.queueFree = true
+				instance.identity.processEntity.ON_EXIT(instance,instance.model)
+				instance.model:remove()
+				entityInstances[key] = nil
+			end
+			instance.matrix = instance.model:partToWorldMatrix()
+			instance.vars = playerVars[instance.uuid] or {}
+			instance.identity.processEntity.ON_PROCESS(instance,instance.model,delta)
+		end
+	end
+	
+	if next(hudInstances) then
+		---@param instance SkullInstanceHud
+		for key, instance in pairs(hudInstances) do
+			if time - instance.lastSeen > SKULL_DECAY_TIME then
+				instance.queueFree = true
+				instance.identity.processHud.ON_EXIT(instance,instance.model)
+				instance.model:remove()
+				hudInstances[key] = nil
+			end
+			instance.identity.processHud.ON_PROCESS(instance,instance.model,delta)
 		end
 	end
 end
@@ -228,6 +417,15 @@ SKULL_PROCESS.preRender = function (delta, context, part)
 	end
 end
 
+
+---@param pos Vector3
+---@return SkullInstanceBlock?
+function SkullAPI.getSkull(pos)
+	local block = blockInstances[SkullAPI.toID(pos)]
+	if block and not block.queueFree then
+		return block
+	end
+end
 
 
 function SkullAPI.getSkullBlockInstances()

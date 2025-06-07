@@ -1,6 +1,6 @@
-models.player.Base.Torso.Head.Face.Sclera
-:setPrimaryRenderType("EMISSIVE_SOLID")
-:setColor(0.7,0.7,0.7)
+--models.player.Base.Torso.Head.Face.Sclera
+--:setPrimaryRenderType("EMISSIVE_SOLID")
+--:setColor(0.7,0.7,0.7)
 
 
 animations.player.Blink:speed(9)

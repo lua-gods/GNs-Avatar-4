@@ -1,33 +1,29 @@
-local SkullAPI = require("lib.skull")
-local SkullUtils = require("lib.skullUtils")
-local MiniMacro = require("lib.MiniMacro")
+local Skull = require("lib.skull")
 
-local identity = SkullAPI.registerIdentity{
+local identity = Skull.registerIdentity{
 	name = "Default",
 	modelBlock = models.skull.block,
 	modelHat = models.skull.hat,
-	modelHud = SkullUtils.makeIcon(models.skull.icon:getTextures()[1]),
+	modelHud = Skull.makeIcon(models.skull.icon),
 	modelItem = models.skull.entity,
 	
-	processBlock = MiniMacro.new(
-	--- INIT
-	---@param skull SkullInstanceBlock
-	---@param model ModelPart
-		function (skull, model)
-			model:setColor(1,0,0)
+	processBlock = {
+		---@param skull SkullInstanceBlock
+		---@param model ModelPart
+		ON_ENTER = function (skull, model)
+			
 		end,
 	
-	--- PROCESS
-	---@param skull SkullInstanceBlock
-	---@param model ModelPart
-	function (skull, model)
-		model:setRot(0,world.getTime(),0)
-	end,
-	
-	-- EXIT
-	---@param skull SkullInstanceBlock
-	---@param model ModelPart
-	function (skull, model)
-	end)
+		---@param skull SkullInstanceBlock
+		---@param model ModelPart
+		ON_PROCESS = function (skull, model,delta)
+			
+		end,
+		
+		---@param skull SkullInstanceBlock
+		---@param model ModelPart
+		ON_EXIT = function (skull, model)
+			
+		end},
 }
 
