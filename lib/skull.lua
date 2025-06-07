@@ -289,15 +289,11 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 		end
 	elseif ctx == "HEAD" then --[────────────────────────-< HAT / HEAD >-────────────────────────]--
 		local uuid = entity:getUUID()
-		instance = hatInstances[uuid] ---@cast instance SkullInstanceEntity
+		local name = item:getName()
+		local identify = uuid..","..name
+		instance = hatInstances[identify] ---@cast instance SkullInstanceEntity
 		
 		if not instance then -- new instance
-			local parameters = {}
-			for param in item:getName():gmatch("([^,]+)") do
-				parameters[#parameters+1] = tonumber(param) or param
-			end
-			local name = parameters[1]
-			table.remove(parameters,1)
 			instance = skullIdentities[name] or skullIdentities.Default
 			instance = instance:newHatInstance()
 			instance.entity = entity
@@ -305,7 +301,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 			instance.item = item
 			instance.uuid = uuid
 			instance.identity.processHat.ON_ENTER(instance,instance.model)
-			hatInstances[uuid] = instance
+			hatInstances[identify] = instance
 			lastInstance = instance
 		else
 			instance.lastSeen = time
@@ -394,7 +390,7 @@ SKULL_PROCESS.postRender = function (delta, context, part)
 	if next(entityInstances) then
 		---@param instance SkullInstanceEntity
 		for key, instance in pairs(entityInstances) do
-			if time - instance.lastSeen > SKULL_DECAY_TIME then
+			if time - instance.lastSeen > 100 then
 				instance.queueFree = true
 				instance.identity.processEntity.ON_EXIT(instance,instance.model)
 				instance.model:remove()
