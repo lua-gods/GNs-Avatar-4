@@ -13,7 +13,7 @@ local SKULL_DECAY_TIME = 100000
 
 -- this is used to avoid using world render when I am offline
 local SKULL_PROCESS = models:newPart("SkullRenderer","SKULL")
-SKULL_PROCESS:newBlock("forceRenderer"):scale(0,0,0):block("minecraft:emerald_block")
+SKULL_PROCESS:newBlock("forceRenderer"):block("minecraft:emerald_block"):scale(0,0,0)
 
 
 local skullIdentities = {}        ---@type table<string,SkullIdentity>
@@ -74,9 +74,32 @@ local SkullIdentity = {}
 SkullIdentity.__index = SkullIdentity
 
 
+local placeholderID = 0
 local function modelIdentityPeprocess(model)
-	return model:setParentType("SKULL"):setVisible(false)
+	if model then
+		return model:setParentType("SKULL"):setVisible(false)
+	else
+		return models:newPart("Placeholder"..placeholderID,"SKULL"):setVisible(false)
+	end
 end
+
+
+local function split(text,pattern)
+	local out = {}
+	for word in text:gmatch(pattern) do
+		out[#out+1] = word
+	end
+	return out
+end
+
+
+---@param itemName string
+local function extractNamesAndParams(itemName)
+	local separations = split(itemName..";","([^;]+);")
+	print(separations)
+end
+
+extractNamesAndParams("test;test2,4;test3,513")
 
 local PROCESS_PLACEHOLDER = {
 	ON_ENTER = function ()end,
@@ -141,6 +164,7 @@ end
 ---@class SkullInstanceEntity : SkullInstance
 ---@field entity Entity
 ---@field isFirstPerson boolean
+---@field params any[]
 ---@field isHand boolean
 
 ---@class SkullProcessEntity
@@ -191,6 +215,7 @@ end
 ---@class SkullInstanceHat : SkullInstance
 ---@field item ItemStack
 ---@field entity Entity
+---@field params any[]
 ---@field uuid string
 ---@field vars table
 
@@ -212,6 +237,7 @@ end
 --[────────-< HUD Instance >-────────]--
 ---@class SkullInstanceHud : SkullInstance
 ---@field item ItemStack
+---@field params any[]
 
 ---@class SkullProcessHud
 ---@field ON_ENTER fun(skull: SkullInstanceHud, model: ModelPart)?
@@ -238,14 +264,20 @@ local entityInstances = {}
 
 local playerVars = {}
 
-events.WORLD_RENDER:register(function ()
-	SKULL_PROCESS:setVisible(true)
-end)
+--events.WORLD_RENDER:register(function ()
+--	SKULL_PROCESS:setVisible(true)
+--end)
 
 local lastInstance ---@type SkullInstance
 
+local lastTime = 0
+
 events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
-	
+	local currentTime = client.getSystemTime()
+	if (currentTime - lastTime) > 20  then
+		SKULL_PROCESS:setVisible(true)
+		lastTime = currentTime
+	end
 	if startupStall then return end
 	if lastInstance then
 		lastInstance.model:setVisible(false)
@@ -296,6 +328,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 	elseif ctx == "HEAD" then --[────────────────────────-< HAT / HEAD >-────────────────────────]--
 		local uuid = entity:getUUID()
 		local name = item:getName():lower()
+		
 		local identify = uuid..","..name
 		instance = hatInstances[identify] ---@cast instance SkullInstanceEntity
 		
@@ -359,6 +392,10 @@ end)
 
 
 SKULL_PROCESS.postRender = function (delta, context, part)
+	
+	--if client:getViewer():getUUID() == "dc912a38-2f0f-40f8-9d6d-57c400185362" then
+	--	print("hello")
+	--end
 	playerVars = world.avatarVars()
 	SKULL_PROCESS:setVisible(false)
 	time = client:getSystemTime()

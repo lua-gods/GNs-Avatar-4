@@ -1,7 +1,3 @@
-local asyncPairs = require("lib.asyncPairs")
-
-require("auto.skulls.default")
-
-asyncPairs(listFiles("auto/skulls"),function (path)
+for index, path in ipairs(listFiles("auto.skulls")) do
 	require(path)
-end)
+end
