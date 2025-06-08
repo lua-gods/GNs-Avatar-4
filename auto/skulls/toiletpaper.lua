@@ -24,25 +24,37 @@ local identity = {
 	modelHat = models.info.Item,
 	modelHud = Skull.makeIcon(models.info.icon),
 	modelItem = models.info.Item,
-	
+
 	processHat = {
 		ON_ENTER = function (skull, model)
 		end
 	},
-	
+
 	processEntity = {
 		ON_ENTER = function (skull, model)
 			local i = 0
 			for key, value in pairs(Skull.getSkullIdentities()) do
-				model:newText(key.."title"):pos(7,i*-3-6,-6):text(toJson{text=key,color="black"}):scale(0.15)
-				local desc = model:newText(key.."requirements"):pos(7,i*-3-7.4,-6):scale(0.1)
-				
+			   local icon = value.modelHud:copy('icon')
+				if not next(icon:getTask()) then -- figura bug workaround
+				   for _, task in pairs(value.modelHud:getTask()) do
+						if type(task) == 'SpriteTask' then
+   						task:setRenderType("TRANSLUCENT")
+						end
+						icon:addTask(task)
+					end
+				end
+				icon:setParentType('None'):setVisible(true)
+				icon:setPos(7, i * -3 - 3, -6):setRot():setScale(1/8)
+				model:addChild(icon)
+				model:newText(key.."title"):pos(5.25,i*-3-6,-6):text(toJson{text=key,color="black"}):scale(0.15)
+				local desc = model:newText(key.."requirements"):pos(5.25,i*-3-7.4,-6):scale(0.09)
+
 				if value.support then
 					desc:text(toJson{text="Place on: "..value.support,color="black"})
 				else
 					desc:text(toJson{text="Rename to: "..value.name,color="black"})
 				end
-				
+
 				i = i + 1
 				model.Middle:scale(1,(i*3+2)/16,1)
 			end
