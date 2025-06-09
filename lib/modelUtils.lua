@@ -13,6 +13,16 @@ local function deepCopy(part)
 end
 
 
+function utils.shallowCopy(part)
+	local copy = part:copy(part:getName())
+	for key, value in pairs(part:getTask()) do
+		copy:addTask(value)
+	end
+	return copy
+end
+
+
+
 ---comment
 ---@param model ModelPart
 function utils.deepCopy(model)
