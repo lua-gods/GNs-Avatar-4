@@ -25,11 +25,6 @@ local identity = {
 	modelHud = Skull.makeIcon(models.info.icon),
 	modelItem = models.info.Item,
 
-	processHat = {
-		ON_ENTER = function (skull, model)
-		end
-	},
-
 	processEntity = {
 		ON_ENTER = function (skull, model)
 			local i = 0

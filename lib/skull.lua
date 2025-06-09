@@ -14,6 +14,7 @@ local SKULL_DECAY_TIME = 100000
 -- this is used to avoid using world render when I am offline
 local SKULL_PROCESS = models:newPart("SkullRenderer","SKULL")
 SKULL_PROCESS:newBlock("forceRenderer"):block("minecraft:emerald_block"):scale(0,0,0)
+models:newPart("SkullHider","SKULL"):newBlock("forceHide"):block("minecraft:redstone_block"):scale(0,0,0)
 
 
 local skullIdentities = {}        ---@type table<string,SkullIdentity>
@@ -43,6 +44,7 @@ end
 
 
 ---@class SkullInstance
+---@field params any[] # Note: does not exist for blocks
 ---@field identity SkullIdentity
 ---@field queueFree boolean
 ---@field model ModelPart
@@ -94,9 +96,20 @@ end
 
 
 ---@param itemName string
+---@return {name:string,params:string[],identifier:string}[]
 local function extractNamesAndParams(itemName)
-	local separations = split(itemName..";","([^;]+);")
-	print(separations)
+	local identities = {}
+	for i, identityString in ipairs(split(itemName..",","([^,]+),")) do
+		local params = split(identityString..";","([^;]+);")
+		local name = params[1]
+		table.remove(params,1)
+		identities[i] = {
+			name = name,
+			params = params or {},
+			identifier = identityString,
+		}
+	end
+	return identities
 end
 
 extractNamesAndParams("test;test2,4;test3,513")
@@ -264,28 +277,21 @@ local entityInstances = {}
 
 local playerVars = {}
 
---events.WORLD_RENDER:register(function ()
---	SKULL_PROCESS:setVisible(true)
---end)
+events.WORLD_RENDER:register(function ()
+	SKULL_PROCESS:setVisible(true)
+end)
 
-local lastInstance ---@type SkullInstance
-
-local lastTime = 0
+local lastDrawInstances = {}
 
 events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
-	local currentTime = client.getSystemTime()
-	if (currentTime - lastTime) > 20  then
-		SKULL_PROCESS:setVisible(true)
-		lastTime = currentTime
-	end
 	if startupStall then return end
-	if lastInstance then
-		lastInstance.model:setVisible(false)
-	end
 	
 	local instance
 	
-	if ctx == "BLOCK" then --[────────────────────-< BLOCK >-────────────────────]--
+	local drawInstances = {}
+	
+	
+	if ctx == "BLOCK" then --[────────────────────-< 🔴 BLOCK >-────────────────────]--
 		
 		local pos = block:getPos()
 		local id = pos.x.. "," ..pos.y .. "," .. pos.z
@@ -293,7 +299,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 		instance = blockInstances[id] ---@cast instance SkullInstanceBlock
 		
 		
-		if not instance then -- new instance
+		if not blockInstances[id] then -- new instance
 			local isWall = block.id:find("wall_head$") and true or false
 			local rot = isWall and (({north=180,south=0,east=90,west=270})[block.properties.facing]) or ((tonumber(block.properties.rotation) * -22.5 + 180) % 360)
 			local matrix = matrices.mat4():rotateY(rot):translate(pos)
@@ -325,74 +331,85 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 		else
 			instance.lastSeen = time
 		end
-	elseif ctx == "HEAD" then --[────────────────────────-< HAT / HEAD >-────────────────────────]--
+		drawInstances[#drawInstances+1] = instance
+	elseif ctx == "HEAD" then --[────────────────────────-< 🟡 HAT / HEAD >-────────────────────────]--
+	
 		local uuid = entity:getUUID()
-		local name = item:getName():lower()
+		local rawName = item:getName():lower()
 		
-		local identify = uuid..","..name
-		instance = hatInstances[identify] ---@cast instance SkullInstanceEntity
-		
-		if not instance then -- new instance
-			instance = skullIdentities[name] or skullIdentities.default
-			instance = instance:newHatInstance()
-			instance.entity = entity
-			instance.vars = playerVars[uuid] or {}
-			instance.item = item
-			instance.uuid = uuid
-			instance.identity.processHat.ON_ENTER(instance,instance.model)
-			hatInstances[identify] = instance
-			lastInstance = instance
-		else
-			instance.lastSeen = time
-		end
-	elseif ctx == "ITEM_ENTITY" or ctx:find("HAND$") then
-		local uuid = entity:getType() ~= "minecraft:player" and entity:getUUID() or item:getName():lower()
-		instance = entityInstances[uuid] ---@cast instance SkullInstanceEntity
-		
-		if not instance then -- new instance
-			local parameters = {}
-			for param in item:getName():lower():gmatch("([^,]+)") do
-				parameters[#parameters+1] = tonumber(param) or param
-			end
-			local name = parameters[1]
-			table.remove(parameters,1)
-			instance = skullIdentities[name] or skullIdentities.default
+		for i, identityString in ipairs(extractNamesAndParams(rawName)) do
+			local identify = uuid..","..identityString.identifier
+			instance = hatInstances[identify] ---@cast instance SkullInstanceEntity
 			
-			instance = instance:newEntityInstance()
-			instance.entity = entity
-			instance.vars = playerVars[uuid] or {}
-			instance.item = item
-			instance.uuid = uuid
-			instance.identity.processEntity.ON_ENTER(instance,instance.model)
-			entityInstances[uuid] = instance
-			lastInstance = instance
-		else
-			instance.lastSeen = time
+			if not instance then -- new instance
+				instance = skullIdentities[identityString.name] or skullIdentities.default
+				instance = instance:newHatInstance()
+				instance.entity = entity
+				instance.vars = playerVars[uuid] or {}
+				instance.item = item
+				instance.uuid = uuid
+				instance.params = identityString.params
+				instance.identity.processHat.ON_ENTER(instance,instance.model)
+				hatInstances[identify] = instance
+			else
+				instance.lastSeen = time
+			end
+			drawInstances[#drawInstances+1] = instance
 		end
-	else --[────────────────────────-< HUD >-────────────────────────]--
-	local name = item:getName():lower():match("^([^,]+)")
-		name = skullIdentities[name] and name or "default"
-		instance = hudInstances[name] ---@cast instance SkullInstanceEntity
-		if not instance then -- new instance
-			instance = skullIdentities[name]
-			instance = instance:newHudInstance()
-			instance.item = item
-			instance.identity.processHud.ON_ENTER(instance,instance.model)
-			hudInstances[name] = instance
-			lastInstance = instance
-		else
-			instance.lastSeen = time
+		--[────────────────────────-< 🟠 ENTITY >-────────────────────────]--
+	elseif ctx == "ITEM_ENTITY" or ctx:find("HAND$") then
+		local uuid = entity:getUUID()
+		local rawName = item:getName():lower()
+		
+		for i, identityString in ipairs(extractNamesAndParams(rawName)) do
+			local identify = uuid..","..identityString.identifier
+			instance = entityInstances[identify] ---@cast instance SkullInstanceEntity
+			if not instance then -- new instance
+				instance = (skullIdentities[identityString.name] or skullIdentities.default):newEntityInstance()
+				instance.entity = entity
+				instance.vars = playerVars[uuid] or {}
+				instance.item = item
+				instance.uuid = uuid
+				instance.params = identityString.params
+				instance.identity.processEntity.ON_ENTER(instance,instance.model)
+				entityInstances[identify] = instance
+			else
+				instance.lastSeen = time
+			end
+			drawInstances[#drawInstances+1] = instance
+		end
+	else --[────────────────────────-< 🟢 HUD >-────────────────────────]--
+		local rawName = item:getName():lower()
+		
+		for i, identityString in ipairs(extractNamesAndParams(rawName)) do
+			instance = hudInstances[identityString.identifier] ---@cast instance SkullInstanceEntity
+			if not instance then -- new instance
+				instance = skullIdentities[identityString.name] or skullIdentities.default
+				instance = instance:newHudInstance()
+				instance.item = item
+				instance.params = identityString.params
+				instance.identity.processHud.ON_ENTER(instance,instance.model)
+				hudInstances[identityString.identifier] = instance
+			else
+				instance.lastSeen = time
+			end
+			drawInstances[#drawInstances+1] = instance
 		end
 	end
-	if instance then
-		instance.model:setVisible(true)
+	
+	for _, value in ipairs(lastDrawInstances) do
+		value.model:setVisible(false)
 	end
+	for _, value in ipairs(drawInstances) do
+		value.model:setVisible(true)
+	end
+	
+	lastDrawInstances = drawInstances
 	lastInstance = instance
 end)
 
 
-SKULL_PROCESS.postRender = function (delta, context, part)
-	
+SKULL_PROCESS.preRender = function (delta, context, part)
 	--if client:getViewer():getUUID() == "dc912a38-2f0f-40f8-9d6d-57c400185362" then
 	--	print("hello")
 	--end
@@ -428,7 +445,6 @@ SKULL_PROCESS.postRender = function (delta, context, part)
 			instance.identity.processHat.ON_PROCESS(instance,instance.model,delta)
 		end
 	end
-	
 	if next(entityInstances) then
 		---@param instance SkullInstanceEntity
 		for key, instance in pairs(entityInstances) do
@@ -459,11 +475,11 @@ SKULL_PROCESS.postRender = function (delta, context, part)
 end
 
 
-SKULL_PROCESS.preRender = function (delta, context, part)
+SKULL_PROCESS.midRender	 = function (delta, context, part)
 	startupStall = startupStall - 1
 	if startupStall < 0 then
 		startupStall = nil
-		SKULL_PROCESS.preRender = nil
+		SKULL_PROCESS.midRender = nil
 	end
 end
 

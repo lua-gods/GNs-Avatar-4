@@ -3,6 +3,8 @@ local Color = require("lib.color")
 
 local Line = require("lib.line")
 
+local MAX_BOUNCE = 100
+
 local face2dir = {
    ["north"] = vec(0,0,1),
    ["east"]  = vec(1,0,0),
@@ -30,10 +32,10 @@ local identity = {
 	modelHud = Skull.makeIcon(models.lazer.icon),
 	modelItem = models.lazer.hat,
 	
-	processEntity = {
+	processHat = {
 		ON_ENTER = function (skull, model)
 			skull.Lines = {}
-			for i = 1, 5, 1 do
+			for i = 1, MAX_BOUNCE, 1 do
 				local group = {
 					Line.new():setWidth(0.075):setColor(1,0,0),
 					Line.new():setWidth(0.05):setColor(1,1,1):setDepth(-0.01)
@@ -43,21 +45,23 @@ local identity = {
 		end,
 		ON_PROCESS = function (skull, model, delta)
 			local pos = skull.matrix:apply()
-			local dir = skull.matrix:applyDir(1,1,-1):normalize()
+			local dir = skull.matrix:applyDir(0,0,1):normalize()
 			local points = {pos}
 			
-			for i = 1, 5, 1 do
-				local block,hit,side = raycast:block(pos,pos + dir * 16)
-				if side then
+			for i = 1, MAX_BOUNCE, 1 do
+				local to = pos + dir * 16
+				local block,hit,side = raycast:block(pos,to)
+				if (to-hit):length() > 0.1 then
 					points[i+1] = hit
 					pos = hit
 					dir = reflect(dir, face2dir[side]):normalize()
 				else
+					points[i+1] = to
 					break
 				end
 			end
 			
-			for i = 1, 5, 1 do
+			for i = 1, MAX_BOUNCE, 1 do
 				local group = skull.Lines[i]
 				if points[i] and points[i+1] then
 					group[1]:setAB(points[i], points[i+1]):setVisible(true)
