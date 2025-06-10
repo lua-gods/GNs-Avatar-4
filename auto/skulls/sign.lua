@@ -16,10 +16,6 @@ local SCALE = 0.845
 
 models.fez.hat:scale(SCALE,SCALE,SCALE)
 
-local function sterializeText(text)
-	return text:gsub("\n",""):gsub('"',''):gsub("'",""):gsub("\\","")
-end
-
 ---@type SkullIdentity|{}
 local identity = {
 	name = "sign",
@@ -38,13 +34,13 @@ local identity = {
 				sign:block("oak_sign")
 			end
 			for i = 1, 4, 1 do
-				model:newText("line"..i):text('{"text":"'..sterializeText(skull.params[i+1] or "")..'","color":"black"}'):alignment("CENTER")
+				model:newText("line"..i):text('{"text":'..toJson(skull.params[i+1] or "")..',"color":"black"}'):alignment("CENTER")
 				:pos(0,22.7-(i-1)*1.7,-0.68)
 				:scale(0.16)
 			end
 			
 			for i = 1, 4, 1 do
-				model:newText("line"..(i+4)):text('{"text":"'..sterializeText(skull.params[i+5] or "")..'","color":"black"}'):alignment("CENTER")
+				model:newText("line"..(i+4)):text('{"text":'..toJson(skull.params[i+5] or "")..',"color":"black"}'):alignment("CENTER")
 				:pos(0,22.7-(i-1)*1.7,0.68)
 				:rot(0,180,0)
 				:scale(0.16)
