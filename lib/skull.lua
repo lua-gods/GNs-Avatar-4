@@ -102,20 +102,34 @@ local function split(text,pattern)
 	return out
 end
 
+local escapeCharMap = {
+   ['\\,'] = '\\a',
+   ['\\;'] = '\\b',
+}
+
+local unescapeCharMap = {
+   ['\\\\'] = '\\',
+   ['\\a'] = ',',
+   ['\\b'] = ';',
+   ['\\_'] = '',
+   ['\\n'] = '\n'
+}
 
 ---@param itemName string
 ---@return {name:string,params:string[],identifier:string}[]
 local function extractNamesAndParams(itemName)
 	local identities = {}
-	for i, identityString in ipairs(split(itemName..",","([^,]+),")) do
-		local params = split(identityString..";","([^;]+);")
-		local name = params[1]
-		table.remove(params,1)
-		identities[i] = {
+	for identityString in (itemName:gsub('\\.', escapeCharMap)..","):gmatch("([^,]+),") do
+		local params = {}
+		for param in (identityString..';'):gmatch('([^;]*);') do
+		   table.insert(params, (param:gsub('\\.', unescapeCharMap)))
+		end
+		local name = table.remove(params, 1)
+		table.insert(identities, {
 			name = name,
 			params = params or {},
 			identifier = identityString,
-		}
+		})
 	end
 	return identities
 end
@@ -139,21 +153,21 @@ end
 ---@param cfg SkullIdentity|{}
 function SkullAPI.registerIdentity(cfg)
 	local root = models:newPart(cfg.name.."root")
-	
+
 	local identity = {
 		name = cfg.name:lower(),
 		support = cfg.support,
-		
+
 		modelBlock = modelIdentityPeprocess(cfg.modelBlock),
 		modelHat   = modelIdentityPeprocess(cfg.modelHat),
 		modelHud   = modelIdentityPeprocess(cfg.modelHud),
 		modelItem  = modelIdentityPeprocess(cfg.modelItem),
-		
+
 		noModelBlockDeepCopy = (cfg.modelBlock and cfg.modelBlock[1]) and true or false,
 		noModelHatDeepCopy =   (cfg.modelHat and cfg.modelHat[1]) and true or false,
 		noModelHudDeepCopy =   (cfg.modelHud and cfg.modelHud[1]) and true or false,
 		noModelItemDeepCopy =  (cfg.modelItem and cfg.modelItem[1]) and true or false,
-		
+
 		processBlock =   applyPlaceholders(cfg.processBlock),
 		processHat   =   applyPlaceholders(cfg.processHat),
 		processHud   =   applyPlaceholders(cfg.processHud),
@@ -163,7 +177,7 @@ function SkullAPI.registerIdentity(cfg)
 	--root:addChild(identity.modelHat)
 	--root:addChild(identity.modelHud)
 	--root:addChild(identity.modelItem)
-	
+
 	setmetatable(identity,SkullIdentity)
 	skullIdentities[cfg.name:lower()] = identity
 	if identity.support then
@@ -285,31 +299,31 @@ local lastDrawInstances = {}
 
 events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 	if startupStall then return end
-	
+
 	local instance
-	
+
 	local drawInstances = {}
-	
-	
+
+
 	if ctx == "BLOCK" then --[────────────────────-< 🔴 BLOCK >-────────────────────]--
-		
+
 		local pos = block:getPos()
 		local id = pos.x.. "," ..pos.y .. "," .. pos.z
-		
+
 		instance = blockInstances[id] ---@cast instance SkullInstanceBlock
-		
-		
+
+
 		if not blockInstances[id] then -- new instance
 			local isWall = block.id:find("wall_head$") and true or false
 			local rot = isWall and (({north=180,south=0,east=90,west=270})[block.properties.facing]) or ((tonumber(block.properties.rotation) * -22.5 + 180) % 360)
 			local matrix = matrices.mat4():rotateY(rot):translate(pos)
 			local dir = matrix:applyDir(0,0,1)
-			
+
 			local support = world.getBlockState(pos - (isWall and dir or UP))
 			local identity = skullSupportIdentities[support.id] or skullIdentities.default
 			instance = identity:newBlockInstance() ---@type SkullInstanceBlock
-			
-			
+
+
 			instance.support = support
 			instance.block   = block
 			instance.pos     = pos
@@ -317,30 +331,30 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 			instance.rot     = rot
 			instance.dir     = dir
 			instance.matrix  = matrix
-			
+
 			local blockModel = instance.model
 			:newPart("blockModelArm")
 			:rot(0,-rot)
 			:newPart("blockModel")
 			:pos(vec(-8,0,-8) + (isWall and matrix:applyDir(0,-4,-4) or ZERO))
 			instance.blockModel = blockModel
-			
+
 			blockInstances[id] = instance
-			
+
 			instance.identity.processBlock.ON_ENTER(instance,instance.model)
 		else
 			instance.lastSeen = time
 		end
 		drawInstances[#drawInstances+1] = instance
 	elseif ctx == "HEAD" then --[────────────────────────-< 🟡 HAT / HEAD >-────────────────────────]--
-	
+
 		local uuid = entity:getUUID()
 		local rawName = item:getName():lower()
-		
+
 		for i, identityString in ipairs(extractNamesAndParams(rawName)) do
 			local identify = uuid..","..identityString.identifier
 			instance = hatInstances[identify] ---@cast instance SkullInstanceEntity
-			
+
 			if not instance then -- new instance
 				instance = skullIdentities[identityString.name] or skullIdentities.default
 				instance = instance:newHatInstance()
@@ -360,7 +374,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 	elseif ctx == "ITEM_ENTITY" or ctx:find("HAND$") then
 		local uuid = entity:getUUID()
 		local rawName = item:getName():lower()
-		
+
 		for i, identityString in ipairs(extractNamesAndParams(rawName)) do
 			local identify = uuid..","..identityString.identifier
 			instance = entityInstances[identify] ---@cast instance SkullInstanceEntity
@@ -380,7 +394,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 		end
 	else --[────────────────────────-< 🟢 HUD >-────────────────────────]--
 		local rawName = item:getName():lower()
-		
+
 		for i, identityString in ipairs(extractNamesAndParams(rawName)) do
 			instance = hudInstances[identityString.identifier] ---@cast instance SkullInstanceEntity
 			if not instance then -- new instance
@@ -396,14 +410,14 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 			drawInstances[#drawInstances+1] = instance
 		end
 	end
-	
+
 	for _, value in ipairs(lastDrawInstances) do
 		value.model:setVisible(false)
 	end
 	for _, value in ipairs(drawInstances) do
 		value.model:setVisible(true)
 	end
-	
+
 	lastDrawInstances = drawInstances
 	lastInstance = instance
 end)
@@ -417,7 +431,7 @@ SKULL_PROCESS.preRender = function (delta, context, part)
 	SKULL_PROCESS:setVisible(false)
 	time = client:getSystemTime()
 	delta = client:getFrameTime()
-	
+
 	if next(blockInstances) then
 		---@param instance SkullInstanceBlock
 		for key, instance in pairs(blockInstances) do
@@ -430,7 +444,7 @@ SKULL_PROCESS.preRender = function (delta, context, part)
 			instance.identity.processBlock.ON_PROCESS(instance,instance.model,delta)
 		end
 	end
-	
+
 	if next(hatInstances) then
 		---@param instance SkullInstanceHat
 		for key, instance in pairs(hatInstances) do
@@ -459,7 +473,7 @@ SKULL_PROCESS.preRender = function (delta, context, part)
 			instance.identity.processEntity.ON_PROCESS(instance,instance.model,delta)
 		end
 	end
-	
+
 	if next(hudInstances) then
 		---@param instance SkullInstanceHud
 		for key, instance in pairs(hudInstances) do
