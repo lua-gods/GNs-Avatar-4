@@ -67,6 +67,11 @@ SkullInstance.__index = SkullInstance
 ---@field modelHud ModelPart|{[1]:ModelPart}
 ---@field modelItem ModelPart|{[1]:ModelPart}
 ---
+---@field noModelBlockDeepCopy boolean
+---@field noModelHatDeepCopy boolean
+---@field noModelHudDeepCopy boolean
+---@field noModelItemDeepCopy boolean
+---
 ---@field processBlock SkullProcessBlock
 ---@field processHat SkullProcessHat
 ---@field processHud SkullProcessHud
@@ -80,7 +85,7 @@ local placeholderID = 0
 local function modelIdentityPeprocess(model)
 	if model then
 		if model[1] then
-			return {modelIdentityPeprocess(model[1])}
+			return modelIdentityPeprocess(model[1])
 		end
 		return model:setParentType("SKULL"):setVisible(false)
 	else
@@ -144,6 +149,11 @@ function SkullAPI.registerIdentity(cfg)
 		modelHud   = modelIdentityPeprocess(cfg.modelHud),
 		modelItem  = modelIdentityPeprocess(cfg.modelItem),
 		
+		noModelBlockDeepCopy = cfg.noModelBlockDeepCopy and true or false,
+		noModelHatDeepCopy = cfg.noModelHatDeepCopy and true or false,
+		noModelHudDeepCopy = cfg.noModelHudDeepCopy and true or false,
+		noModelItemDeepCopy = cfg.noModelItemDeepCopy and true or false,
+		
 		processBlock =   applyPlaceholders(cfg.processBlock),
 		processHat   =   applyPlaceholders(cfg.processHat),
 		processHud   =   applyPlaceholders(cfg.processHud),
@@ -180,7 +190,7 @@ function SkullIdentity:newEntityInstance()
 	local instance = {
 		identity = self,
 		lastSeen = time,
-		model = (self.modelItem[1] and modelUtils.shallowCopy(self.modelItem[1]) or modelUtils.deepCopy(self.modelItem)):setVisible(true):moveTo(models),
+		model = (self.noModelItemDeepCopy and modelUtils.shallowCopy(self.modelItem[1]) or modelUtils.deepCopy(self.modelItem)):setVisible(true):moveTo(models),
 	}
 	setmetatable(instance,SkullInstance)
 	return instance
@@ -208,7 +218,7 @@ function SkullIdentity:newBlockInstance()
 	local instance = {
 		identity = self,
 		lastSeen = time,
-		model = (self.modelBlock[1] and modelUtils.shallowCopy(self.modelBlock[1]) or modelUtils.deepCopy(self.modelBlock)):setVisible(true):moveTo(models),
+		model = (self.noModelBlockDeepCopy and modelUtils.shallowCopy(self.modelBlock[1]) or modelUtils.deepCopy(self.modelBlock)):setVisible(true):moveTo(models),
 	}
 	setmetatable(instance,SkullInstance)
 	return instance
@@ -231,7 +241,7 @@ function SkullIdentity:newHatInstance()
 	local instance = {
 		identity = self,
 		lastSeen = time,
-		model = (self.modelHat[1] and modelUtils.shallowCopy(self.modelHat[1]) or modelUtils.deepCopy(self.modelHat)):setVisible(true):moveTo(models),
+		model = (self.noModelHatDeepCopy and modelUtils.shallowCopy(self.modelHat[1]) or modelUtils.deepCopy(self.modelHat)):setVisible(true):moveTo(models),
 	}
 	setmetatable(instance,SkullInstance)
 	return instance
@@ -251,7 +261,7 @@ function SkullIdentity:newHudInstance()
 	local instance = {
 		identity = self,
 		lastSeen = time,
-		model = (self.modelHud[1] and modelUtils.shallowCopy(self.modelHud[1]) or modelUtils.deepCopy(self.modelHud)):setVisible(true):moveTo(models),
+		model = (self.noModelHudDeepCopy and modelUtils.shallowCopy(self.modelHud[1]) or modelUtils.deepCopy(self.modelHud)):setVisible(true):moveTo(models),
 	}
 	setmetatable(instance,SkullInstance)
 	return instance

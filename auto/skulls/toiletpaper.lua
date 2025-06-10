@@ -29,18 +29,20 @@ local identity = {
 		ON_ENTER = function (skull, model)
 			local i = 0
 			for key, value in pairs(Skull.getSkullIdentities()) do
-			   local icon = value.modelHud:copy('icon')
-				if not next(icon:getTask()) then -- figura bug workaround
-				   for _, task in pairs(value.modelHud:getTask()) do
-						if type(task) == 'SpriteTask' then
-   						task:setRenderType("TRANSLUCENT")
+				if value.modelHud then
+					local icon = value.modelHud:copy('icon')
+					if not next(icon:getTask()) then -- figura bug workaround
+						for _, task in pairs(value.modelHud:getTask()) do
+							if type(task) == 'SpriteTask' then
+								task:setRenderType("TRANSLUCENT")
+							end
+							icon:addTask(task)
 						end
-						icon:addTask(task)
 					end
+					icon:setParentType('None'):setVisible(true)
+					icon:setPos(7, i * -3 - 3, -6):setRot():setScale(1/8)
+					model:addChild(icon)
 				end
-				icon:setParentType('None'):setVisible(true)
-				icon:setPos(7, i * -3 - 3, -6):setRot():setScale(1/8)
-				model:addChild(icon)
 				model:newText(key.."title"):pos(5.25,i*-3-6,-6):text(toJson{text=key,color="black"}):scale(0.15)
 				local desc = model:newText(key.."requirements"):pos(5.25,i*-3-7.4,-6):scale(0.09)
 
