@@ -371,7 +371,7 @@ local Tween = {
 local queries = {}
 local sysTime
 
-local tweenProcessor = models:newPart("TweenProcessor")
+local tweenProcessor = models:newPart("TweenProcessor","WORLD") -- set to "WORLD" so it always runs when the player is loaded
 
 local isActive = false
 local setActive ---@type function

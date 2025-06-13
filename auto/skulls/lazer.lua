@@ -3,23 +3,16 @@ local Color = require("lib.color")
 
 local Line = require("lib.line")
 
-local MAX_BOUNCE = 500
+local MAX_BOUNCE = 100
 
 local face2dir = {
-   ["north"] = vec(0,0,1),
-   ["east"]  = vec(1,0,0),
-   ["south"] = vec(0,0,-1),
-   ["west"]  = vec(-1,0,0),
-   ["up"]    = vec(0,1,0),
-   ["down"]  = vec(0,-1,0),
+   ["north"] = vec(1,1,-1),
+   ["east"]  = vec(-1,1,1),
+   ["south"] = vec(1,1,-1),
+   ["west"]  = vec(-1,1,1),
+   ["up"]    = vec(1,-1,1),
+   ["down"]  = vec(1,-1,1),
 }
-
----@param dir Vector3
----@param normal Vector3
----@return unknown
-local function reflect(dir, normal)
-	return dir - 2 * dir:dot(normal) * normal
-end
 local SCALE = 0.845
 
 models.lazer.hat:scale(SCALE,SCALE,SCALE)
@@ -54,7 +47,7 @@ local identity = {
 				if (to-hit):length() > 0.1 then
 					points[i+1] = hit
 					pos = hit
-					dir = reflect(dir, face2dir[side]):normalize()
+					dir = dir * face2dir[side]
 				else
 					points[i+1] = to
 					break

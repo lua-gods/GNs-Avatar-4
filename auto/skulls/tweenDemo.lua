@@ -28,6 +28,12 @@ local identity = {
 				for easingName in pairs(Tween.easings) do
 					local demodel = skull.model:newBlock(easingName)
 					demodel:block("minecraft:grass_block"):scale(S * SCALE)
+					skull.model:newText(easingName.."text")
+					:pos((i+1.8) * 4,0,-0)
+					:scale(0.2,0.2,0.2)
+					:rot(90,90,0)
+					:alignment("RIGHT")
+					:text(easingName)
 					i = i + 1
 					local o = i * 4
 					Tween.new{
