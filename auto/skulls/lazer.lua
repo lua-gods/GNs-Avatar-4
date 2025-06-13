@@ -3,7 +3,7 @@ local Color = require("lib.color")
 
 local Line = require("lib.line")
 
-local MAX_BOUNCE = 100
+local MAX_BOUNCE = 500
 
 local face2dir = {
    ["north"] = vec(0,0,1),
@@ -44,8 +44,8 @@ local identity = {
 			end
 		end,
 		ON_PROCESS = function (skull, model, delta)
-			local pos = skull.matrix:apply()
-			local dir = skull.matrix:applyDir(0,0,1):normalize()
+			local dir = skull.entity:getLookDir()
+			local pos = skull.entity:getPos(delta):add(0,skull.entity:getEyeHeight()+0.4)
 			local points = {pos}
 			
 			for i = 1, MAX_BOUNCE, 1 do

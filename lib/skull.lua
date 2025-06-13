@@ -341,6 +341,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 
 			blockInstances[id] = instance
 
+			instance.identifier = id
 			instance.identity.processBlock.ON_ENTER(instance,instance.model)
 		else
 			instance.lastSeen = time
@@ -363,6 +364,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				instance.item = item
 				instance.uuid = uuid
 				instance.params = identityString.params
+				instance.identifier = identityString.identifier
 				instance.identity.processHat.ON_ENTER(instance,instance.model)
 				hatInstances[identify] = instance
 			else
@@ -385,6 +387,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				instance.item = item
 				instance.uuid = uuid
 				instance.params = identityString.params
+				instance.identifier = identityString.identifier
 				instance.identity.processEntity.ON_ENTER(instance,instance.model)
 				entityInstances[identify] = instance
 			else
@@ -402,6 +405,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				instance = instance:newHudInstance()
 				instance.item = item
 				instance.params = identityString.params
+				instance.identifier = identityString.identifier
 				instance.identity.processHud.ON_ENTER(instance,instance.model)
 				hudInstances[identityString.identifier] = instance
 			else

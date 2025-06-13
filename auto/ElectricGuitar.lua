@@ -276,7 +276,7 @@ local GUITAR = Macro.new(function (events, screen)
 					
 					---@param value Sound
 					for key, value in pairs(playingNotes[key]) do
-						Tween.tweenFunction(0.2,0,2,"outQuad",function (t)
+						Tween.new(0.2,0,2,"outQuad",function (t)
 							value:setVolume(t)
 						end,function() 
 							value:stop()
