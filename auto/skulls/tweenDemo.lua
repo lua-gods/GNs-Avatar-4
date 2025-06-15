@@ -6,13 +6,12 @@ local Tween = require("lib.tween")
 local S = 1/16
 local SCALE = 4
 
-local oldTween = require("lib.oldTween")
 
 ---@type SkullIdentity|{}
 local identity = {
 	name = "Sunflower",
 	support = "minecraft:soul_sand",
-	modelBlock = models.skull.block:setPrimaryRenderType("CUTOUT_CULL"),
+	modelBlock = models:newPart("place"),
 	
 	processBlock = {
 		ON_ENTER = function (skull, model)
@@ -21,20 +20,30 @@ local identity = {
 		end,
 		ON_PROCESS = function (skull, model)
 			local i = 0
+			local j = 0
 			
 			if skull.start then
 				skull.toggle = not skull.toggle
 				skull.start = false
 				for easingName in pairs(Tween.easings) do
+					i = i + 1
+					if i == 8 then
+						i = 0
+						j = j + 1
+					end
 					local demodel = skull.model:newBlock(easingName)
-					demodel:block("minecraft:grass_block"):scale(S * SCALE)
+					demodel:block("minecraft:oak_log"):scale(S * SCALE)
+					skull.model:newBlock(easingName.."b"):block("dark_oak_log"):pos(i * 4,-1,j * 21 ):scale(S * SCALE)
+					skull.model:newBlock(easingName.."bc"):block("dark_oak_log"):pos(i * 4,-1,j * 21 +4):scale(S * SCALE)
 					skull.model:newText(easingName.."text")
-					:pos((i+1.8) * 4,0,-0)
+					:pos(i * 4,4,j * 21 )
 					:scale(0.2,0.2,0.2)
 					:rot(90,90,0)
 					:alignment("RIGHT")
 					:text(easingName)
-					i = i + 1
+					:outline(true)
+					
+					local u = j * 21
 					local o = i * 4
 					Tween.new{
 						from = (skull.toggle and 0 or SCALE),
@@ -42,7 +51,7 @@ local identity = {
 						duration = 1,
 						easing = easingName,
 						tick = function (v, t)
-							demodel:pos(o,v,0)
+							demodel:pos(o,0,u+v)
 						end,
 						onFinish = function ()
 							skull.start = true

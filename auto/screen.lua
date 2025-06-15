@@ -9,8 +9,7 @@ GNUI.getScreenCanvas():addChild(book:setAnchorMax())
 
 local keybind = keybinds:fromVanilla("figura.config.action_wheel_button")
 
-book:newPage("default",function (events, screen)
-end)
+book:newPage("default",function (events, screen) end) -- creates a page that gets displayed by default
 
 keybind.press = function (modifiers, self)
 	if book.currentPage then

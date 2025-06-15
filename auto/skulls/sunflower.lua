@@ -14,7 +14,7 @@ local SCALE = 0.8
 
 
 animations.sunflower.idle:speed(0.5):play()
-models.sunflower.blocko:setPrimaryRenderType("BLURRY")
+models.sunflower.blocko:setPrimaryRenderType("CUTOUT")
 ---@type SkullIdentity|{}
 local identity = {
 	name = "Sunflower",

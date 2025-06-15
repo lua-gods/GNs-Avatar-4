@@ -400,6 +400,24 @@ setActive = function (toggle)
 	end
 end
 
+
+---@class TweenInstanceCreation
+---@field id any?
+---
+---@field from number|Vector.any
+---@field to number|Vector.any
+---
+---@field duration number
+---@field period number?
+---@field overshoot number?
+---@field amplitude number?
+---
+---@field easing EaseTypes|(fun(t: number): number|Vector.any)
+---
+---@field tick fun(v : number|Vector.any,t : number)
+---@field onFinish function?
+
+
 ---An instance of a tween query
 ---@class TweenInstance
 ---@field id any
@@ -408,12 +426,17 @@ end
 ---@field to number|Vector.any
 ---
 ---@field duration number
----@field start number
----@field easing fun(t: number, b: number|Vector.any, c: number|Vector.any, d: number): number
+---@field package start number?
+---@field period number?
+---@field overshoot number?
+---@field amplitude number?
+---
+---@field easing fun(t: number): number|Vector.any
 ---
 ---@field tick fun(v : number|Vector.any,t : number)
 ---@field onFinish function?
-
+local TweenInstance = {}
+TweenInstance.__index = TweenInstance
 
 local function placeholder() end
 
@@ -421,23 +444,24 @@ local function placeholder() end
 ---Creates a new Tween instance
 ---***
 ---FIELDS:  
---- | Field       | Default    | Description                                                                                                                                   |
---- | ----------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
---- | `id`        | `?`        | The unique ID of the tween                                                                                                                    |
---- | `from`      | `0`        | The starting value of the tween                                                                                                               |
---- | `to`        | `1`        | The ending value of the tween                                                                                                                 |
+--- | Field       | Default    | Description                                                                                                                                     |
+--- | ----------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+--- | `id`        | `?`        | The unique ID of the tween                                                                                                                      |
+--- | `from`      | `0`        | The starting value of the tween                                                                                                                 |
+--- | `to`        | `1`        | The ending value of the tween                                                                                                                   |
 --- | `amplitude` | `1`        | The height of the oscillation (springiness). **only used for the elastic easings**                                                              |
 --- | `period`    | `1`        | The frequency of the oscillation (how fast it bounces). **only used for the elastic easings**                                                   |
 --- | `overshoot` | `1.7`      | controls how much the back easing will "go past" the starting position before moving toward the final value. **only used for the back easings** |
---- | `duration`  | `1`        | how long the tween will take in seconds                                                                                                       |
---- | `easing`    | `ar`       | The name of theeasing function to use                                                                                                         |
---- | `tick`      | `?`        | a callback function that gets called everytime the tween ticks                                                                                |
---- | `onFinish`  | `?`        | a callback function that gets called when the tween finishes                                                                                  |
----@param cfg TweenInstance|{easing: EaseTypes,onFinish : fun()?, tick: fun(v: number, t: number)?, id: any?,amplitude: number?, period: number?, overshoot: number?}
+--- | `duration`  | `1`        | how long the tween will take in seconds                                                                                                         |
+--- | `easing`    | `ar`       | The name of theeasing function to use                                                                                                           |
+--- | `tick`      | `?`        | a callback function that gets called everytime the tween ticks                                                                                  |
+--- | `onFinish`  | `?`        | a callback function that gets called when the tween finishes                                                                                    |
+---@param cfg TweenInstanceCreation
 ---@return TweenInstance
 function Tween.new(cfg)
 	local id = cfg.id or #queries + 1
 	---@type TweenInstance
+	
 	local new = {
 		start = isActive and sysTime or (client:getSystemTime()/1000),
 		from = cfg.from or 0,
@@ -450,12 +474,33 @@ function Tween.new(cfg)
 		onFinish = cfg.onFinish or placeholder,
 		id = cfg.id
 	}
+	setmetatable(new, {__index = Tween})
 	new.tick(new.from, 0)
 	queries[id] = new
 	
 	setActive(true)
-	return new
+	return id
 end
 
+---Stops this TweenInstance
+function TweenInstance:stop()
+	Tween.stop(self.id,true)
+end
+
+---Skips the given TweenInsatnce to finish instantly
+function TweenInstance:skip()
+	Tween.stop(self.id)
+end
+
+
+---Stops the tween with the given ID. if `cancel` is true, it NOT will call the `onFinish` function
+---@param id any
+---@param cancel boolean?
+function Tween.stop(id, cancel)
+	if not cancel and queries[id] then
+		queries[id].onFinish()
+	end
+	queries[id] = nil
+end
 
 return Tween

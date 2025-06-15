@@ -1,0 +1,21 @@
+local Tween = require("lib.tween")
+
+-- create a new tween
+local transition = Tween.new{
+	from = 0,
+	to = 1,
+	duration = 1,
+	tick = function (v) print(v) end,
+	onFinish = function (v) print(v) end,
+	easing = "linear",
+}
+
+--[[ separate the [[ to skip to the end
+
+transition:skip()
+--]]
+
+--[[ separate [[ to skip to the end
+
+transition:stop()
+--]]

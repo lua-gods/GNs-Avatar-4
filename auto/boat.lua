@@ -1,11 +1,11 @@
 local Macros = require("lib.macros")
 local Spring = require("lib.spring")
 
-local recoilSpring = Spring.new({
-	f = 0.2,
-	z = 0.5,
-	r = 0,
-})
+local recoilSpring = Spring.new(
+	0.2,
+	0.5,
+	0
+)
 
 local model = models.boat
 model:setPos(0,8,0):setVisible(false)

@@ -70,4 +70,12 @@ function Book:setPage(name)
 	return self
 end
 
+
+---@param name string
+---@return GNUI.Page
+function Book:getPage(name)
+	return self.pages[name] or error(name.." page does not exist")
+end
+
+
 return {newBook = Book.newBook}
