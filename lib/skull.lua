@@ -9,7 +9,7 @@ local modelUtils = require("lib.modelUtils")
 
 local ZERO = vec(0,0,0)
 local UP = vec(0,1,0)
-local SKULL_DECAY_TIME = 100000
+local SKULL_DECAY_TIME = 1000
 
 -- this is used to avoid using world render when I am offline
 local SKULL_PROCESS = models:newPart("SkullRenderer","SKULL")

@@ -6,5 +6,6 @@
 		"player.Base.Torso.Head.Smooth": {
 			"smooth":true
 		}
-	}
+	},
+	"resources": ["*.nbs"]
 }

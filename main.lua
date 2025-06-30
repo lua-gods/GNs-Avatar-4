@@ -8,7 +8,7 @@ figuraMetatables.HostAPI.__index.isHost = function () return false end
 
 
 --[ [ <- separate to enable
-for key, path in ipairs(listFiles("auto")) do
+for key, path in ipairs(listFiles("auto",true)) do
 	require(path)
 end
 --]]
