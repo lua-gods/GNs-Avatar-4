@@ -2,7 +2,7 @@
 local cfg = require("./../config") ---@type GNUI.Config
 local eventLib = cfg.event ---@type Event ---@type EventLibAPI
 local utils = cfg.utils ---@type GNUI.UtilsAPI
-local Nineslice = require("./../nineslice")   ---@type Nineslice
+local Nineslice = require("./../nineslice")   ---@type ModelPart.Nineslice
 local Container = require("./box")            ---@type GNUI.Box
 
 ---@class GNUI.InputEvent

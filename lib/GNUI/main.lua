@@ -16,7 +16,7 @@ local api = {}
 ---@alias GNUI.any GNUI.Box|GNUI.Box|GNUI.Canvas
 
 local config = require("./config") ---@type GNUI.Config
-local s = require("./nineslice") ---@type Nineslice
+local s = require("./nineslice") ---@type ModelPart.Nineslice
 local ca = require("./primitives/canvas") ---@type GNUI.Canvas
 local bx = require("./primitives/box") ---@type GNUI.Box
 
@@ -51,7 +51,7 @@ api.newCanvas = function (autoInputs)return ca.new(autoInputs) end
 ---@param expandRight number?
 ---@param expandBottom number?
 ---@param expandLeft number?
----@return Nineslice
+---@return ModelPart.Nineslice
 api.newNineslice = function (texture,UVx1,UVy1,UVx2,UVy2,borderLeft,borderTop,borderRight,borderBottom,expandTop,expandRight,expandBottom,expandLeft)
 	local new = s.new()
 	if texture then new:setTexture(texture) end
@@ -94,7 +94,7 @@ end
 
 ---Enables debug mode for the soon to be created boxes. will not enable debug mode on exiting boxes.
 function api.debugMode()
-  config.debug_mode = true
+  config.DEBUG_MODE = true
 end
 api.showBoundingBoxes = api.debugMode
 

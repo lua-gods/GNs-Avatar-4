@@ -2,7 +2,7 @@
 local cfg = require("./../config") ---@type GNUI.Config ---@type GNUI.Config
 local event = cfg.event ---@type Event ---@type EventLibAPI
 local utils = cfg.utils ---@type GNUI.UtilsAPI
-local nineslice = require("./../nineslice") ---@type Nineslice
+local nineslice = require("./../nineslice") ---@type ModelPart.Nineslice
 
 local debugTex = textures['gnui_debug_outline'] or 
 textures:newTexture("gnui_debug_outline",6,6)
@@ -78,7 +78,7 @@ local nextID = 0
 ---@field textLimitsHeight boolean         # If true, the text will clamp to the height of the box
 --- ============================ RENDERING ============================
 ---@field modelPart ModelPart              # The `ModelPart` used to handle where to display debug features and the sprite.
----@field nineslice Nineslice              # the sprite that will be used for displaying textures.
+---@field nineslice ModelPart.Nineslice              # the sprite that will be used for displaying textures.
 ---@field SPRITE_CHANGED Event             # Triggered when the sprite object set to this box has changed.
 ---@field color Vector3                    # The tint applied to the sprite.
 --- ============================ INPUTS ============================
@@ -186,8 +186,8 @@ function Box.new(data)
 	},Box)
 	
 	-->==========[ Internals ]==========<--
-	if cfg.debug_mode then
-		new.debugBox = nineslice.new():setModelpart(new.modelPart):setTexture(debugTex):setRenderType("EMISSIVE_SOLID"):setBorderThickness(3,3,3,3):setScale(cfg.debug_scale):setExcludeMiddle(true):setDepthOffset(-0.1)
+	if cfg.DEBUG_MODE then
+		new.debugBox = nineslice.new():setModelpart(new.modelPart):setTexture(debugTex):setRenderType("EMISSIVE_SOLID"):setBorderThickness(3,3,3,3):setScale(cfg.DEBUG_SCALE):setExcludeMiddle(true):setDepthOffset(-0.1)
 		new.MOUSE_PRESSENCE_CHANGED:register(function (hovering,pressed)
 			if pressed then
 				new.debugBox:setColor(0.5,0.5,0.1)
@@ -492,7 +492,7 @@ end
 ---Note: if the sprite given is already in use, it will overtake it.
 ---@generic self
 ---@param self self
----@param texture Texture|Nineslice|{}?
+---@param texture Texture|ModelPart.Nineslice|{}?
 ---@return self
 function Box:setTexture(texture)
 	---@cast self self
@@ -1059,7 +1059,7 @@ function Box:updateSpriteTasks(forced_resize_sprites)
 		:setPos(
 			-containment_rect.x * unscaleSelf,
 			-containment_rect.y * unscaleSelf,
-			-(child_weight) * cfg.clipping_margin * self.z * self.zSquish
+			-(child_weight) * cfg.CLIPPING_MARGIN * self.z * self.zSquish
 		):setVisible(true)
 		if self.nineslice and (self.cache.size_changed or forced_resize_sprites) then
 			self.nineslice
@@ -1070,13 +1070,13 @@ function Box:updateSpriteTasks(forced_resize_sprites)
 		end
 	end
 ---@diagnostic disable-next-line: undefined-field
-	 if cfg.debug_mode and self.debugBox then
+	 if cfg.DEBUG_MODE and self.debugBox then
 	 ---@diagnostic disable-next-line: undefined-field
 	 self.debugBox
 	 :setPos(
 		0,
 		0,
-		-(((self.childIndex * self.z) / (self.parent and (#self.parent.children) or 1) * 0.8) * cfg.clipping_margin))
+		-(((self.childIndex * self.z) / (self.parent and (#self.parent.children) or 1) * 0.8) * cfg.CLIPPING_MARGIN))
 		if self.cache.size_changed then
 			---@diagnostic disable-next-line: undefined-field
 				self.debugBox:setSize(

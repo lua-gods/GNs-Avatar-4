@@ -1,5 +1,9 @@
+--[[______   __
+  / ____/ | / /  by: GNanimates / https://gnon.top / Discord: @gn68s
+ / / __/  |/ / name: Param Library
+/ /_/ / /|  /  desc: a library of parameter parsers
+\____/_/ |_/ source: link ]]
 local params={}
-
 
 ---Parses Vector2 variants into a single unified Vector2.
 ---@overload fun(xy: Vector2): Vector2
