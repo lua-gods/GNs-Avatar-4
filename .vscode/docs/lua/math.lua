@@ -45,7 +45,7 @@ function math.clamp(x, min, max) end
 ---@param a A
 ---@param b B
 ---@param t T
----@return number | A | B | T
+---@return A
 ---@nodiscard
 function math.lerp(a, b, t) end
 

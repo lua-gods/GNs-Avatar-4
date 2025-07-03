@@ -6,4 +6,13 @@
 			"${1:host:setActionbar(avatar:getCurrentInstructions()-benchmark-5) -- END OF BENCHMARK}"
 		]
 	},
+	"inheritance_fix": {
+      "prefix": "generic",
+      "body": [
+         "---@generic self",
+         "---@param self self",
+         "---@return self",
+         "---@cast self ${1}",
+      ]
+   }
 }
