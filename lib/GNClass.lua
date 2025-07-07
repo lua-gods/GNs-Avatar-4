@@ -21,10 +21,11 @@ local class = {}
 ---@param i string
 class.__index = function (t,i)
 	local mt = rawget(t,"__metatable")
-	local out = mt and mt.__index(t,i) or rawget(t.__tbl,i)
-	if out then return out end
+	local out = mt and mt.__index(t.__tbl,i) or rawget(t.__tbl,i)
+	--print(mt.__index(t.__tbl,i),t.__tbl,i,mt.__index)
+	if out ~= nil then return out end
 	
-	local name = i:match((i:find("^[gs]et") and "..." or "").."(.*)"):lower()
+	local name = i:match((i:find("^[gs]et") and "..." or "").."(.*)"):gsub("^%u",string.lower)
 	if i:find("^get") then --[────────-< Getter >-────────]--
 		local m = function (self,...)
 			return rawget(self.__tbl,name)
@@ -61,11 +62,12 @@ class.__newindex = function (t,i,v)
 	
 	-- this allows setting values into the table without using rawset in the methods themselves.
 	local isInMethod = rawget(t,"__inMethod")
-	if not isInMethod then
+	if not isInMethod and t[setterMethod] then
 		rawset(t,"__inMethod",true)
 		t[setterMethod](t,v)
 	else
 		rawset(t,"__inMethod",false)
+		print("new",i)
 		rawset(t.__tbl,i,v)
 		if event then event:invoke(v) end
 	end
