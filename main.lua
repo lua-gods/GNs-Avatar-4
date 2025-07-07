@@ -34,7 +34,7 @@ end
 
 --[ [ <- separate to enable
 for key, path in ipairs(listFiles("auto",true)) do
-	host:setClipboard(getScript(path))
+	--host:setClipboard(getScript(path))
 	require(path)
 end
 --]]

@@ -7,33 +7,63 @@
 local Class = require"../GNClass"
 local Event = require"../event"
 local utils = require"./utils" ---@type GNUI.UtilsAPI
+local Sprite = require"./sprite" ---@type GNUI.SpriteAPI
+local Render = require("lib.GNUI.renderer") ---@type GNUI.RenderAPI
+
+
 
 ---@class GNUI.BoxAPI
-local API = {}
+local BoxAPI = {}
+
 
 ---@class GNUI.Box
 ---@field protected extent Vector4
----@field EXTENT_CHANGED Event
 ---@field protected anchor Vector4
----@field ANCHOR_CHANGED Event
 ---@field protected dimensions Vector4
----@field DIMENSIONS_CHANGED Event
 ---@field protected sprite GNUI.Sprite?
+---@field protected screen GNUI.Screen?
+---@field protected parent GNUI.Box?
+---@field protected children GNUI.Box[]
+---
+---@field EXTENT_CHANGED Event
+---@field ANCHOR_CHANGED Event
+---@field DIMENSIONS_CHANGED Event
 ---@field SPRITE_CHANGED Event
+---@field SCREEN_CHANGED Event
+---@field PARENT_CHANGED Event
+---@field CHILDREN_CHANGED Event
+---
+---@field getAnchor fun(self: self): Vector4
+---@field getExtent fun(self: self): Vector4
+---@field getDimensions fun(self: self): Vector4
+---@field getSprite fun(self: self): GNUI.Sprite
+---@field getScreen fun(self: self): GNUI.Screen
+---@field getParent fun(self: self): GNUI.Box?
+---@field getChildren fun(self: self): GNUI.Box[]
+---
 ---@field protected __index function
 local Box = {}
 Box.__index = function(t,k)
 	return rawget(t,k) or Box[k]
 end
+Box.__type = "GNUI.Box"
+
+local vec4 = vectors.vec4
 
 ---@return GNUI.Box
-function API.new()
-	local self = Class.apply{
-		extent = vec(0,0,0,0),
-		anchor = vec(0,0,0,0),
-	}
-	setmetatable(self,Box)
-	return self
+function BoxAPI.new(cfg)
+	cfg = cfg or {}
+	local new = Class.apply({},Box)
+	new.extent = vec4()
+	new.anchor = vec4()
+	new.dimensions = vec4()
+	new.children = {}
+	Render.setup(new)
+	for key, value in pairs(cfg) do
+		new[key] = value
+	end
+	
+	return new
 end
 
 
@@ -46,15 +76,7 @@ end
 function Box:setExtent(x,y,z,w)
 	---@cast self GNUI.Box
 	self.extent = utils.vec4(x,y,z,w)
-	self.EXTENT_CHANGED:invoke()
 	return self
-end
-
-
----Returns the current extent of the box.
----@return Vector4
-function Box:getExtent()
-	return self.extent
 end
 
 
@@ -69,19 +91,37 @@ end
 function Box:setAnchor(x,y,z,w)
 	---@cast self GNUI.Box
 	self.anchor = utils.vec4(x,y,z,w)
-	self.ANCHOR_CHANGED:invoke()
 	return self
 end
 
 
----Returns the current anchor of the box.
----@return Vector4
-function Box:getAnchor()
-	return self.anchor
+---@param sprite GNUI.Sprite|Texture
+---@generic self
+---@param self self
+---@return self
+function Box:setSprite(sprite)
+	---@cast self GNUI.Box
+	local t = type(sprite)
+	if t == "Texture" then
+		self.sprite = Sprite.new(sprite)
+	elseif t == "GNUI.Sprite" then
+		self.sprite = sprite
+	else
+		self.sprite = nil
+	end
+	return self
 end
 
 
+---Updates the box dimensions.
+---@generic self
+---@param self self
+---@return self
+function Box:update()
+	---@cast self GNUI.Box
+	self.dimensions = self.extent:copy()
+	return self
+end
 
-
-
-return API
+BoxAPI.methods = Box
+return BoxAPI
