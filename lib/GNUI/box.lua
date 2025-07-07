@@ -24,6 +24,8 @@ local BoxAPI = {}
 ---@field protected screen GNUI.Screen?
 ---@field protected parent GNUI.Box?
 ---@field protected children GNUI.Box[]
+---@field protected childIndex integer
+---@field protected flagUpdate boolean
 ---
 ---@field EXTENT_CHANGED Event
 ---@field ANCHOR_CHANGED Event
@@ -32,6 +34,8 @@ local BoxAPI = {}
 ---@field SCREEN_CHANGED Event
 ---@field PARENT_CHANGED Event
 ---@field CHILDREN_CHANGED Event
+---@field FLAG_UPDATE_CHANGED Event
+---@field CHILD_INDEX_CHANGED Event
 ---
 ---@field getAnchor fun(self: self): Vector4
 ---@field getExtent fun(self: self): Vector4
@@ -40,6 +44,8 @@ local BoxAPI = {}
 ---@field getScreen fun(self: self): GNUI.Screen
 ---@field getParent fun(self: self): GNUI.Box?
 ---@field getChildren fun(self: self): GNUI.Box[]
+---@field getChildIndex fun(self: self): integer
+---@field getFlagUpdate fun(self: self): boolean
 ---
 ---@field protected __index function
 local Box = {}
@@ -58,6 +64,7 @@ function BoxAPI.new(cfg)
 	new.anchor = vec4()
 	new.dimensions = vec4()
 	new.children = {}
+	new.flagUpdate = true
 	Render.setup(new)
 	for key, value in pairs(cfg) do
 		new[key] = value
@@ -76,6 +83,7 @@ end
 function Box:setExtent(x,y,z,w)
 	---@cast self GNUI.Box
 	self.extent = utils.vec4(x,y,z,w)
+	self.flagUpdate = true
 	return self
 end
 
@@ -91,6 +99,7 @@ end
 function Box:setAnchor(x,y,z,w)
 	---@cast self GNUI.Box
 	self.anchor = utils.vec4(x,y,z,w)
+	self.flagUpdate = true
 	return self
 end
 
@@ -109,6 +118,69 @@ function Box:setSprite(sprite)
 	else
 		self.sprite = nil
 	end
+	self.flagUpdate = true
+	return self
+end
+
+
+---@generic self
+---@param self self
+---@return self
+function Box:setParent(parent)
+	---@cast self GNUI.Box
+	if parent then
+		parent:addChild(self)
+	else
+		self.parent = nil
+	end
+	return self
+end
+
+
+---@generic self
+---@param self self
+---@return self
+function Box:addChild(child)
+	---@cast self GNUI.Box
+	if child.parent then
+		child.parent:removeChild(child)
+	end
+	child.parent = self
+	local childIndex = #self.children + 1
+	self.children[childIndex] = child
+	child.childIndex = childIndex
+	
+	self.flagUpdate = true
+	return self
+end
+
+---@generic self
+---@param self self
+---@return self
+function Box:removeChild(child)
+	---@cast self GNUI.Box
+	if child.parent == self then
+		table.remove(self.children,child.childIndex)
+		child:setParent(nil)
+		child.childIndex = -1
+	end
+	return self
+end
+
+---@generic self
+---@param self self
+---@return self
+---@param children GNUI.Box[]
+function Box:setChildren(children)
+	---@cast self GNUI.Box
+	for _, child in pairs(children) do
+		self:removeChild(child)
+	end
+	self.children = {}
+	for _, child in pairs(children) do
+		self:addChild(child)
+	end
+	self.flagUpdate = true
 	return self
 end
 
@@ -119,7 +191,16 @@ end
 ---@return self
 function Box:update()
 	---@cast self GNUI.Box
-	self.dimensions = self.extent:copy()
+	self.flagUpdate = false
+	local dim = self.extent:copy()
+	if self.parent then
+		local pDim = self.parent:getDimensions()
+		dim.x = dim.x + math.lerp(pDim.x,pDim.z,self.anchor.x)
+		dim.y = dim.y + math.lerp(pDim.y,pDim.w,self.anchor.y)
+		dim.z = dim.z + math.lerp(pDim.x,pDim.z,self.anchor.z)
+		dim.w = dim.w + math.lerp(pDim.y,pDim.w,self.anchor.w)
+	end
+	self.dimensions = dim
 	return self
 end
 

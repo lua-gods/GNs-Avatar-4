@@ -37,7 +37,7 @@ function API.getScreen()
 		screen = Screen.new()
 		
 		API.WINDOW_RESIZED:register(function (winSize)
-			screen:setExtent(0,0,winSize.x,winSize.y)
+			screen:setExtent(winSize.x*0.5,0,winSize.x,winSize.y)
 		end)
 	end
 	return screen

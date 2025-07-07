@@ -64,8 +64,8 @@ class.__newindex = function (t,i,v)
 	if not isInMethod and t[setterMethod] then
 		rawset(t,"__inMethod",true)
 		t[setterMethod](t,v)
-	else
 		rawset(t,"__inMethod",false)
+	else
 		rawset(t.__tbl,i,v)
 		if event then event:invoke(v) end
 	end

@@ -24,6 +24,7 @@ end
 local nextFree = 0
 
 local renderStates = {} ---@type table<GNUI.Box, GNUI.RenderState>
+local queueUpdate = {} ---@type table<GNUI.Box, GNUI.RenderState>
 
 ---@param box GNUI.Box
 local function setup(box)
@@ -40,20 +41,27 @@ local function setup(box)
 	}
 	renderStates[box] = renderState
 	
+	box.FLAG_UPDATE_CHANGED:register(function (update)
+		if update then queueUpdate[box] = renderState end
+	end)
+	
 	box.DIMENSIONS_CHANGED:register(function (dim)
 		local size = utils.vec4GetSize(dim)*0.0625
+		local pOffset = box.parent and box.parent.dimensions.xy or vec(0,0)
+		
 		renderState.dirt:scale(-size.x,-size.y,1)
+		renderState.model:setPos(-dim.x+pOffset.x,-dim.y+pOffset.y)
 	end)
-	box.dimensions = box.dimensions
 	
 	---@param parent GNUI.Box?
 	box.PARENT_CHANGED:register(function (parent)
 		if parent then
 			local parentRenderState = renderStates[parent]
-			renderState.model:moveTo(parentRenderState.model)
+			renderState.model:moveTo(parentRenderState.model):setParentType("None")
 		end
 	end)
-	box.parent = box.parent
+	
+	box.flagUpdate = true
 	
 	--[────────────────────────-< End of Figura Code >-────────────────────────]--
 	
@@ -62,10 +70,22 @@ local function setup(box)
 	end
 end
 
+--[────────────────────────-< Figura Specific Code >-────────────────────────]--
+
+models:newPart("GNUI.process","WORLD").midRender = function ()
+	for box, renderState in pairs(queueUpdate) do
+		box.flagUpdate = false
+		box:update()
+		for key, child in pairs(box:getChildren()) do
+			child.flagUpdate = true
+		end
+	end
+end
+
+--[────────────────────────-< End of Figura Code >-────────────────────────]--
 
 
 ---@param box GNUI.Box
 function RenderAPI.setup(box) setup(box) end
-
 
 return RenderAPI
