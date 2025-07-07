@@ -22,7 +22,6 @@ local class = {}
 class.__index = function (t,i)
 	local mt = rawget(t,"__metatable")
 	local out = mt and mt.__index(t.__tbl,i) or rawget(t.__tbl,i)
-	--print(mt.__index(t.__tbl,i),t.__tbl,i,mt.__index)
 	if out ~= nil then return out end
 	
 	local name = i:match((i:find("^[gs]et") and "..." or "").."(.*)"):gsub("^%u",string.lower)
@@ -57,7 +56,7 @@ end
 ---@param i string
 class.__newindex = function (t,i,v)
 	local mt = rawget(t,"__metatable")
-	local event = rawget(t.__tbl,i:upper().."_CHANGED")
+	local event = rawget(t.__tbl,i:gsub("^%u",string.lower):gsub("(%u)","_%1"):upper().."_CHANGED")
 	local setterMethod = "set"..i:gsub("^.",string.upper)
 	
 	-- this allows setting values into the table without using rawset in the methods themselves.
@@ -67,7 +66,6 @@ class.__newindex = function (t,i,v)
 		t[setterMethod](t,v)
 	else
 		rawset(t,"__inMethod",false)
-		print("new",i)
 		rawset(t.__tbl,i,v)
 		if event then event:invoke(v) end
 	end
