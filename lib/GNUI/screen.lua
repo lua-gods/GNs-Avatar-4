@@ -23,7 +23,7 @@ Screen.__type = "GNUI.Box.Screen"
 ---@param cfg (GNUI.Screen|{})?
 ---@return GNUI.Screen
 function ScreenAPI.new(cfg)
-	local new = Class.apply(Box.new(cfg),Screen) ---@cast new GNUI.Screen
+	local new = setmetatable(Box.new(cfg),Screen) ---@cast new GNUI.Screen
 	-- TODO
 	return new
 end

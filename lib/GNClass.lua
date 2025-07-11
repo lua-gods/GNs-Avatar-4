@@ -33,10 +33,11 @@ class.__index = function (t,i)
 		return m
 	elseif i:find("^set") then --[────────-< Setter >-────────]--
 		return function (self,value)
+			local last = self.__tbl[name]
 			rawset(self.__tbl,name,value)
-			local e = rawget(t,"__eventsLookup")[name]
-			if e then
-				e:invoke(value)
+			local event = rawget(t,"__eventsLookup")[name]
+			if event then
+				event:invoke(value,last)
 			end
 		end
 	else -- possible event
@@ -66,8 +67,9 @@ class.__newindex = function (t,i,v)
 		t[setterMethod](t,v)
 		rawset(t,"__inMethod",false)
 	else
+		local last = t.__tbl[i]
 		rawset(t.__tbl,i,v)
-		if event then event:invoke(v) end
+		if event then event:invoke(v,last) end
 	end
 	
 end

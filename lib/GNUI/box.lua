@@ -4,12 +4,14 @@
 / /_/ / /|  /  desc: representation of a box on the screen
 \____/_/ |_/ source: link ]]
 
-local Class = require"../GNClass"
-local Event = require"../event"
+--local Class = require"../GNClass"
+local Event = require"../event" ---@type Event
 local utils = require"./utils" ---@type GNUI.UtilsAPI
 local Sprite = require"./sprite" ---@type GNUI.SpriteAPI
 local Render = require("lib.GNUI.renderer") ---@type GNUI.RenderAPI
 
+
+local IMMIDIATE_UPDATE_MODE = false
 
 
 ---@class GNUI.BoxAPI
@@ -18,34 +20,25 @@ local BoxAPI = {}
 
 ---@class GNUI.Box
 ---@field protected extent Vector4
----@field protected anchor Vector4
----@field protected dimensions Vector4
----@field protected sprite GNUI.Sprite?
----@field protected screen GNUI.Screen?
----@field protected parent GNUI.Box?
----@field protected children GNUI.Box[]
----@field protected childIndex integer
----@field protected flagUpdate boolean
----
 ---@field EXTENT_CHANGED Event
+---@field protected anchor Vector4
 ---@field ANCHOR_CHANGED Event
+---@field protected dimensions Vector4
 ---@field DIMENSIONS_CHANGED Event
+---@field protected sprite GNUI.Sprite?
 ---@field SPRITE_CHANGED Event
+---@field protected screen GNUI.Screen?
 ---@field SCREEN_CHANGED Event
+---@field protected parent GNUI.Box?
 ---@field PARENT_CHANGED Event
+---@field protected children GNUI.Box[]
 ---@field CHILDREN_CHANGED Event
----@field FLAG_UPDATE_CHANGED Event
+---@field CHILD_ADDED Event
+---@field CHILD_REMOVED Event
+---@field protected childIndex integer
 ---@field CHILD_INDEX_CHANGED Event
----
----@field getAnchor fun(self: self): Vector4
----@field getExtent fun(self: self): Vector4
----@field getDimensions fun(self: self): Vector4
----@field getSprite fun(self: self): GNUI.Sprite
----@field getScreen fun(self: self): GNUI.Screen
----@field getParent fun(self: self): GNUI.Box?
----@field getChildren fun(self: self): GNUI.Box[]
----@field getChildIndex fun(self: self): integer
----@field getFlagUpdate fun(self: self): boolean
+---@field protected flagUpdate boolean
+---@field FLAGGED_UPDATE Event
 ---
 ---@field protected __index function
 local Box = {}
@@ -57,19 +50,21 @@ Box.__type = "GNUI.Box"
 local vec4 = vectors.vec4
 
 ---@return GNUI.Box
-function BoxAPI.new(cfg)
+function BoxAPI.new(cfg) --TODO: Bring back config support
 	cfg = cfg or {}
-	local new = Class.apply({},Box)
-	new.extent = vec4()
-	new.anchor = vec4()
-	new.dimensions = vec4()
-	new.children = {}
-	new.flagUpdate = true
+	local new = {}
+	new.extent = vec4()      new.EXTENT_CHANGED = Event.new()
+	new.anchor = vec4()      new.ANCHOR_CHANGED = Event.new()
+	new.dimensions = vec4()  new.DIMENSIONS_CHANGED = Event.new()
+	new.children = {}        new.CHILDREN_CHANGED = Event.new()
+	new.sprite = nil         new.SPRITE_CHANGED = Event.new()
+	new.screen = nil         new.SCREEN_CHANGED = Event.new()
+	new.parent = nil         new.PARENT_CHANGED = Event.new()
+	new.childIndex = 0       new.CHILD_INDEX_CHANGED = Event.new()
+	new.flagUpdate = false   new.FLAGGED_UPDATE = Event.new()
+	new.CHILD_ADDED = Event.new() new.CHILD_REMOVED = Event.new()
+	setmetatable(new,Box)
 	Render.setup(new)
-	for key, value in pairs(cfg) do
-		new[key] = value
-	end
-	
 	return new
 end
 
@@ -82,11 +77,15 @@ end
 ---@return self
 function Box:setExtent(x,y,z,w)
 	---@cast self GNUI.Box
+	self.EXTENT_CHANGED:invoke()
 	self.extent = utils.vec4(x,y,z,w)
-	self.flagUpdate = true
+	self:update()
 	return self
 end
 
+function Box:getExtent()
+	return self.extent
+end
 
 ---Sets the anchor of the box.
 ---@param x number|Vector2|Vector4
@@ -99,8 +98,18 @@ end
 function Box:setAnchor(x,y,z,w)
 	---@cast self GNUI.Box
 	self.anchor = utils.vec4(x,y,z,w)
-	self.flagUpdate = true
+	self:update()
 	return self
+end
+
+function Box:getAnchor()
+	return self.anchor
+end
+
+
+
+function Box:getDimensions()
+	return self.dimensions
 end
 
 
@@ -110,32 +119,42 @@ end
 ---@return self
 function Box:setSprite(sprite)
 	---@cast self GNUI.Box
+	local lastSprite = self.sprite
 	local t = type(sprite)
 	if t == "Texture" then
 		self.sprite = Sprite.new(sprite)
-	elseif t == "GNUI.Sprite" then
-		self.sprite = sprite
 	else
-		self.sprite = nil
+		self.sprite = sprite
 	end
-	self.flagUpdate = true
+	self.SPRITE_CHANGED:invoke(sprite, lastSprite)
+	self:update()
 	return self
 end
 
+function Box:getSprite()
+	return self.sprite
+end
 
 ---@generic self
 ---@param self self
 ---@return self
 function Box:setParent(parent)
 	---@cast self GNUI.Box
+	local lastParent = self.parent
 	if parent then
 		parent:addChild(self)
 	else
 		self.parent = nil
 	end
+	if lastParent ~= parent then
+		self.PARENT_CHANGED:invoke(parent,lastParent)
+	end
 	return self
 end
 
+function Box:getParent()
+	return self.parent
+end
 
 ---@generic self
 ---@param self self
@@ -149,9 +168,13 @@ function Box:addChild(child)
 	local childIndex = #self.children + 1
 	self.children[childIndex] = child
 	child.childIndex = childIndex
-	
-	self.flagUpdate = true
+	self.CHILD_ADDED:invoke(child)
+	self:update()
 	return self
+end
+
+function Box:getChildren()
+	return self.children
 end
 
 ---@generic self
@@ -167,6 +190,7 @@ function Box:removeChild(child)
 	return self
 end
 
+
 ---@generic self
 ---@param self self
 ---@return self
@@ -180,8 +204,20 @@ function Box:setChildren(children)
 	for _, child in pairs(children) do
 		self:addChild(child)
 	end
-	self.flagUpdate = true
+	self:update()
 	return self
+end
+
+
+function Box:update()
+	if IMMIDIATE_UPDATE_MODE then
+		self:forceUpdate()
+	else
+		if not self.flagUpdate then
+			self.flagUpdate = true
+			self.FLAGGED_UPDATE:invoke()
+		end
+	end
 end
 
 
@@ -189,7 +225,7 @@ end
 ---@generic self
 ---@param self self
 ---@return self
-function Box:update()
+function Box:forceUpdate()
 	---@cast self GNUI.Box
 	self.flagUpdate = false
 	local dim = self.extent:copy()
@@ -201,6 +237,7 @@ function Box:update()
 		dim.w = dim.w + math.lerp(pDim.y,pDim.w,self.anchor.w)
 	end
 	self.dimensions = dim
+	self.DIMENSIONS_CHANGED:invoke(dim)
 	return self
 end
 
