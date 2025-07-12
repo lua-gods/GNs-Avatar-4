@@ -17,7 +17,6 @@ local IMMIDIATE_UPDATE_MODE = false
 ---@class GNUI.BoxAPI
 local BoxAPI = {}
 
-
 ---@class GNUI.Box
 ---@field protected extent Vector4
 ---@field EXTENT_CHANGED Event
@@ -63,6 +62,7 @@ function BoxAPI.new(cfg) --TODO: Bring back config support
 	new.childIndex = 0       new.CHILD_INDEX_CHANGED = Event.new()
 	new.flagUpdate = false   new.FLAGGED_UPDATE = Event.new()
 	new.CHILD_ADDED = Event.new() new.CHILD_REMOVED = Event.new()
+	new.lineLayers = {}
 	setmetatable(new,Box)
 	Render.setup(new)
 	return new
@@ -219,7 +219,6 @@ function Box:update()
 		end
 	end
 end
-
 
 ---Updates the box dimensions.
 ---@generic self

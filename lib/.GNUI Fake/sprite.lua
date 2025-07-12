@@ -65,10 +65,18 @@ function Sprite:setTexture(texture)
 end
 
 
+---@generic self
+---@param self self
+---@return self
+---@param x1 number|Vector2|Vector4
+---@param y1 (number|Vector2)?
+---@param x2 number?
+---@param y2 number?
 function Sprite:setUV(x1,y1,x2,y2)
+	---@cast self GNUI.Sprite
 ---@diagnostic disable-next-line: undefined-field
 	self.uv = utils.vec4(x1,y1,x2,y2)
-	print(self.uv)
+	return self
 end
 
 
