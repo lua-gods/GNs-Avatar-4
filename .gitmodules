@@ -2,3 +2,6 @@
 	path = modules/GNUI
 	url = https://github.com/lua-gods/GNUI.git
 	branch = ultra-refactor
+[submodule "lib/GNUI"]
+	path = lib/GNUI
+	url = https://github.com/lua-gods/GNUI
