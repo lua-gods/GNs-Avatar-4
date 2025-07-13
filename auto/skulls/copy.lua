@@ -2,10 +2,10 @@ local Skull = require("lib.skull")
 
 local process = {
 		ON_ENTER = function (skull, model)
-			local itemString = ([[minecraft:player_head{"SkullOwner":"%s","display":{"Name":'{"text":"%s"}'}}]])
-			:format(skull.params[1] or "", skull.params[2] or "")
+			local itemString = ([[minecraft:player_head{"SkullOwner":"%s","display":{"Name":%s}}]])
+			:format(skull.params[1] or "", toJson(toJson(skull.params[2] or "")))
 			local ok, result = pcall(world.newItem, itemString)
-			if ok then
+			if not ok then
 				result = "minecraft:barrier"
 			end
 			model
@@ -18,10 +18,10 @@ local process = {
 
 local identity = Skull.registerIdentity{
 	name = "Copy",
-	
+
 	processHat = process,
 	processHud = process,
 	processEntity = process,
 }
 
---minecraft:player_head{"SkullOwner":"AuriaFoxGirl","display":{"Name":'{"text":"balls"}'}}
+--minecraft:player_head{"SkullOwner":"AuriaFoxGirl","display":{"Name":'{"text":"furry"}'}}
