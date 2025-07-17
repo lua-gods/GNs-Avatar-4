@@ -9,7 +9,6 @@ local recoilSpring = Spring.new(
 
 local model = models.boat
 model:setPos(0,8,0):setVisible(false)
-renderer:setRenderVehicle(false)
 
 local function pitch(speed)
 	speed = speed * 2
@@ -27,6 +26,7 @@ end
 ---@param events MacroEventsAPI
 ---@param vehicle Entity
 local Motorcycle = Macros.new(function (events, vehicle)
+	renderer:setRenderVehicle(false)
 	local engine
 	model:setVisible(true)
 	models.player:setPos(0,12,-2):setRot(0,0,0)
@@ -110,11 +110,14 @@ local Motorcycle = Macros.new(function (events, vehicle)
 	end)
 	
 	events.ON_EXIT:register(function ()
+		renderer:setRenderVehicle(false)
 		renderer:offsetCameraPivot()
 		models.player:setPos(0,0,0)
 		model:setVisible(false)
 		engine:stop()
 		
+		models.player:setRot()
+		models.player.Base:setRot()
 		models.player.Base.Torso:setRot()
 		models.player.Base.Torso.LeftArm:setRot()
 		models.player.Base.Torso.RightArm:setRot()
@@ -135,3 +138,4 @@ events.TICK:register(function ()
 	local vehicle = player:getVehicle()
 	Motorcycle:setActive((vehicle and vehicle:getType() == "minecraft:boat") and true or false, vehicle)
 end)
+

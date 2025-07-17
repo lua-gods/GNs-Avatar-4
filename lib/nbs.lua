@@ -53,8 +53,8 @@ end
 local activeMusicPlayers={}
 
 local lastTime=client:getSystemTime()
-local processor=models:newPart("NBSProcessor","WORLD")
-processor.preRender=function ()
+
+function events.WORLD_RENDER()
 	local time=client:getSystemTime()
 	local delta=(time-lastTime) / 1000
 	lastTime=time
