@@ -19,7 +19,7 @@ models.sunglasses.hat:scale(SCALE,SCALE,SCALE)
 
 ---@type SkullIdentity|{}
 local identity = {
-	name = "Sunglasses",
+	name = "sunglasses",
 	modelBlock = models.sunglasses.hat,
 	modelHat = models.sunglasses.hat,
 	modelHud = Skull.makeIcon(models.sunglasses.icon),

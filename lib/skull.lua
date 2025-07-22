@@ -155,7 +155,7 @@ function SkullAPI.registerIdentity(cfg)
 	local root = models:newPart(cfg.name.."root")
 
 	local identity = {
-		name = cfg.name:lower(),
+		name = cfg.name,
 		support = cfg.support,
 
 		modelBlock = modelIdentityPeprocess(cfg.modelBlock),
@@ -179,7 +179,7 @@ function SkullAPI.registerIdentity(cfg)
 	--root:addChild(identity.modelItem)
 
 	setmetatable(identity,SkullIdentity)
-	skullIdentities[cfg.name:lower()] = identity
+	skullIdentities[cfg.name] = identity
 	if identity.support then
 		skullSupportIdentities[identity.support] = identity
 	end
@@ -297,6 +297,32 @@ end)
 
 local lastDrawInstances = {}
 
+avatar:store("get",function ()
+	local data = {}
+	
+	local c = 0
+	for key, value in pairs(entityInstances) do
+		c = c + 1
+		data[#data+1] = c..". "..value.identifier
+	end
+	
+	return data
+end)
+
+local display = models:newPart("name"):setPos(-8,32,0):newPart("camera","CAMERA"):newText("texto"):setText("HELLO WORLD")
+display:scale(0.3,0.3,0.3)
+
+
+events.WORLD_TICK:register(function ()
+	local c = 0
+	local text = ""
+	for key, value in pairs(entityInstances) do
+		c = c + 1
+		text = text .. c..". "..value.identifier .. "\n"
+	end
+	display:setText("Active Tracks: "..c.."\n"..text)
+end)
+
 events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 	if startupStall then return end
 
@@ -350,7 +376,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 	elseif ctx == "HEAD" then --[────────────────────────-< 🟡 HAT / HEAD >-────────────────────────]--
 
 		local uuid = entity:getUUID()
-		local rawName = item:getName():lower()
+		local rawName = item:getName()
 
 		for i, identityString in ipairs(extractNamesAndParams(rawName)) do
 			local identify = uuid..","..identityString.identifier
@@ -375,7 +401,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 		--[────────────────────────-< 🟠 ENTITY >-────────────────────────]--
 	elseif ctx == "ITEM_ENTITY" or ctx:find("HAND$") then
 		local uuid = entity:getUUID()
-		local rawName = item:getName():lower()
+		local rawName = item:getName()
 
 		for i, identityString in ipairs(extractNamesAndParams(rawName)) do
 			local identify = uuid..","..identityString.identifier
@@ -387,7 +413,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				instance.item = item
 				instance.uuid = uuid
 				instance.params = identityString.params
-				instance.identifier = identityString.identifier
+				instance.identifier = identify
 				instance.identity.processEntity.ON_ENTER(instance,instance.model)
 				entityInstances[identify] = instance
 			else
@@ -396,7 +422,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 			drawInstances[#drawInstances+1] = instance
 		end
 	else --[────────────────────────-< 🟢 HUD >-────────────────────────]--
-		local rawName = item:getName():lower()
+		local rawName = item:getName()
 
 		for i, identityString in ipairs(extractNamesAndParams(rawName)) do
 			instance = hudInstances[identityString.identifier] ---@cast instance SkullInstanceEntity
@@ -416,10 +442,18 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 	end
 
 	for _, value in ipairs(lastDrawInstances) do
-		value.model:setVisible(false)
+		if value.model then
+			value.model:setVisible(false)
+		else
+			lastDrawInstances[_] = nil
+		end
 	end
 	for _, value in ipairs(drawInstances) do
-		value.model:setVisible(true)
+		if value.model then
+			value.model:setVisible(true)
+		else
+			drawInstances[_] = nil
+		end
 	end
 
 	lastDrawInstances = drawInstances
@@ -439,55 +473,64 @@ SKULL_PROCESS.preRender = function (delta, context, part)
 	if next(blockInstances) then
 		---@param instance SkullInstanceBlock
 		for key, instance in pairs(blockInstances) do
+			instance.identity.processBlock.ON_PROCESS(instance,instance.model,delta)
 			if time - instance.lastSeen > SKULL_DECAY_TIME or (not world.getBlockState(instance.pos).id:find("head$")) then
 				instance.queueFree = true
 				instance.identity.processBlock.ON_EXIT(instance,instance.model)
 				instance.model:remove()
+				instance.model = nil
 				blockInstances[key] = nil
 			end
-			instance.identity.processBlock.ON_PROCESS(instance,instance.model,delta)
 		end
 	end
 
 	if next(hatInstances) then
 		---@param instance SkullInstanceHat
 		for key, instance in pairs(hatInstances) do
+			instance.matrix = instance.model:partToWorldMatrix()
+			instance.vars = playerVars[instance.uuid] or {}
+			instance.identity.processHat.ON_PROCESS(instance,instance.model,delta)
 			if time - instance.lastSeen > SKULL_DECAY_TIME then
 				instance.queueFree = true
 				instance.identity.processHat.ON_EXIT(instance,instance.model)
 				instance.model:remove()
+				instance.model = nil
 				hatInstances[key] = nil
 			end
-			instance.matrix = instance.model:partToWorldMatrix()
-			instance.vars = playerVars[instance.uuid] or {}
-			instance.identity.processHat.ON_PROCESS(instance,instance.model,delta)
 		end
 	end
 	if next(entityInstances) then
 		---@param instance SkullInstanceEntity
 		for key, instance in pairs(entityInstances) do
-			if time - instance.lastSeen > 100 then
-				instance.queueFree = true
-				instance.identity.processEntity.ON_EXIT(instance,instance.model)
-				instance.model:remove()
+			if instance.model then
+				instance.matrix = instance.model:partToWorldMatrix()
+				instance.vars = playerVars[instance.uuid] or {}
+				instance.identity.processEntity.ON_PROCESS(instance,instance.model,delta)
+				if time - instance.lastSeen > 100 then
+					instance.queueFree = true
+					instance.identity.processEntity.ON_EXIT(instance,instance.model)
+					instance.model:remove()
+					instance.model = nil
+					entityInstances[key] = nil
+					--print("MANAGEMENT SKULL FREE", instance.identity)
+				end
+			else
 				entityInstances[key] = nil
 			end
-			instance.matrix = instance.model:partToWorldMatrix()
-			instance.vars = playerVars[instance.uuid] or {}
-			instance.identity.processEntity.ON_PROCESS(instance,instance.model,delta)
 		end
 	end
 
 	if next(hudInstances) then
 		---@param instance SkullInstanceHud
 		for key, instance in pairs(hudInstances) do
+			instance.identity.processHud.ON_PROCESS(instance,instance.model,delta)
 			if time - instance.lastSeen > SKULL_DECAY_TIME then
 				instance.queueFree = true
 				instance.identity.processHud.ON_EXIT(instance,instance.model)
 				instance.model:remove()
+				instance.model = nil
 				hudInstances[key] = nil
 			end
-			instance.identity.processHud.ON_PROCESS(instance,instance.model,delta)
 		end
 	end
 end

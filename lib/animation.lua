@@ -205,12 +205,12 @@ local function lerp(k1,k2,time)
 end
 
 
+
 local lastTime=client:getSystemTime()
 AnimationProcessor.postRender	= function ()
 	local time=client:getSystemTime()
 	local delta=(time-lastTime) / 1000
 	lastTime=time
-	
 	
 	for model, track in pairs(activeAnimations) do
 		local modelID=modelOriginals[model] or model
@@ -247,6 +247,8 @@ AnimationProcessor.postRender	= function ()
 		end
 	end
 end
+
+
 
 --[────────────────────────────────────────-< Extra ModelPart APIs >-────────────────────────────────────────]--
 local ogCopy=models.copy
@@ -341,7 +343,6 @@ local ogIndex=figuraMetatables.ModelPart.__index
 figuraMetatables.ModelPart.__index=function (self, key)
 	return ModelPart[key] or ogIndex(self,key)
 end
-
 
 --[────────────────────────────────────────-< Playground >-────────────────────────────────────────]--
 --[[

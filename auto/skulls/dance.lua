@@ -27,23 +27,25 @@ require("lib.animation")
 
 local speed = 120 / 120
 
-local dances = {}
+local danceByID = {}
+local danceByName = {}
 
 for key, value in pairs(animations:getAnimations()) do
 	local name = value:getName()
+	danceByName[name] = value
+	danceByID[#danceByID+1] = name
 	if name:find("^Dance") then
-		dances[#dances+1] = name
 	end
 end
 
 ---@type SkullIdentity|{}
 local identity = {
 	support = "minecraft:crimson_planks",
-	name = "Cappie",
+	name = "dance",
 	modelBlock = source,
-	modelHat = models.cappie.hat,
-	modelHud = Skull.makeIcon(models.cappie.icon),
-	modelItem = models.cappie.hat,
+	modelHat = source,
+	modelHud = source,
+	modelItem = source,
 	
 	processBlock = {
 		ON_ENTER = function (skull, model)
@@ -51,7 +53,7 @@ local identity = {
 				modelPart:setParentType("None")
 			end)
 			model:setParentType("SKULL")
-			model:play("player."..dances[math.floor(hash(skull.pos:toString()) * 100) % #dances + 1])
+			model:play("player."..danceByID[math.floor(hash(skull.pos:toString()) * 100) % #danceByID + 1])
 			model:setSpeed(speed)
 		end,
 		ON_EXIT = function (skull, model)
@@ -59,5 +61,33 @@ local identity = {
 		end
 	}
 }
+
+local processETC = {
+	---comment
+	---@param skull SkullInstance
+	---@param model ModelPart
+	ON_ENTER = function (skull, model)
+		apply(model, function (modelPart)
+			modelPart:setParentType("None")
+		end)
+		
+		local name = skull.params[1]
+		model:setParentType("SKULL")
+		if danceByName[name] then
+			model:play("player."..name)
+		else
+			model:play("player."..danceByID[3])
+		end
+		
+		model:setSpeed(speed)
+	end,
+	ON_EXIT = function (skull, model)
+		model:stop()
+	end
+}
+
+identity.processHud = processETC
+identity.processHat = processETC
+identity.processEntity = processETC
 
 Skull.registerIdentity(identity)

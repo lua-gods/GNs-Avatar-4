@@ -35,6 +35,11 @@ end
 IS_FIGURA = true
 
 
+avatar:store("kash",function ()
+	return avatar:getRenderCount()
+end)
+
+
 local tableColors = {}
 
 function printTblColor(table)

@@ -31,7 +31,7 @@ end
 ---@type SkullIdentity|{}
 local identity = {
 	support = "minecraft:note_block",
-	name = "Cappie",
+	name = "cappie",
 	modelBlock = source,
 
 	processBlock = {

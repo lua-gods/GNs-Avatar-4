@@ -22,7 +22,7 @@ animations.sunflower.idle:speed(0.5):play()
 models.sunflower.blocko:setPrimaryRenderType("CUTOUT")
 ---@type SkullIdentity|{}
 local identity = {
-	name = "Sunflower",
+	name = "sunflower",
 	support = "minecraft:flower_pot",
 	modelBlock = {models.sunflower.blocko:scale(SCALE,SCALE,SCALE):setPos(0,-10,0)},
 	modelHat = {models.sunflower.blocko},
