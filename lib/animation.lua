@@ -217,18 +217,19 @@ AnimationProcessor.postRender	= function ()
 		local state=animationStates[model]
 		local cache=animationCache[model]
 		local time=state.time
+		local amp=state.weight
 		-- Figura needs an offsetPos, like how setScale and setOffsetScale exist
 		
 		applyTrack(track.data.scl, time, cache.scl, function(k1,k2)
-			model:setScale(lerp(k1,k2,time))
+			model:setScale((lerp(k1,k2,time)-1)*amp+1)
 		end)
 		
 		applyTrack(track.data.rot, time, cache.rot, function(k1,k2)
-			model:setRot(lerp(k1,k2,time)*ROT_MUL)
+			model:setRot(lerp(k1,k2,time)*ROT_MUL*amp)
 		end)
 		
 		applyTrack(track.data.pos, time, cache.pos, function(k1,k2)
-			model:setPos(lerp(k1,k2,time)*POS_MUL)
+			model:setPos(lerp(k1,k2,time)*POS_MUL*amp)
 		end)
 		
 		state.time=state.time+delta*state.speed
@@ -293,8 +294,10 @@ function ModelPart:stop()
 		activeAnimations[self]=nil
 		local state=animationStates[self]
 		self:setRot():setScale():setPos()
-		state.isPlaying=false
-		state.animation=nil
+		if state then
+			state.isPlaying=false
+			state.animation=nil
+		end
 	end)
 end
 
@@ -302,10 +305,21 @@ end
 function ModelPart:setSpeed(speed)
 	applyNested(self,function (self)
 		local state=animationStates[self]
-		state.speed=speed
+		if state then
+			state.speed=speed
+		end
 	end)
 end
 
+
+function ModelPart:setBlend(amplifier)
+	applyNested(self,function (self)
+		local state=animationStates[self]
+		if state then
+			state.weight=amplifier
+		end
+	end)
+end
 
 
 ---@param name string
