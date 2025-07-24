@@ -9,7 +9,7 @@ local utils  = require("../utils") ---@type GNUI.UtilsAPI
 local Event = require("../../event") ---@type Event
 
 ---@class GNUI.DrawBackendAPI
-local RenderAPI = {}
+local DrawBackend = {}
 
 
 
@@ -23,7 +23,7 @@ RenderInstance.__index = RenderInstance
 
 local nextFree = 0
 ---@param screen GNUI.Screen
-function RenderAPI.newRenderInstance(screen)
+function DrawBackend.newDrawBackend(screen)
 	local self = {
 		screen = screen,
 		part = models:newPart("GNUIRenderInstance#"..nextFree,"HUD")
@@ -34,4 +34,15 @@ function RenderAPI.newRenderInstance(screen)
 	return self
 end
 
-return RenderAPI
+
+---Sets the target box for the visuals to rely on.
+---@param box GNUI.Box
+function DrawBackend:setTargetBox(box)
+	
+end
+
+
+-- TODO: box tracking for visuals drawing
+
+
+return DrawBackend

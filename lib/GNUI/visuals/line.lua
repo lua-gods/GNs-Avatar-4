@@ -34,25 +34,27 @@ function Line:setPoint(i,x,y)
 	end
 end
 
-
+---@param box GNUI.Box
 ---@param draw GNUI.DrawBackend
-function Line:init(draw)
+function Line:init(box,draw)
 	
 end
 
+---@param box GNUI.Box
 ---@param draw GNUI.DrawBackend
-function Line:update(draw)
+function Line:update(box,draw)
 	if self.lastPointCount ~= #self.points then
 		self.lastPointCount = #self.points
-		self:free(draw)
-		self:init(draw)
+		self:free(box,draw)
+		self:init(box,draw)
 	end
 	
 	-- TODO: draw points
 end
 
+---@param box GNUI.Box
 ---@param draw GNUI.DrawBackend
-function Line:free(draw)
+function Line:free(box,draw)
 	
 end
 

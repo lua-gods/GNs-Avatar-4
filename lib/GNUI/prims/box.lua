@@ -292,10 +292,5 @@ function Box:forcePostUpdate()
 end
 
 
-function Box:update()
-	
-end
-
-
 BoxAPI.methods = Box
 return BoxAPI

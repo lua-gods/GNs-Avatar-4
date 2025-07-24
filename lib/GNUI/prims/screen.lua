@@ -16,7 +16,7 @@ local ScreenAPI = {}
 
 
 ---@class GNUI.Screen : GNUI.Box
----@field renderInstance GNUI.DrawBackend
+---@field drawBackend GNUI.DrawBackend
 ---@field updateQueue {[1]:GNUI.Box,[2]:boolean}[] #{box,isPreUpdate}
 ---@field protected __index function
 local Screen = {}
@@ -32,7 +32,7 @@ function ScreenAPI.new(cfg)
 	local self = Box.new(cfg) ---@cast self GNUI.Screen
 	self.updateQueue = {}
 	self.screen = self
-	Draw.newRenderInstance(self)
+	Draw.newDrawBackend(self)
 	Input.RENDER:register(function ()self:renderUpdate()end)
 	setmetatable(self,Screen)
 	return self
@@ -57,6 +57,8 @@ function Screen:renderUpdate()
 			box:forcePreUpdate()
 		else
 			box:forcePostUpdate()
+			-- TODO: Draw Backend stuff here
+			--self.drawBackend
 		end
 	end
 	self.updateQueue = {}
