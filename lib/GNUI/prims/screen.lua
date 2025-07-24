@@ -1,3 +1,4 @@
+---@diagnostic disable: invisible
 --[[______   __
   / ____/ | / /  by: GNanimates / https://gnon.top / Discord: @gn68s
  / / __/  |/ / name: GNUI Screen
@@ -29,9 +30,10 @@ Screen.__type = "GNUI.Box.Screen"
 ---@return GNUI.Screen
 function ScreenAPI.new(cfg)
 	local self = Box.new(cfg) ---@cast self GNUI.Screen
+	self.updateQueue = {}
+	self.screen = self
 	Draw.newRenderInstance(self)
-	
-	Input.RENDER:register(function ()self:update()end)
+	Input.RENDER:register(function ()self:renderUpdate()end)
 	setmetatable(self,Screen)
 	return self
 end
@@ -48,12 +50,13 @@ end
 
 ---Updates all the update queries of child box hierarchy
 ---@return self
-function Screen:update()
+function Screen:renderUpdate()
 	for i, query in ipairs(self.updateQueue) do
+		local box = query[1]
 		if query[2] then
-			query[1]:forcePreUpdate()
+			box:forcePreUpdate()
 		else
-			query[1]:forcePostUpdate()
+			box:forcePostUpdate()
 		end
 	end
 	self.updateQueue = {}

@@ -28,7 +28,7 @@ function RenderAPI.newRenderInstance(screen)
 		screen = screen,
 		part = models:newPart("GNUIRenderInstance#"..nextFree,"HUD")
 	}
-	
+	nextFree = nextFree + 1
 	setmetatable(self,RenderInstance)
 	self.screen = screen
 	return self

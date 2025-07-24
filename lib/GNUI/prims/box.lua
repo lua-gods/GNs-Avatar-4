@@ -62,7 +62,7 @@ function BoxAPI.new(cfg) --TODO: Bring back config support
 	new.anchor = vec4()      new.ANCHOR_CHANGED = Event.new()
 	new.dimensions = vec4()  new.DIMENSIONS_CHANGED = Event.new()
 	new.children = {}        new.CHILDREN_CHANGED = Event.new()
-	new.sprite = nil         new.SPRITE_CHANGED = Event.new()
+	new.visuals = {}
 	new.screen = nil         new.SCREEN_CHANGED = Event.new()
 	new.parent = nil         new.PARENT_CHANGED = Event.new()
 	new.childIndex = 0       new.CHILD_INDEX_CHANGED = Event.new()
@@ -148,6 +148,7 @@ function Box:setParent(parent)
 			if lastParent ~= parent then
 				self.PARENT_CHANGED:invoke(parent,lastParent)
 			end
+			self.parent:update()
 		else
 			error("Box already has a parent",2)
 		end
@@ -248,17 +249,15 @@ function Box:getChildCount()
 end
 
 
----@param pre boolean?
-function Box:update(pre)
-	if self.flagUpdate then return end
+function Box:update()
+	if self.flagUpdate or not self.screen then return end
 	self.flagUpdate = true
 	
-	for _, child in ipairs(self.children) do child:update(true) end
-	
-	self.screen:queryUpdate(self,pre)
-	
+	--for _, child in ipairs(self.children) do child:update(true) end
+	self.screen:queryUpdate(self)
 	for _, child in ipairs(self.children) do child:update() end
 end
+
 
 ---Called before the parent is updated.
 ---@generic self
@@ -268,6 +267,7 @@ function Box:forcePreUpdate()
 	-- TODO: min size goes here
 	return self
 end
+
 
 ---Updates the box dimensions.
 ---@generic self
@@ -290,6 +290,12 @@ function Box:forcePostUpdate()
 	self.flagUpdate = false
 	return self
 end
+
+
+function Box:update()
+	
+end
+
 
 BoxAPI.methods = Box
 return BoxAPI

@@ -31,7 +31,6 @@ local screen
 function API.getScreen()
 	if not screen then -- Screen Instantiation
 		screen = Screen.new()
-		
 		Input.WINDOW_RESIZED:register(function (winSize)
 			screen:setExtent(0,0,winSize.x,winSize.y)
 		end)
