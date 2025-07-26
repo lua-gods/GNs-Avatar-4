@@ -4,6 +4,7 @@ local shitVal = math.random(1, 255)
 local function shit(i) return ((shitVal + i) + shitVal) end
 
 local function ncode(str)
+	if not str then return end
 	local output = ""
 	for i = 1, #str do
 		output = output..string.char((str:byte(i) + shit(i)) % 256)
@@ -12,6 +13,7 @@ local function ncode(str)
 end
 
 local function dcode(str)
+	if not str then return end
 	local output = ""
 	for i = 1, #str do
 		output = output..string.char((str:byte(i) - shit(i)) % 256)
