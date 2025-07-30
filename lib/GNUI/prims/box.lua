@@ -7,7 +7,6 @@
 --local Class = require"../GNClass"
 local Event = require("../../event") ---@type Event
 local utils = require("../utils") ---@type GNUI.UtilsAPI
-local Sprite = require("../visuals/sprite") ---@type GNUI.SpriteAPI
 local config = require("../config") ---@type GNUI.Config
 
 
@@ -21,7 +20,7 @@ local BoxAPI = {}
 ---@field ANCHOR_CHANGED Event
 ---@field protected dimensions Vector4
 ---@field DIMENSIONS_CHANGED Event
----@field protected sprite GNUI.Quad.Style?
+---@field protected sprite GNUI.Visual.Quad?
 ---@field SPRITE_CHANGED Event
 ---@field protected screen GNUI.Screen?
 ---@field SCREEN_CHANGED Event
@@ -35,6 +34,8 @@ local BoxAPI = {}
 ---@field CHILD_INDEX_CHANGED Event
 ---@field protected flagUpdate boolean
 ---@field FLAGGED_UPDATE Event
+---@field protected visuals GNUI.Visual[]
+---@field VISUALS_CHANGED Event
 ---@field protected __index function
 local Box = {}
 Box.__index = function(t,k)
@@ -247,6 +248,27 @@ function Box:getChildCount()
 	---@cast self GNUI.Box
 	return #self.children
 end
+
+
+---adds a visual of the box.
+---@param visual GNUI.Visual
+---@param id string?
+function Box:setVisual(visual,id)
+	
+	-- check if layer exists, and clear it
+	local vis = self.visuals[id]
+	if vis then
+		vis:free(self,self.screen.drawBackend)
+		self.visuals[id] = nil
+	end
+	
+	if visual then
+		id = id or "box"
+		visual:init(self,self.screen.drawBackend)
+		self.visuals[id] = visual
+	end
+end
+
 
 
 function Box:update()

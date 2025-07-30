@@ -6,8 +6,9 @@
 \____/_/ |_/ source: link ]]
 
 local Box = require("./prims/box") ---@type GNUI.BoxAPI
-local Sprite = require("./visuals/sprite") ---@type GNUI.SpriteAPI
 local Screen = require("./prims/screen") ---@type GNUI.ScreenAPI
+
+local Quad = require("./visuals/quad") ---@type GNUI.QuadAPI
 
 local Event = require("../event") ---@type Event
 local config = require("./config") ---@type GNUI.Config
@@ -19,7 +20,7 @@ local Input = require("./backend/input") ---@type GNUI.InputBackendAPI
 ---@class GNUIAPI
 local API = {
 	box = Box, ---@type GNUI.BoxAPI
-	sprite = Sprite, ---@type GNUI.SpriteAPI
+	sprite = Quad, ---@type GNUI.QuadAPI
 	screen = Screen, ---@type GNUI.ScreenAPI
 	--Renderer = require("./renderer"), ---@type GNUI.RenderAPI
 }

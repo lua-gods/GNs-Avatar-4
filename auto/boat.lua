@@ -65,6 +65,8 @@ local Motorcycle = Macros.new(function (events, vehicle)
 			local v = math.lerp(lvel,vel,delta)
 			local tilt = (v.x/math.max(v.z,0.5)) * -15
 			
+			renderer:offsetCameraRot(0,0,-tilt*0.2)
+			
 			local mat = matrices.mat4()
 			mat:rotateY(-vehicle:getRot(delta).y)
 			mat:translate(vehicle:getPos(delta))
@@ -115,6 +117,8 @@ local Motorcycle = Macros.new(function (events, vehicle)
 		models.player:setPos(0,0,0)
 		model:setVisible(false)
 		engine:stop()
+		
+		renderer:offsetCameraRot()
 		
 		models.player:setRot()
 		models.player.Base:setRot()

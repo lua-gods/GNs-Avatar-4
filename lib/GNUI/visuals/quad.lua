@@ -9,11 +9,11 @@ local Event = require("../../event") ---@type Event
 local utils = require("../utils") ---@type GNUI.UtilsAPI
 
 
----@class GNUI.SpriteAPI
+---@class GNUI.QuadAPI
 local SpriteAPI = {}
 
 
----@class GNUI.Quad.Style
+---@class GNUI.Visual.Quad : GNUI.Visual
 ---@field texture Texture
 ---@field border Vector4
 ---@field color Vector3
@@ -28,11 +28,10 @@ Sprite.__index = function (t,k)
 end
 Sprite.__type = "GNUI.Sprite"
 
---#region
 
----@overload fun(cfg: GNUI.Quad.Style|{}):GNUI.Quad.Style
+---@overload fun(cfg: GNUI.Visual.Quad|{}):GNUI.Visual.Quad
 ---@param texture Texture?
----@return GNUI.Quad.Style
+---@return GNUI.Visual.Quad
 function SpriteAPI.new(texture)
 	local new = {}
 	new.color = vec(1,1,1)
@@ -55,10 +54,8 @@ function SpriteAPI.new(texture)
 	return new
 end
 
---#endregion
-
 ---@param texture Texture
----@return GNUI.Quad.Style
+---@return GNUI.Visual.Quad
 function Sprite:setTexture(texture)
 	self.texture = texture
 	if texture then
@@ -74,7 +71,7 @@ end
 ---@param x2 number?
 ---@param y2 number?
 function Sprite:setUV(x1,y1,x2,y2)
-	---@cast self GNUI.Quad.Style
+	---@cast self GNUI.Visual.Quad
 ---@diagnostic disable-next-line: undefined-field
 	self.uv = utils.vec4(x1,y1,x2,y2)
 	return self
@@ -82,10 +79,16 @@ end
 
 
 ---@param factor number
----@return GNUI.Quad.Style
+---@return GNUI.Visual.Quad
 function Sprite:setScale(factor)
 	self.scale = factor
 	return self
 end
+
+
+function Sprite:init(box,draw)
+	print(box,draw)
+end
+
 
 return SpriteAPI

@@ -1,5 +1,9 @@
 local name = "GNanimates"
 
+if math.random() < 0.05 then
+	name = "GNaminates"
+end
+
 local from = vectors.hexToRGB("#d3fc7e")
 local to = vectors.hexToRGB("#33984b")
 

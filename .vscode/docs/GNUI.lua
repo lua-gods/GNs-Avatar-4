@@ -4,7 +4,7 @@
 ---@class GNUIAPI
 local API = {
 	box = {}, ---@type GNUI.BoxAPI
-	sprite = {}, ---@type GNUI.SpriteAPI
+	sprite = {}, ---@type GNUI.QuadAPI
 	screen = {}, ---@type GNUI.ScreenAPI
 }
 

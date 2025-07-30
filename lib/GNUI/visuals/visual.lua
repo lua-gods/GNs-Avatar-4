@@ -1,5 +1,4 @@
 ---@class GNUI.Visual
----@field box GNUI.Box?
----@field init fun(self:GNUI.Visual,draw:GNUI.DrawBackend)
----@field update fun(self:GNUI.Visual,draw:GNUI.DrawBackend)
----@field free fun(self:GNUI.Visual,draw:GNUI.DrawBackend)
+---@field init fun(self:GNUI.Visual,box:GNUI.Box,draw:GNUI.DrawBackend)
+---@field update fun(self:GNUI.Visual,box:GNUI.Box,draw:GNUI.DrawBackend)
+---@field free fun(self:GNUI.Visual,box:GNUI.Box,draw:GNUI.DrawBackend)
