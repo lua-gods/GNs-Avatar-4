@@ -1,32 +1,10 @@
 local Skull = require("lib.skull")
 
 local SCALE = 10
-
 local source = models.disco:scale(SCALE,SCALE,SCALE)--:setOpacity(0.3)
-
 source:setPrimaryRenderType("EYES")
 
---pcall(source.setPrimaryRenderType,source,"NO_SHADING_BLURRY")
-
-function hash(str)
-	local hash = 0
-	for i = 1, #str do
-		local c = str:byte(i)
-		hash = (hash * math.pi + c) % 100000 -- keep it within 5 digits
-	end
-	return hash
-end
-
 require("lib.animation")
-
-local dances = {}
-
-for key, value in pairs(animations:getAnimations()) do
-	local name = value:getName()
-	if name:find("^Dance") then
-		dances[#dances+1] = name
-	end
-end
 
 ---@type SkullIdentity|{}
 local identity = {

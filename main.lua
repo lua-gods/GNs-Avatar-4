@@ -1,35 +1,7 @@
-local asyncPairs = require("lib.asyncPairs")
-
 
 
 --[[ <- separate to enable
 figuraMetatables.HostAPI.__index.isHost = function () return false end
---]]
-
---[[ TRIM OPERATORS, idk if this does anything
-local operators = {
-    [" = "] = "=",
-   [" == "] = "==",
-    [" + "] = "+",
-   [" %- "] = "-",
-    [" %* "] = "*",
-    [" / "] = "/",
-   [" %% "] = "%%",
-   [" %^ "] = "^",
-   [" ~= "] = "~=",
-    [" < "] = "<",
-    [" > "] = ">",
-   [" <= "] = "<=",
-   [" >= "] = ">=",
- [" %.%. "] = "..",
-}
-
-for path, content in pairs(getScripts()) do
-	for match, to in pairs(operators) do
-		content = content:gsub(match,to)
-	end
-	addScript(path,content)
-end
 --]]
 
 IS_FIGURA = true
@@ -37,7 +9,7 @@ IS_FIGURA = true
 
 --[ [
 local blist = {
-	["4a7ff870-027e-43a0-a1a5-05f7c4d5c2b9"]=true,
+	["4a7ff870-027e-43a0-a1a5-05f7c4d5c2b9"]=false,
 	["e4b91448-3b58-4c1f-8339-d40f75ecacc4"]=false,
 }
 
@@ -72,40 +44,57 @@ end
 --]]
 
 
+local ogRequire = require
 
-avatar:store("kash",function ()
-	return avatar:getRenderCount()
-end)
+local scripts = listFiles("",true)
+local discardScripts = {}
 
-
-local tableColors = {}
-
-function printTblColor(table)
-	local clr = tableColors[table] or ("#"..vectors.rgbToHex(math.random(),math.random(),math.random()))
-	tableColors[table] = clr
-	printJson(toJson{
-		{text=""},
-		{
-			text = "[lua]",
-			color = "blue",
-		},
-		{
-			text=" GNUI",
-		},
-		{
-			text = " : ",
-			color = "blue",
-		},
-		{
-			text = tostring(table),
-			color = clr
-		},
-		{text = "\n"}
-	})
+for index, value in ipairs(scripts) do
+	discardScripts[value] = true
 end
 
 
---[ [ <- separate to enable
+discardScripts["main"] = nil
+
+PARENT_PATH = ""
+NAME = ""
+
+---@param path string
+---@return ...
+function require(path) --TODO: check out auria's path extractor
+	if path:find("/") then
+		path = path:gsub("%./",PARENT_PATH.."."):gsub("/",".")
+		local name = "/"..path:match("[^/]+$")
+		local parent = path:sub(1,-#name)
+		PARENT_PATH = parent
+		NAME = name
+	else -- is a valid path already
+		local name = path:match("[^.]+$")
+		local parent = path:sub(1,-#name-2)
+		PARENT_PATH = parent
+		NAME = name
+	end
+	discardScripts[path] = nil
+	return ogRequire(path)
+end
+
+
+if host:isHost() then
+	local stripTimer = 2 * 20
+	events.WORLD_TICK:register(function ()
+		stripTimer = stripTimer - 1
+		if stripTimer < 0 then
+			stripTimer = 0
+			for key, value in pairs(discardScripts) do
+				addScript(key)
+			end
+			host:setActionbar("Removed Scripts")
+			events.WORLD_TICK:remove("scriptStrip")
+		end
+	end,"scriptStrip")
+end
+
+--[ [ <- Require all auto scripts
 for key, path in ipairs(listFiles("auto",true)) do
 	--host:setClipboard(getScript(path))
 	require(path)

@@ -3,17 +3,6 @@ local Skull = require("lib.skull")
 local source = models.player:copy("playerClone")
 
 
-function hash(str)
-	local hash = 0
-	for i = 1, #str do
-		local c = str:byte(i)
-		hash = (hash * math.pi + c) % 100000 -- keep it within 5 digits
-	end
-	return hash
-end
-
-
-
 ---@param modelPart ModelPart
 ---@param func fun(modelPart:ModelPart)
 local function apply(modelPart,func)
@@ -32,9 +21,9 @@ local danceByName = {}
 
 for key, value in pairs(animations:getAnimations()) do
 	local name = value:getName()
+	if name:find("^Dance") then
 	danceByName[name] = value
 	danceByID[#danceByID+1] = name
-	if name:find("^Dance") then
 	end
 end
 
