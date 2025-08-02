@@ -35,7 +35,7 @@ local identity = {
 			skull.music:setPos(skull.pos + vec(0.5,0.5,0.5))
 			---@param note NBS.Noteblock
 			skull.music.NOTE_PLAYED:register(function (note)
-				Tween.new{
+				skull.tween = Tween.new{
 					from=1-note.volume*0.5,
 					to=1,
 					duration=0.5,
@@ -49,35 +49,13 @@ local identity = {
 			end)
 		end,
 		ON_EXIT = function (skull, model)
+			if skull.tween then
+				skull.tween:skip()
+			end
 			skull.music:stop()
 		end
 	},
 	
-	processHat = {
-		ON_ENTER = function (skull, model)
-			skull.music = NBS.newMusicPlayer():setTrack(track):play()
-			model:setPos(0,8,0)
-			skull.music.NOTE_PLAYED:register(function (note)
-				Tween.new{
-					from=0.8,
-					to=1,
-					duration=0.5,
-					easing="outSine",
-					tick=function (v, t)
-						local s = 1/v
-						skull.model:scale(s*0.6,v*0.6,s*0.6)
-					end,
-					id=skull.identity
-				}
-			end)
-		end,
-		ON_PROCESS = function (skull, model, delta)
-			skull.music:setPos(skull.matrix:apply(0,0,0))
-		end,
-		ON_EXIT = function (skull, model)
-			skull.music:stop()
-		end
-	},
 	processHud = {
 		ON_ENTER = function (skull, model)
 			model:rot(50,-45,0):pos(0,-4,0)

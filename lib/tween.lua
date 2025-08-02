@@ -474,12 +474,12 @@ function Tween.new(cfg)
 		onFinish = cfg.onFinish or placeholder,
 		id = cfg.id
 	}
-	setmetatable(new, {__index = Tween})
+	setmetatable(new, {__index = TweenInstance})
 	new.tick(new.from, 0)
 	queries[id] = new
 	
 	setActive(true)
-	return id
+	return new
 end
 
 ---Stops this TweenInstance
