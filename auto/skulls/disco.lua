@@ -9,7 +9,7 @@ require("lib.animation")
 ---@type SkullIdentity|{}
 local identity = {
 	support = "minecraft:note_block",
-	name = "cappie",
+	name = "Disco",
 	modelBlock = source,
 
 	processBlock = {

@@ -30,7 +30,7 @@ end
 ---@type SkullIdentity|{}
 local identity = {
 	support = "minecraft:crimson_planks",
-	name = "dance",
+	name = "Statue Emotes",
 	modelBlock = source,
 	modelHat = source,
 	modelHud = source,

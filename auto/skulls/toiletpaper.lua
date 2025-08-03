@@ -58,7 +58,7 @@ local identity = {
 		end,
 		ON_PROCESS = function (skull, model)
 			local scroll = client:getCameraRot().x / 180
-			model:setPos(0,16 + scroll * 64,16)
+			model:setPos(0,32 + scroll * 64,16)
 		end
 	}
 }

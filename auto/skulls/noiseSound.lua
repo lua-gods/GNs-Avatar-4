@@ -4,14 +4,14 @@ local Color = require("lib.color")
 
 models.skull.hat:scale(1.1,1.1,1.1)
 
-
+local DOWN = vec(0,-1,0)
 local DISTANCE = 6
 
 
 ---@type SkullIdentity|{}
 local identity = {
-	name = "Sound Stopper",
-	support = "minecraft:black_wool",
+	name = "Sound Noiser",
+	support = "minecraft:red_wool",
 	modelBlock = models.skull.block,
 	modelHat = models.skull.hat,
 	modelHud = Skull.makeIcon(models.skull.icon),
@@ -22,38 +22,43 @@ identity.processBlock = {
 ---@param skull SkullInstanceBlock
 ---@param model ModelPart
 ON_ENTER = function (skull, model)
-	model:setColor(1,0,1)
+	model:setColor(1,0.1,0.1)
 	skull.sounds = {}
 	events.ON_PLAY_SOUND:register(function (id, pos, volume, pitch, loop, category, path)
-		local dist = (pos-skull.pos):length()
-		if path and dist < DISTANCE then
+		if path and (pos-skull.pos):length() < DISTANCE then
 			local s = sounds[id]:pos(pos):volume(volume):pitch(pitch):play()
 			skull.sounds[#skull.sounds+1] = {
-				hasPlayed = false,
 				sound = s,
 				pitch = pitch,
-				dist = dist,
+				hasPitchCorrected = false
 			}
 			return true
 		end
 	end,skull.identifier)
 end,
 
+
+
 ---@param skull SkullInstanceBlock
 ---@param model ModelPart
 ON_PROCESS = function (skull, model,delta)
-	local t = client:getSystemTime() / 1000
-	local s = 0.8-(t % 0.1)
+	local t = client:getSystemTime()
+	
+	math.randomseed(t)
+	math.random()
+	math.random()
+	math.random()
+	math.random()
+	local w = math.random()-0.5
+	local s = w * 0.5 + 1
 	model:scale(1/s,s,1/s)
 	---@param value {sound: Sound, pitch: number}
 	for key, value in pairs(skull.sounds) do
-		if value.pitch < 0  then
-			value.sound:stop()
+		if not value.sound:isPlaying() and value.hasPitchCorrected then
 			skull.sounds[key] = nil
 		else
-			value.hasPlayed = true
-			value.pitch = value.pitch - 0.001
-			value.sound:setPitch(value.pitch)
+			value.hasPitchCorrected = true
+			value.sound:setPitch(value.pitch + w)
 		end
 	end
 end,

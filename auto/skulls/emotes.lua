@@ -41,7 +41,7 @@ end
 ---@type SkullIdentity|{}
 local identity = {
 	support = "minecraft:gold_block",
-	name = "dance",
+	name = "Statue Emotes",
 	modelBlock = source,
 	modelHat = source,
 	modelHud = source,
