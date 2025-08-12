@@ -140,7 +140,19 @@ parseNBTModelData(nbt.models,models)
 
 local animationCache={} ---@type table<ModelPart,table> # cache data
 local activeAnimations={} ---@type table<ModelPart,Animation.Track>
-local AnimationProcessor=models:newPart("AnimationProcessor","WORLD")
+local AnimationProcessor=models:newPart("AnimationProcessor","SKULL")
+
+
+local first = false
+events.WORLD_RENDER:register(function ()
+	first = true
+end)
+
+events.SKULL_RENDER:register(function ()
+	AnimationProcessor:setVisible(first)
+	first = false
+end)
+
 
 local POS_MUL=vec(-1, 1, 1)
 local ROT_MUL=vec(-1, -1, 1)

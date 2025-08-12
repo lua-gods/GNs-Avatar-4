@@ -191,7 +191,7 @@ end
 -- pings
 function pings.patpat(a, b, c)
 	if not player:isLoaded() then return end
-	for i = 1, 128, 1 do
+	for i = 1, 32, 1 do
 		local avatarVars, pos, boundingBox, pattingOutput
 		local petpetSuccess, noPats, noHearts
 		if b then -- block

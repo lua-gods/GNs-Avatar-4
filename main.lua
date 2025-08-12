@@ -41,62 +41,8 @@ if blist[client:getViewer():getUUID()] then
 	return
 end
 
---]]
-
-
-local ogRequire = require
-
-local scripts = listFiles("",true)
-local discardScripts = {}
-
-for index, value in ipairs(scripts) do
-	discardScripts[value] = true
-end
-
-
-discardScripts["main"] = nil
-
-PARENT_PATH = ""
-NAME = ""
-
----@param path string
----@return ...
-function require(path) --TODO: check out auria's path extractor
-	if path:find("/") then
-		path = path:gsub("%./",PARENT_PATH.."."):gsub("/",".")
-		local name = "/"..path:match("[^/]+$")
-		local parent = path:sub(1,-#name)
-		PARENT_PATH = parent
-		NAME = name
-	else -- is a valid path already
-		local name = path:match("[^.]+$")
-		local parent = path:sub(1,-#name-2)
-		PARENT_PATH = parent
-		NAME = name
-	end
-	discardScripts[path] = nil
-	return ogRequire(path)
-end
-
-
-if host:isHost() then
-	local stripTimer = 2 * 20
-	events.WORLD_TICK:register(function ()
-		stripTimer = stripTimer - 1
-		if stripTimer < 0 then
-			stripTimer = 0
-			for key, value in pairs(discardScripts) do
-				addScript(key)
-			end
-			host:setActionbar("Removed Scripts")
-			events.WORLD_TICK:remove("scriptStrip")
-		end
-	end,"scriptStrip")
-end
-
---[ [ <- Require all auto scripts
-for key, path in ipairs(listFiles("auto",true)) do
-	--host:setClipboard(getScript(path))
+for _, path in ipairs(listFiles("auto")) do
 	require(path)
 end
+
 --]]
