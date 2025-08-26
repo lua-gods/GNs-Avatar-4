@@ -112,7 +112,7 @@ local Motorcycle = Macros.new(function (events, vehicle)
 	end)
 	
 	events.ON_EXIT:register(function ()
-		renderer:setRenderVehicle(false)
+		renderer:setRenderVehicle(true)
 		renderer:offsetCameraPivot()
 		models.player:setPos(0,0,0)
 		model:setVisible(false)
@@ -137,9 +137,19 @@ local Motorcycle = Macros.new(function (events, vehicle)
 		engine = sounds["engine"]:loop(true):play()
 	end)
 end)
-
+local lastVehicle
 events.TICK:register(function ()
 	local vehicle = player:getVehicle()
-	Motorcycle:setActive((vehicle and vehicle:getType() == "minecraft:boat") and true or false, vehicle)
+	if lastVehicle ~= vehicle then
+		lastVehicle = vehicle
+		
+		if vehicle then
+			if world.getBlockState(vehicle:getPos():add(0,-0.5,0)).id:find("ice") then
+				Motorcycle:setActive(true, vehicle)
+			end
+		else
+			Motorcycle:setActive(false, vehicle)
+		end
+	end
 end)
 

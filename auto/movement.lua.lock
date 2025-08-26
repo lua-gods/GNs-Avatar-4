@@ -1,0 +1,22 @@
+local SCALE = 4
+models.player:setScale(SCALE)
+if not host:isHost() then return end
+
+local lpos
+events.WORLD_TICK:register(function ()
+	if not player:isLoaded() then
+		return
+	end
+	local pos = player:getPos()
+	if not lpos then lpos = pos end
+	local tvel = vec(table.unpack(player:getNbt().Motion))
+	local tpos = pos + tvel * (SCALE - 1)
+	
+	local block,hit = raycast:block(pos-tvel,tpos,"COLLIDER")
+	
+	host:setPos(block:hasCollision() and hit or tpos)
+	local height = player:getEyeHeight()
+	
+	renderer:setEyeOffset(0,-height*(1-SCALE),0):offsetCameraPivot(0,-height*(1-SCALE),0)
+	lpos = pos
+end)

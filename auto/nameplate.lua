@@ -30,3 +30,5 @@ nameplate.ENTITY:setOutline(true)
 nameplate.ENTITY:setBackgroundColor(0,0,0,0)
 --nameplate.ENTITY:setPos(-1.3,0,0):setPivot(0,1.7,0)
 nameplate.LIST:setText(toJson(output))
+
+host:setClipboard(toJson(output))

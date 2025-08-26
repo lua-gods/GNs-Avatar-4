@@ -4,7 +4,7 @@ local config = {
 	patpatKey = "key.mouse.right",   -- keybind that will be used for patpat
 
 	requireEmptyOffHand = false,
-	patDelay = 1,    -- delay between pats when holding patpat key in ticks
+	patDelay = 5,    -- delay between pats when holding patpat key in ticks
 	holdFor = 10,    -- amount of ticks before patting stops, if this value is smaller than patDelay it might cause issues
 
 	patpatBlocks = { -- list of blocks that can be patted
@@ -41,6 +41,7 @@ local playerEvents = { -- list of tables containing functions that get called wh
 		--function(entity) end
 	},
 }
+
 
 local headEvents = { -- this table works like playerEvents table but instead of player its for player heads and every event have extra argument that is position of player head
 	onPat = {},
@@ -191,7 +192,7 @@ end
 -- pings
 function pings.patpat(a, b, c)
 	if not player:isLoaded() then return end
-	for i = 1, 32, 1 do
+	for i = 1, 1, 1 do
 		local avatarVars, pos, boundingBox, pattingOutput
 		local petpetSuccess, noPats, noHearts
 		if b then -- block

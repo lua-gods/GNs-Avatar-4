@@ -385,9 +385,9 @@ local function process()
 			tween.tick(math.lerp(tween.from,tween.to, w), duration)
 		else
 			tween.tick(tween.to, 1)
+			queries[id] = nil
 			tween.onFinish()
 			setActive(next(queries) and true or false)
-			queries[id] = nil
 		end
 	end
 end
@@ -456,7 +456,17 @@ local function placeholder() end
 --- | `easing`    | `ar`       | The name of theeasing function to use                                                                                                           |
 --- | `tick`      | `?`        | a callback function that gets called everytime the tween ticks                                                                                  |
 --- | `onFinish`  | `?`        | a callback function that gets called when the tween finishes                                                                                    |
----@param cfg TweenInstanceCreation
+---@param cfg {
+---	id: any?,
+---	from: number|Vector.any,
+---	to: number|Vector.any,
+---	duration: number,
+---	period: number?,
+---	overshoot: number?,
+---	amplitude: number?,
+---	easing: EaseTypes|(fun(t: number): number|Vector.any),
+---	tick: fun(v : number|Vector.any,t : number),
+---	onFinish: function?}
 ---@return TweenInstance
 function Tween.new(cfg)
 	local id = cfg.id or #queries + 1
@@ -497,10 +507,10 @@ end
 ---@param id any
 ---@param cancel boolean?
 function Tween.stop(id, cancel)
+	queries[id] = nil
 	if not cancel and queries[id] then
 		queries[id].onFinish()
 	end
-	queries[id] = nil
 end
 
 return Tween

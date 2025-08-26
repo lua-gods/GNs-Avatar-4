@@ -11,3 +11,5 @@ models.player.Base.Torso.Head["Hat Layer"]:setPrimaryRenderType("TRANSLUCENT")
 
 --models.player:setPrimaryTexture("SKIN")
 --animations.player.california:play()
+
+animations.player.HatGirlDance:speed(0.7)

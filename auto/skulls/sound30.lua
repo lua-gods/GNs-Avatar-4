@@ -1,0 +1,49 @@
+local Skull = require("lib.skull")
+
+local dontyoulecturemewithyour30dollarhaircut = require("lib.dontyoulecturemewithyour30dollarhaircut")
+
+models.skull.hat:scale(1.1,1.1,1.1)
+
+
+local DISTANCE = 64
+
+
+---@type SkullIdentity|{}
+local identity = {
+	name = "Sound 30",
+	support = "minecraft:brown_wool",
+	modelBlock = models.skull.block,
+	modelHat = models.skull.hat,
+	modelHud = Skull.makeIcon(models.skull.icon),
+	modelItem = models.skull.entity
+}
+
+identity.processBlock = {
+---@param skull SkullInstanceBlock
+---@param model ModelPart
+ON_ENTER = function (skull, model)
+	model:setColor(0.5,0.5,0)
+	skull.sounds = {}
+	events.ON_PLAY_SOUND:register(function (id, pos, volume, pitch, loop, category, path)
+		local dist = (pos-skull.pos):length()
+		if path and dist < DISTANCE then
+			if not path:find("step") then
+				dontyoulecturemewithyour30dollarhaircut.playRandom(pos)
+			end
+			return true
+		end
+	end,skull.identifier)
+end,
+
+---@param skull SkullInstanceBlock
+---@param model ModelPart
+ON_EXIT = function (skull, model)
+	events.ON_PLAY_SOUND:remove(skull.identifier)
+	for key, value in pairs(skull.sounds) do
+		value.sound:stop()
+	end
+end}
+
+
+
+Skull.registerIdentity(identity)

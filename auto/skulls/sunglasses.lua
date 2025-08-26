@@ -27,7 +27,7 @@ local identity = {
 	
 	processHat = {
 		ON_ENTER = function (skull, model)
-			model:setPos(0,skull.vars.eye_height or skull.params[1] or 2)
+			model:setPos(0,tonumber(skull.params[1] or skull.vars.eye_height) or 2)
 		end
 	}
 }
