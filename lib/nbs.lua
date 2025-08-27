@@ -2,7 +2,7 @@
   / ____/ | / /  by: GNanimates / https://gnon.top / Discord: @gn68s
  / / __/  |/ / name: Note Block Studio file reader/player
 / /_/ / /|  /  desc: allows avatars to load and play .NBS files in their avatar
-\____/_/ |_/ source: link ]]
+\____/_/ |_/ source: https://github.com/lua-gods/GNs-Avatar-4/blob/main/lib/nbs.lua ]]
 
 --[────────-< CONFIG >-────────]--
 local MAX_NOTES_PER_TICK=16
@@ -413,16 +413,20 @@ function Nbs.loadTrack(path)
 	return new
 end
 
---[ [ <- playground, separate [[ to run
-	
-local track=Nbs.loadTrack("Miku ft. Hatsune Miku")
---local track=Nbs.loadTrack("cool")
+--[[ <- playground, separate [[ to run
+
+local track=Nbs.loadTrack("cool")
 local player=Nbs.newMusicPlayer(track)
 
 player:setPos(client:getCameraPos()+client:getCameraDir())
 player:play()
 player:setSpeed(1)
 player:setOctaveShift(2)
+
+---@param note NBS.Noteblock
+player.NOTE_PLAYED:register(function (note)
+	-- do stuff
+end)
 --]]
 
 return Nbs
