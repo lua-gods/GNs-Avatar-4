@@ -174,7 +174,7 @@ end
 local MusicPlayer={}
 MusicPlayer.__index=MusicPlayer
 
-local Events = require("lib.event")
+local Events = require("./event")
 
 ---Creates a new music player
 ---@param track NBS.Track?
