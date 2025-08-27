@@ -4,6 +4,8 @@
 / /_/ / /|  /  desc: allows avatars to load and play .NBS files in their avatar
 \____/_/ |_/ source: https://github.com/lua-gods/GNs-Avatar-4/blob/main/lib/nbs.lua ]]
 
+local hasEvents,Events = pcall(require,"./event")
+
 --[────────-< CONFIG >-────────]--
 local MAX_NOTES_PER_TICK=16
 -- the maximum amount of notes that can play at the same time
@@ -174,7 +176,7 @@ end
 local MusicPlayer={}
 MusicPlayer.__index=MusicPlayer
 
-local Events = require("./event")
+
 
 ---Creates a new music player
 ---@param track NBS.Track?
@@ -192,7 +194,7 @@ function Nbs.newMusicPlayer(track)
 		loopCount=0,
 		isPlaying=false,
 		currentNote=1,
-		NOTE_PLAYED = Events.new()
+		NOTE_PLAYED = hasEvents and Events.new() or nil
 	}
 	return setmetatable(new,MusicPlayer)
 end
