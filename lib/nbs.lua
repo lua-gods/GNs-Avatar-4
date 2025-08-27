@@ -1,6 +1,36 @@
-local params=require("lib.params")
+--[[______   __
+  / ____/ | / /  by: GNanimates / https://gnon.top / Discord: @gn68s
+ / / __/  |/ / name: Note Block Studio file reader/player
+/ /_/ / /|  /  desc: allows avatars to load and play .NBS files in their avatar
+\____/_/ |_/ source: link ]]
+
+--[────────-< CONFIG >-────────]--
+local MAX_NOTES_PER_TICK=16
+-- the maximum amount of notes that can play at the same time
+
+local PROCESS_MODE=0
+-- 0: MODEL RENDER, plays when the player is loaded, runs on RENDER, works on lower permission levels
+-- 1: WORLD RENDER, plays when the avatar is loaded, run on WORLD_RENDER, requires higher permission levels
+---2: SKULL RENDER, plays when the player head is loaded, runs on RENDER, works on lower permission levels
+
+--────────-< How to install >-────────]
+
+--- in the avatar.json, add a new entry called "resources" with an array, and add "*.nbs" to the array.
+--- this tells figura to load alongside the avatar all the .nbs files in the avatar folder.
+
+--- or if you dont know what that means
+---in the avatar.json, copy the resources line down here into your avatar.json
+--[[@@@
+{
+	...
+	"resources": ["*.nbs"],
+	...
+}
+]]
 
 
+
+---A Music track loaded from a .NBS file
 ---@class NBS.Track
 ---@field name string
 ---@field instrumentCount integer
@@ -13,10 +43,13 @@ local params=require("lib.params")
 ---@field songLength integer
 ---@field timeSignature integer
 ---@field loop boolean
+---@field loopStartTick integer
+---@field maxLoopCount integer
 ---@field notes NBS.Noteblock[]
 
 local Nbs={}
 
+---A representation of a noteblock in Note Block Studio's format
 ---@class NBS.Noteblock
 ---@field tick integer
 ---@field instrument integer
@@ -25,6 +58,9 @@ local Nbs={}
 ---@field pitch integer
 
 
+--[────────────────────────-< Instruments >-────────────────────────]--
+-- these can be replaced with custom sound IDs.
+-- any entries starting with a dot . will get replaced by minecraft:block.note_block.
 ---@type table<integer,Minecraft.soundID>
 local instruments={
 	[0] =".harp",
@@ -45,53 +81,93 @@ local instruments={
 	[15]=".pling",
 }
 
+-- prefix inserter
 for i, v in pairs(instruments) do
-	instruments[i]="minecraft:block.note_block"..v
+	if v:find("^%.") then
+		instruments[i]="minecraft:block.note_block"..v
+	end
 end
 
 
-local activeMusicPlayers={}
+---@type table<NBS.MusicPlayer, NBS.MusicPlayer>
+local activeMusicPlayers={} -- holds the active playing one to loop ver them
 
 local lastTime=client:getSystemTime()
 
-function events.WORLD_RENDER()
+local function process()
 	local time=client:getSystemTime()
 	local delta=(time-lastTime) / 1000
 	lastTime=time
-	
+	if delta > 1 then delta = 1 end
 	
 	---@param mp NBS.MusicPlayer
 	for _, mp in pairs(activeMusicPlayers) do
 		
-		mp.tick=mp.tick+delta * mp.track.songTempo
+		mp.tick=mp.tick+delta * (mp.songTempo or mp.track.songTempo) * mp.speed
 		
-		for i=1, 10, 1 do
+		for i=1, MAX_NOTES_PER_TICK, 1 do
 			local currentNote=mp.track.notes[mp.currentNote]
 			if currentNote then
-				if mp.tick >= currentNote.tick then
+				if math.sign(mp.tick-currentNote.tick) - math.sign(mp.speed) == 0 then
+					mp.currentNoteTick=currentNote.tick
 					mp.currentNote=mp.currentNote+math.sign(mp.tick-currentNote.tick)
-					local pitch=2^(((currentNote.key-9)/12)-3)
-					sounds[instruments[currentNote.instrument]]:pos(mp.pos):pitch(pitch):volume(currentNote.volume):play()
-					mp.NOTE_PLAYED:invoke(currentNote)
+					if mp.loopCount == 0 or mp.track.loopStartTick <= currentNote.tick then
+						local pitch=2^(((currentNote.key-9)/12+mp.transposition)-3)
+						sounds[instruments[currentNote.instrument]]:pos(mp.pos):pitch(pitch):attenuation(mp.attenuation):volume(currentNote.volume*mp.volume):play()
+						mp.NOTE_PLAYED:invoke(currentNote)
+					end
 				else
 					break
 				end
 			end
 		end
-		
-		if mp.tick >= mp.track.songLength then
-			mp.tick=mp.tick-mp.track.songLength
-			mp.currentNote=1
+		if mp.track.loop then
+			if mp.speed > 0 then
+				
+				if mp.tick >= mp.track.songLength+1 then
+					mp.tick=mp.tick-mp.track.songLength-1+mp.track.loopStartTick
+					if mp.loopCount >= mp.track.maxLoopCount then mp:stop() end
+					mp.currentNote=1
+					mp.loopCount=mp.loopCount+1
+				end
+			else
+				if mp.tick < mp.track.loopStartTick then
+					mp.tick=mp.track.songLength+1
+					mp.currentNote=#mp.track.notes
+					if mp.loopCount >= mp.track.maxLoopCount then mp:stop() end
+					mp.loopCount=mp.loopCount+1
+				end
+			end
 		end
 	end
 end
 
 
+if PROCESS_MODE == 0 then
+	models:newPart("MusicProcessor").midRender = process
+elseif PROCESS_MODE == 1 then
+	events.WORLD_RENDER:register(process)
+elseif	PROCESS_MODE == 2 then
+	local first = false
+	events.WORLD_RENDER:register(function (delta) first=true end)
+	events.SKULL_RENDER:register(function ()
+		if first then
+			process()
+			first = false
+		end
+	end)
+end
+
 
 ---@class NBS.MusicPlayer
+---@field speed number
+---@field volume number
+---@field transposition number
+---@field attenuation number
 ---@field NOTE_PLAYED Event
 ---@field track NBS.Track
 ---@field tick integer
+---@field currentNoteTick integer
 ---@field pos Vector3
 ---@field currentNote integer
 ---@field isPlaying boolean
@@ -100,55 +176,105 @@ MusicPlayer.__index=MusicPlayer
 
 local Events = require("lib.event")
 
+---Creates a new music player
 ---@param track NBS.Track?
 ---@return NBS.MusicPlayer
 function Nbs.newMusicPlayer(track)
 	local new={
 		track=track,
 		tick=0,
-		pos=vec(0,0,0),
-		currentNote=1,
+		currentNoteTick=0,
+		speed=1,
+		volume=1,
+		attenuation=1,
+		pos=vec(0,-10000,0),
+		transposition=0,
+		loopCount=0,
 		isPlaying=false,
+		currentNote=1,
 		NOTE_PLAYED = Events.new()
 	}
 	return setmetatable(new,MusicPlayer)
 end
 
 
-
----@param reset boolean?
+---Plays the song / Continues where it stops.
 ---@return NBS.MusicPlayer
-function MusicPlayer:play(reset)
+function MusicPlayer:play()
 	activeMusicPlayers[self]=self
 	self.isPlaying=true
-	if reset then
-		self.currentNote=1
-		self.tick=-2
-	end
 	return self
 end
 
 
+---Stops the playback of the song, resetting the playback time.
 ---@return NBS.MusicPlayer
 function MusicPlayer:stop()
+	activeMusicPlayers[self]=nil
+	self.isPlaying=false
+	self.loopCount=0
+	self.currentNote=1
+	self.tick=-2
+	return self
+end
+
+
+---Stops the playback of the song, without resetting the playback time.
+---@return NBS.MusicPlayer
+function MusicPlayer:pause()
 	activeMusicPlayers[self]=nil
 	self.isPlaying=false
 	return self
 end
 
+---Sets the playback speed.
+---@param speed number?
+---@return NBS.MusicPlayer
+function MusicPlayer:setSpeed(speed)
+	self.speed = speed or 1
+	return self
+end
 
----@overload fun(xyz: Vector3)
+---Sets the tempo the songs played will use. leaving it nil will use the song's default tempo.  
+---NOTE: the tempo is in ticks per second. not Beats per Minute
+---@param tempo number
+---@return NBS.MusicPlayer
+function MusicPlayer:setTempoOverride(tempo)
+	self.songTempo = tempo
+	return self
+end
+
+---Sets the octave transposition of the song.
+---@param shift integer
+---@return NBS.MusicPlayer
+function MusicPlayer:setOctaveShift(shift)
+	self.transposition = shift
+	return self
+end
+
+
+---@overload fun(self: NBS.MusicPlayer,xyz: Vector3): NBS.MusicPlayer
 ---@param x number
 ---@param y number
 ---@param z number
 ---@return NBS.MusicPlayer
 function MusicPlayer:setPos(x,y,z)
-	local pos=params.vec3(x,y,z)
+	local tx,ty,tz=type(x), type(y), type(z)
+	local pos
+	if (tx == "number" and ty == "number" and tz == "number") then
+		pos = vec(x,y,z)
+	elseif (tx == "Vector3" and ty == "nil" and tz == "nil") then
+		---@cast tx Vector3
+		pos = x
+	else
+		error(("Invalid Vector3 parameter, expected (number, number, number), (Vector3), instead got (%s, %s, %s)"):format(tx,ty,tz),2)
+	end
 	self.pos=pos
 	return self
 end
 
 
+---Sets the track to be played.
 ---@param track NBS.Track
 ---@param reset boolean?
 ---@return NBS.MusicPlayer
@@ -161,6 +287,23 @@ function MusicPlayer:setTrack(track,reset)
 end
 
 
+---Sets the attenuation of the music player.
+---@param attenuation number
+---@return NBS.MusicPlayer
+function MusicPlayer:setAttenuation(attenuation)
+	self.attenuation=attenuation
+	return self
+end
+
+
+---Sets the volume of the music player.
+---@param volume number
+---@return NBS.MusicPlayer
+function MusicPlayer:setVolume(volume)
+	self.volume=volume
+	return self
+end
+
 
 ---@param buffer Buffer
 local function readString(buffer)
@@ -169,6 +312,8 @@ local function readString(buffer)
 	return str
 end
 
+---Loads a given .NBS file into a Music track object.  
+---`NBS.loadTrack(<path>)` -> `<path>.nbs`
 ---@param path string
 ---@return NBS.Track
 function Nbs.loadTrack(path)
@@ -178,7 +323,7 @@ function Nbs.loadTrack(path)
 	buffer:readFromStream(stream)
 	buffer:setPosition(0)
 	-- check if NBS version is valid
-	assert(buffer:readShort() == 0, 'Legacy NBS File is not supported')
+	assert(buffer:readShort() == 0, 'attempted to load a legacy NBS file "'..path..'.nbs".')
 	
 	--[────────────────────────-< HEADER >-────────────────────────]--
 	local version=buffer:read()
@@ -217,8 +362,8 @@ function Nbs.loadTrack(path)
 	readString(buffer) -- Schematic file name
 	local loop=buffer:read() ~= 0 and true or false
 	local maxLoopCount=buffer:read()
-	local loopStartTick=buffer:read()
-	
+	new.maxLoopCount=maxLoopCount==0 and math.huge or maxLoopCount
+	new.loopStartTick=buffer:read()
 	new.loop=loop
 	
 	--[────────────────────────-< BODY >-────────────────────────]--
@@ -268,13 +413,16 @@ function Nbs.loadTrack(path)
 	return new
 end
 
---[[ <- playground, separate [[ to run
+--[ [ <- playground, separate [[ to run
 	
-local track=Nbs.loadTrack("plant")
-local player=MusicPlayer.new(track)
+local track=Nbs.loadTrack("Miku ft. Hatsune Miku")
+--local track=Nbs.loadTrack("cool")
+local player=Nbs.newMusicPlayer(track)
 
 player:setPos(client:getCameraPos()+client:getCameraDir())
 player:play()
+player:setSpeed(1)
+player:setOctaveShift(2)
 --]]
 
 return Nbs
