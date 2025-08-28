@@ -116,7 +116,9 @@ local function process()
 					if mp.loopCount == 0 or mp.track.loopStartTick <= currentNote.tick then
 						local pitch=2^(((currentNote.key-9)/12+mp.transposition)-3)
 						sounds[instruments[currentNote.instrument]]:pos(mp.pos):pitch(pitch):attenuation(mp.attenuation):volume(currentNote.volume*mp.volume):play()
-						mp.NOTE_PLAYED:invoke(currentNote)
+						if hasEvents then
+							mp.NOTE_PLAYED:invoke(currentNote)
+						end
 					end
 				else
 					break
@@ -194,7 +196,7 @@ function Nbs.newMusicPlayer(track)
 		loopCount=0,
 		isPlaying=false,
 		currentNote=1,
-		NOTE_PLAYED = hasEvents and Events.new() or nil
+		NOTE_PLAYED = hasEvents and (Events.new()) or nil
 	}
 	return setmetatable(new,MusicPlayer)
 end
