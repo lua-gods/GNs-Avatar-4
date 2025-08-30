@@ -33,7 +33,7 @@ local identity = {
 	processBlock = {
 		ON_ENTER = function (skull, model)
 			skull.music = NBS.newMusicPlayer():setTrack(track):play()
-			skull.music:setPos(skull.pos + vec(0.5,0.5,0.5))
+			--skull.music:setPos(skull.pos + vec(0.5,0.5,0.5))
 			---@param note NBS.Noteblock
 			skull.music.NOTE_PLAYED:register(function (note)
 				skull.tween = Tween.new{
@@ -48,6 +48,9 @@ local identity = {
 					id=skull.identity
 				}
 			end)
+		end,
+		ON_PROCESS=function (skull, model, delta)
+			skull.music:setPos(skull.model:partToWorldMatrix():apply())
 		end,
 		ON_EXIT = function (skull, model)
 			if skull.tween then
