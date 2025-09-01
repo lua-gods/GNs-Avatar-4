@@ -190,9 +190,8 @@ end
 ---Queues itself to be updated in the next frame.
 ---@return Line
 function Line:update()
-	if not self._queue_update and self.visible then
-		queueUpdate[#queueUpdate+1] = self
-		self._queue_update = true
+	if self.visible then
+		queueUpdate[self.id] = self
 	end
 	return self
 end
@@ -220,22 +219,26 @@ function Line:immediateUpdate()
 	return self
 end
 
+local lk
 MODEL:setPreRender(function ()
 	local c = client:getCameraPos()
-		if c ~= cpos then
-			cpos = c
-			for _, l in pairs(lines) do
-				l:update()
-			end
+	if (c-cpos):lengthSquared() > 0.5 then
+		cpos = c
+		for _, l in pairs(lines) do
+			l:update()
 		end
-		for i = 1, #queueUpdate, 1 do
-			local l = queueUpdate[i]
-			if l._queue_update then
+	end
+		for i = 1, 500, 1 do
+			local k,l = next(queueUpdate,lk)
+			lk = k
+			if l then
 				l:immediateUpdate()
-				l._queue_update = false
+				queueUpdate[k] = nil
+			else
+				break
 			end
 		end
-		queueUpdate = {}
+		
 end)
 
 return Line
