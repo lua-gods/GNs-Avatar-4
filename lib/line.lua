@@ -1,14 +1,17 @@
 
---[[______  __
-  / ____/ | / / By: GNamimates
- / / __/  |/ / name: GNlineLib v2.0.2
+
+
+--[[______   __
+  / ____/ | / /  by: GNanimates / https://gnon.top / Discord: @gn68s
+ / / __/  |/ / name: GNlineLib v2.1.0
 / /_/ / /|  /  desc: Allows you to draw lines in the world at ease.
-\____/_/ |_/ https://github.com/lua-gods/GNs-Avatar-3/blob/main/lib/line.lua]]
+\____/_/ |_/ source: https://github.com/lua-gods/GNs-Avatar-4/blob/main/lib/line.lua ]]
 ---@diagnostic disable: param-type-mismatch
--->==========[ Config ]==========<--
+--[────────────────────────────────────────-< CONFIG >-────────────────────────────────────────]--
 local MODEL = models:newPart("gnlinelibline","WORLD"):scale(16,16,16)
 local TEXTURE = textures["1x1white"] or textures:newTexture("1x1white",1,1):setPixel(0,0,vec(1,1,1))
--->==========[  ]==========<--
+--[────────────────────────────────────────-< END OF CONFIG >-────────────────────────────────────────]--
+
 local lines = {} ---@type Line[]
 local queueUpdate = {} ---@type Line[]
 
