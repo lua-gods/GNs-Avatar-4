@@ -88,7 +88,8 @@ function Line:setAB(x1,y1,z1,x2,y2,z2)
 		self.a = vec(x1,y1,z1)
 		self.b = vec(x2,y2,z2)
 	end
-	self:update()
+	self.dir = (self.b-self.a)
+	self.length = self.dir:length()
 	self:update()
 	return self
 end
@@ -101,6 +102,8 @@ end
 ---@return Line
 function Line:setA(x,y,z)
 	self.a = vec3(x,y,z)
+	self.dir = (self.b-self.a)
+	self.length = self.dir:length()
 	self:update()
 	return self
 end
@@ -113,6 +116,8 @@ end
 ---@return Line
 function Line:setB(x,y,z)
 	self.b = vec3(x,y,z)
+	self.dir = (self.b-self.a)
+	self.length = self.dir:length()
 	self:update()
 	return self
 end
@@ -202,22 +207,16 @@ end
 ---Immediately updates the line without queuing it.
 ---@return Line
 function Line:immediateUpdate()
-	local a,b = self.a,self.b
+	local a = self.a
 	local offset = a - cpos
-	local dir = (b - a)
-	self.dir = dir
-	local w,d = self.width,dir:normalized()
-	local w2 = w * 0.5
-	local l = dir:length()
-	self.length = l
+	local w,d = self.width,self.dir:normalized()
 	local p = (offset - d * offset:copy():dot(d)):normalize()
 	local c = p:copy():cross(d) * w
-	local mat = matrices.mat4(
-		(p:cross(d) * w):augmented(0),
-		(-d * (l + w)):augmented(0),
-		p:augmented(0),
-		(a + c * 0.5 - d * w2):augmented(1)
-	)
+	local mat = matrices.mat3(
+		(p:cross(d) * w),
+		(-d * (self.length + w)),
+		p
+	):augmented():translate(a + c * 0.5 - d * w * 0.5)
 	self.model:setMatrix(mat * self.depth)
 	return self
 end
