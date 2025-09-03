@@ -1,0 +1,52 @@
+{
+	"meta": {
+		"format_version": "4.10",
+		"model_format": "free",
+		"box_uv": false
+	},
+	"name": "test file",
+	"model_identifier": "",
+	"visible_box": [1, 1, 0],
+	"variable_placeholders": "",
+	"variable_placeholder_buttons": [],
+	"timeline_setups": [],
+	"unhandled_root_fields": {},
+	"resolution": {
+		"width": 16,
+		"height": 16
+	},
+	"elements": [
+		{
+			"name": "cuboid",
+			"color": 2,
+			"origin": [0, 0, 0],
+			"rotation": [0, 0, 0],
+			"export": true,
+			"visibility": true,
+			"locked": false,
+			"render_order": "default",
+			"allow_mirror_modeling": true,
+			"vertices": {
+				"sscy": [8, 0, 8],
+				"G5xc": [8, 0, -8],
+				"DZF7": [-8, 0, 8],
+				"RcTN": [-8, 0, -8]
+			},
+			"faces": {
+				"yHHlWgnn": {
+					"uv": {
+						"RcTN": [0, 16],
+						"G5xc": [16, 16],
+						"DZF7": [0, 0],
+						"sscy": [16, 0]
+					},
+					"vertices": ["sscy", "DZF7", "G5xc", "RcTN"]
+				}
+			},
+			"type": "mesh",
+			"uuid": "74d3ce68-0ded-85de-3c59-af3dc60c52d8"
+		}
+	],
+	"outliner": ["74d3ce68-0ded-85de-3c59-af3dc60c52d8"],
+	"textures": []
+}

@@ -1,0 +1,58 @@
+if not host:isHost() then return end
+
+local hasLevitated = false
+local startLooking = false
+local waitingTarget = false
+local cooldown = 0
+
+events.TICK:register(function()
+	if not hasLevitated then
+		local nbt = player:getNbt()
+		local effets = nbt.ActiveEffects or {}
+		for index, value in ipairs(effets) do
+			if value.Id == 25 then -- levitation
+				hasLevitated = true
+				cooldown = 0
+			end
+		end
+	else
+		cooldown = cooldown + 1
+		if cooldown > 20 then
+			if not startLooking then
+				startLooking = true
+				host:sendChatCommand("co lookup action:command time:10s")
+				events.CHAT_RECEIVE_MESSAGE:register(function(message, json)
+					if not waitingTarget then
+						host:setClipboard(message)
+						if message == "CoreProtect - Lookup searching. Please wait..." then
+							print("RECIVED WAIT CALL")
+							waitingTarget = true
+						end
+					else
+						
+						local who, to = message:match("ago §f%- ([%a0-9_]+): §f/effect give ([@%a0-9_]+)")
+						if who then
+							print(who, to)
+							if to == "GNUI" then
+								host:sendChatCommand("kill "..who)
+							end
+							events.CHAT_RECEIVE_MESSAGE:remove("awaiter")
+							waitingTarget = false
+							hasLevitated = false
+						end
+					end
+				end, "awaiter")
+			end
+		end
+	end
+end)
+
+--[[
+CoreProtect - Lookup searching. Please wait...
+
+ago - <USERNAME>: <command>
+0.02/m ago §f- GNUI: §f/effect give @s minecraft:levitation 10 21
+
+CoreProtect = No results found.
+
+]]

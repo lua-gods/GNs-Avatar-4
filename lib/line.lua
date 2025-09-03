@@ -10,6 +10,7 @@
 --[────────────────────────────────────────-< CONFIG >-────────────────────────────────────────]--
 local MODEL = models:newPart("gnlinelibline","WORLD"):scale(16,16,16)
 local TEXTURE = textures["1x1white"] or textures:newTexture("1x1white",1,1):setPixel(0,0,vec(1,1,1))
+local MAX_MS = 1000/60 -- replace 60 with max fps cap process
 --[────────────────────────────────────────-< END OF CONFIG >-────────────────────────────────────────]--
 
 local lines = {} ---@type Line[]
@@ -230,10 +231,14 @@ MODEL:setPreRender(function ()
 			l:update()
 		end
 	end
-		for i = 1, 500, 1 do
+	local time = client:getSystemTime()
+		for i = 1, 1000, 1 do
 			local k,l = next(queueUpdate,lk)
 			lk = k
 			if l then
+				if client:getSystemTime()-time > MAX_MS then
+					break
+				end
 				l:immediateUpdate()
 				queueUpdate[k] = nil
 			else

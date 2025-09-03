@@ -1,6 +1,6 @@
 local Line = require("lib.line")
 
-local pos = vec(1998992, 1000, 1999664)
+local pos = vec(1999051, 72, 1999390)
 
 local c = 0
 for x = 1, 128, 1 do

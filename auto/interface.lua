@@ -1,6 +1,6 @@
-#host
 
-if not host:isHost() or true then return end
+
+if not host:isHost() then return end
 
 local GNUI = require("lib.GNUI.main")
 --[[
@@ -14,7 +14,6 @@ local Slider = require("lib.GNUI.widget.slider")
 local Stack = require("lib.GNUI.widget.panes.stack")
 
 local cnt = Stack.new(screen)
-
 :setSize(200,200)
 :setPos(16,16)
 

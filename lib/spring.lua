@@ -1,3 +1,4 @@
+---@diagnostic disable: param-type-mismatch
 --[[______   __
   / ____/ | / /  by: GNanimates / https://gnon.top / Discord: @gn68s
  / / __/  |/ / name: Spring Library
@@ -68,9 +69,9 @@ function Spring.new(responseSpeed,dampingCoeficient,initialResponseStrength)
 	return s
 end
 
----@param responseSpeed number?
----@param dampingCoeficient number?
----@param initialResponseStrength number?
+---@param responseSpeed number|Vector3?
+---@param dampingCoeficient number|Vector3?
+---@param initialResponseStrength number|Vector3?
 ---@return Spring.Vector3
 function Spring.newVec3(responseSpeed,dampingCoeficient,initialResponseStrength)
 	local spring = Spring.new(responseSpeed,dampingCoeficient,initialResponseStrength)
@@ -82,9 +83,9 @@ function Spring.newVec3(responseSpeed,dampingCoeficient,initialResponseStrength)
 	return spring
 end
 
----@param responseSpeed number?
----@param dampingCoeficient number?
----@param initialResponseStrength number?
+---@param responseSpeed number|Vector2?
+---@param dampingCoeficient number|Vector2?
+---@param initialResponseStrength number|Vector2?
 ---@return Spring.Vector3
 function Spring.newVec2(responseSpeed,dampingCoeficient,initialResponseStrength)
 	local spring = Spring.new(responseSpeed,dampingCoeficient,initialResponseStrength)
