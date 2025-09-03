@@ -10,7 +10,7 @@
 --[────────────────────────────────────────-< CONFIG >-────────────────────────────────────────]--
 local MODEL = models:newPart("gnlinelibline","WORLD"):scale(16,16,16)
 local TEXTURE = textures["1x1white"] or textures:newTexture("1x1white",1,1):setPixel(0,0,vec(1,1,1))
-local MAX_MS = 1000/60 -- replace 60 with max fps cap process
+local MAX_MS = 1000/200 -- replace 60 with max fps cap process
 --[────────────────────────────────────────-< END OF CONFIG >-────────────────────────────────────────]--
 
 local lines = {} ---@type Line[]
