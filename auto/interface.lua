@@ -18,12 +18,12 @@ local cnt = Stack.new(screen)
 :setPos(16,16)
 
 local btn = Button.new(cnt)
-:setSize(100,20)
+:setSize(0,20)
 :setText("Hello World")
 
 
 local txf = TextField.new(cnt)
-:setSize(100,100)
+:setSize(0,100)
 
 
 local sld = Slider.new(cnt,{
@@ -32,4 +32,4 @@ local sld = Slider.new(cnt,{
 	step = 1,
 	value = 4,
 })
-:setSize(100,10)
+:setSize(0,10)

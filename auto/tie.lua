@@ -5,7 +5,7 @@ local tie = models.player.Base.Torso.Body.Tie
 local boign = Spring.newVec2(1.2,vec(0.1,0.1),0)
 local UP = vec(0,1,0)
 
-
+animations.player.Danceclubpenguin:play()
 
 local lpos = vec(0,0,0)
 local lvel = vec(0,0,0)
@@ -13,7 +13,7 @@ local lbyaw
 events.TICK:register(function ()
 	local mat = tie:partToWorldMatrix()
 	local pos = mat:apply(0,0,0)
-	local vel = vectors.rotateAroundAxis(player:getBodyYaw()+180,pos-lpos,UP) --vectors.rotateAroundAxis(player:getBodyYaw()+180,player:getVelocity(),UP)
+	local vel = vectors.rotateAroundAxis(player:getBodyYaw(),pos-lpos,UP) --vectors.rotateAroundAxis(player:getBodyYaw()+180,player:getVelocity(),UP)
 	local accel = (vel - lvel):clampLength(0,0.1)
 	lvel = vel
 	lpos = pos
@@ -21,18 +21,9 @@ events.TICK:register(function ()
 	local byaw = math.rad(player:getBodyYaw())
 	local accelByaw = byaw - (lbyaw or byaw)
 	lbyaw = byaw
-	boign.target = mat:applyDir(0,-16,2).xz
+	boign.target = mat:applyDir(0,-16,0).xz
 	boign.vel = (boign.vel - accel.xz * 20 + vec(accelByaw*-0.5,accel.y*20))
 end)
-
-local function skew(dir,shift)
-	local skew = dir.xz:length()
-	local mat = matrices.mat3()
-	mat.c2 = -dir + UP - UP*skew^2
-	mat = mat:augmented()
-	mat:translate(mat:apply(-shift)):translate(shift)
-	return mat
-end
 
 local historyMat = {}
 

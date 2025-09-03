@@ -1,6 +1,3 @@
-
-
-
 --[[______   __
   / ____/ | / /  by: GNanimates / https://gnon.top / Discord: @gn68s
  / / __/  |/ / name: GNlineLib v2.1.0
@@ -8,9 +5,10 @@
 \____/_/ |_/ source: https://github.com/lua-gods/GNs-Avatar-4/blob/main/lib/line.lua ]]
 ---@diagnostic disable: param-type-mismatch
 --[────────────────────────────────────────-< CONFIG >-────────────────────────────────────────]--
-local MODEL = models:newPart("gnlinelibline","WORLD"):scale(16,16,16)
-local TEXTURE = textures["1x1white"] or textures:newTexture("1x1white",1,1):setPixel(0,0,vec(1,1,1))
-local MAX_MS = 1000/200 -- replace 60 with max fps cap process
+local MODEL = models:newPart("gnlinelibline", "WORLD"):scale(16, 16, 16)
+local TEXTURE = textures["1x1white"] or textures:newTexture("1x1white", 1, 1):setPixel(0, 0,
+	vec(1, 1, 1))
+local MAX_MS = 1000 / 200 -- replace 60 with max fps cap process
 --[────────────────────────────────────────-< END OF CONFIG >-────────────────────────────────────────]--
 
 local lines = {} ---@type Line[]
@@ -23,10 +21,12 @@ local cpos = client:getCameraPos()
 ---@param y number
 ---@param z number
 ---@return Vector3
-local function vec3(x,y,z)
+local function vec3(x, y, z)
 	local t = type(x)
-	if t == "Vector3" then return x:copy()
-	elseif t == "number" then return vec(x,y,z)
+	if t == "Vector3" then
+		return x:copy()
+	elseif t == "number" then
+		return vec(x, y, z)
 	end
 end
 
@@ -53,16 +53,17 @@ Line._VERSION = "2.0.2"
 ---@return Line
 function Line.new(preset)
 	preset = preset or {}
-	local next_free = #lines+1 
-	local new = setmetatable({},Line)
+	local next_free = #lines + 1
+	local new = setmetatable({}, Line)
 	new.visible = true
-	new.a = preset.a and preset.a:copy() or vec(0,0,0)
-	new.b = preset.a and preset.b:copy() or vec(0,0,0)
+	new.a = preset.a and preset.a:copy() or vec(0, 0, 0)
+	new.b = preset.a and preset.b:copy() or vec(0, 0, 0)
 	new.width = preset.width or 0.125
 	new.width = preset.width or 0.125
-	new.color = preset.color and preset.color:copy() or vec(1,1,1)
+	new.color = preset.color and preset.color:copy() or vec(1, 1, 1)
 	new.depth = preset.depth or 1
-	new.model = MODEL:newSprite("line"..next_free):setTexture(TEXTURE,1,1):setRenderType("EMISSIVE_SOLID"):setScale(0,0,0)
+	new.model = MODEL:newSprite("line" .. next_free):setTexture(TEXTURE, 1, 1):setRenderType(
+	"EMISSIVE_SOLID"):setScale(0, 0, 0)
 	new.id = next_free
 	lines[next_free] = new
 	return new
@@ -77,19 +78,19 @@ end
 ---@param y2 number
 ---@param z2 number
 ---@return Line
-function Line:setAB(x1,y1,z1,x2,y2,z2)
+function Line:setAB(x1, y1, z1, x2, y2, z2)
 	if type(x1) == "Vector3" and type(y1) == "Vector3" then
 		self.a = x1:copy()
 		self.b = y1:copy()
 		self.a = x1:copy()
 		self.b = y1:copy()
 	else
-		self.a = vec(x1,y1,z1)
-		self.b = vec(x2,y2,z2)
-		self.a = vec(x1,y1,z1)
-		self.b = vec(x2,y2,z2)
+		self.a = vec(x1, y1, z1)
+		self.b = vec(x2, y2, z2)
+		self.a = vec(x1, y1, z1)
+		self.b = vec(x2, y2, z2)
 	end
-	self.dir = (self.b-self.a)
+	self.dir = (self.b - self.a)
 	self.length = self.dir:length()
 	self:update()
 	return self
@@ -101,9 +102,9 @@ end
 ---@param y number
 ---@param z number
 ---@return Line
-function Line:setA(x,y,z)
-	self.a = vec3(x,y,z)
-	self.dir = (self.b-self.a)
+function Line:setA(x, y, z)
+	self.a = vec3(x, y, z)
+	self.dir = (self.b - self.a)
 	self.length = self.dir:length()
 	self:update()
 	return self
@@ -115,15 +116,15 @@ end
 ---@param y number
 ---@param z number
 ---@return Line
-function Line:setB(x,y,z)
-	self.b = vec3(x,y,z)
-	self.dir = (self.b-self.a)
+function Line:setB(x, y, z)
+	self.b = vec3(x, y, z)
+	self.dir = (self.b - self.a)
 	self.length = self.dir:length()
 	self:update()
 	return self
 end
 
----Sets the width of the line.  
+---Sets the width of the line.
 ---Note: This is in minecraft blocks/meters.
 ---@param w number
 ---@return Line
@@ -133,7 +134,7 @@ function Line:setWidth(w)
 	return self
 end
 
----Sets the render type of the line.  
+---Sets the render type of the line.
 ---by default this is "CUTOUT_EMISSIVE_SOLID".
 ---@param render_type ModelPart.renderType
 ---@return Line
@@ -151,10 +152,10 @@ end
 ---@param b number
 ---@param a number
 ---@return Line
-function Line:setColor(r,g,b,a)
-	local rt,yt,bt = type(r),type(g),type(b)
+function Line:setColor(r, g, b, a)
+	local rt, yt, bt = type(r), type(g), type(b)
 	if rt == "number" and yt == "number" and bt == "number" then
-		self.color = vectors.vec4(r,g,b,a or 1)
+		self.color = vectors.vec4(r, g, b, a or 1)
 	elseif rt == "Vector3" then
 		self.color = r:augmented()
 	elseif rt == "Vector4" then
@@ -162,13 +163,15 @@ function Line:setColor(r,g,b,a)
 	elseif rt == "string" then
 		self.color = vectors.hexToRGB(r):augmented(1)
 	else
-		error("Invalid Color parameter, expected Vector3, (number, number, number) or Hexcode, instead got ("..rt..", "..yt..", "..bt..")")
+		error(
+		"Invalid Color parameter, expected Vector3, (number, number, number) or Hexcode, instead got (" ..
+		rt .. ", " .. yt .. ", " .. bt .. ")")
 	end
 	self.model:setColor(self.color)
 	return self
 end
 
----Sets the depth of the line.  
+---Sets the depth of the line.
 ---Note: this is an offset to the depth of the object. meaning 0 is normal, `0.5` is farther and `-0.5` is closer
 ---@param z number
 ---@return Line
@@ -210,7 +213,7 @@ end
 function Line:immediateUpdate()
 	local a = self.a
 	local offset = a - cpos
-	local w,d = self.width,self.dir:normalized()
+	local w, d = self.width, self.dir:normalized()
 	local p = (offset - d * offset:copy():dot(d)):normalize()
 	local c = p:copy():cross(d) * w
 	local mat = matrices.mat3(
@@ -223,29 +226,29 @@ function Line:immediateUpdate()
 end
 
 local lk
-MODEL:setPreRender(function ()
+MODEL:setPreRender(function()
 	local c = client:getCameraPos()
-	if (c-cpos):lengthSquared() > 0.5 then
+	if (c - cpos):lengthSquared() > 0.5 then
 		cpos = c
 		for _, l in pairs(lines) do
 			l:update()
 		end
 	end
-	local time = client:getSystemTime()
-		for i = 1, 1000, 1 do
-			local k,l = next(queueUpdate,lk)
-			lk = k
-			if l then
-				if client:getSystemTime()-time > MAX_MS then
-					break
-				end
-				l:immediateUpdate()
-				queueUpdate[k] = nil
-			else
+	local time = client:getSystemTime() -- gets the starting time
+	for i = 1, 1000, 1 do
+		local k, l = next(queueUpdate, lk)
+		lk = k
+		if l then
+			if client:getSystemTime() - time > MAX_MS then -- checks if the update took too long
 				break
 			end
+			l:immediateUpdate()
+			queueUpdate[k] = nil
+		else
+			break
 		end
-		
+	end
 end)
+
 
 return Line
