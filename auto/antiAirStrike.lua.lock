@@ -39,6 +39,8 @@ events.TICK:register(function()
 							events.CHAT_RECEIVE_MESSAGE:remove("awaiter")
 							waitingTarget = false
 							hasLevitated = false
+							startLooking = false
+							cooldown = 0
 						end
 					end
 				end, "awaiter")

@@ -5,8 +5,6 @@ local tie = models.player.Base.Torso.Body.Tie
 local boign = Spring.newVec2(1.2,vec(0.1,0.1),0)
 local UP = vec(0,1,0)
 
-animations.player.Danceclubpenguin:play()
-
 local lpos = vec(0,0,0)
 local lvel = vec(0,0,0)
 local lbyaw
@@ -21,7 +19,7 @@ events.TICK:register(function ()
 	local byaw = math.rad(player:getBodyYaw())
 	local accelByaw = byaw - (lbyaw or byaw)
 	lbyaw = byaw
-	boign.target = mat:applyDir(0,-16,0).xz
+	boign.target = vectors.rotateAroundAxis(player:getBodyYaw(),mat:applyDir(0,-16,0),UP).xz
 	boign.vel = (boign.vel - accel.xz * 20 + vec(accelByaw*-0.5,accel.y*20))
 end)
 

@@ -1,3 +1,6 @@
+
+if not events.ERROR then return end
+
 ---@diagnostic disable: undefined-field
 local str = require("lib.utils.string")
 

@@ -16,6 +16,8 @@ local SCALE = 0.85
 models.glasses.hat:scale(SCALE,SCALE,SCALE)
 
 
+local DEFAULT_TINT = vectors.hexToRGB("#c7cfdd")
+
 ---@type SkullIdentity|{}
 local identity = {
 	name = "glasses",
@@ -27,6 +29,16 @@ local identity = {
 		ON_ENTER = function (skull, model)
 			local ok,value = pcall(tonumber,skull.params[1] or skull.vars.eye_height)
 			model:setPos(0,ok and value or 2)
+			
+			local color
+			if skull.vars.color then
+				local ok, value = pcall(Color.parseColor,skull.vars.glasses_tint)
+				color = ok and value.xyz or DEFAULT_TINT
+			else
+				color = DEFAULT_TINT
+			end
+			model.Glass:setColor(color)
+			model.Lens:setColor((color-1)*0.5+1)
 		end,
 		ON_PROCESS = function (skull, model, delta)
 			local cpos = vectors.toCameraSpace(skull.matrix:apply(0,0,0))

@@ -1,6 +1,6 @@
 
 
-if not host:isHost() then return end
+if not host:isHost() or true then return end
 
 local GNUI = require("lib.GNUI.main")
 --[[
