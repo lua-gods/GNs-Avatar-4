@@ -15,12 +15,12 @@ function api.playRandom(pos)
 	--e = (e + 1) % (i - 1)
 	--e = math.floor(world.getTime()/50)
 	e = 0
-	e = e + pos.x ^ 1.2135
-	e = e + pos.y * 3.2125
-	e = e + pos.z * 4.241
+	e = (e + pos.x * 12.135 )% 1024
+	e = (e + pos.y * 321.25 )% 1024
+	e = (e + pos.z * 42.41  )% 1024
 	e = (e - 1) % (i - 1) + 1
 	e = math.floor(e)
-	sounds[soundNames[e+1]]:pos(pos):play(pos)
+	sounds[soundNames[e]]:pos(pos):play(pos)
 end
 
 return api
