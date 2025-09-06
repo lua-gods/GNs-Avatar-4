@@ -1402,7 +1402,7 @@
 			"origin": [-2, 26.25, -3],
 			"faces": {
 				"north": {
-					"uv": [29.65, 4, 26.65, 5],
+					"uv": [29.15, 4, 26.15, 5],
 					"texture": 2
 				},
 				"east": {
@@ -1531,7 +1531,7 @@
 			"origin": [2, 26.25, -3],
 			"faces": {
 				"north": {
-					"uv": [30.45, 4, 27.45, 5],
+					"uv": [30.85, 4, 27.85, 5],
 					"texture": 2
 				},
 				"east": {
@@ -1978,12 +1978,13 @@
 			"light_emission": 0,
 			"render_order": "default",
 			"allow_mirror_modeling": true,
-			"from": [-1, 24.75, -4],
-			"to": [1, 24.8, -3.75],
+			"from": [-1.25, 24.5, -4],
+			"to": [1.25, 24.55, -3.75],
 			"autouv": 0,
 			"color": 2,
+			"visibility": false,
 			"inflate": 0.01,
-			"origin": [-0.5, 0, 0],
+			"origin": [-0.5, -0.25, 0],
 			"faces": {
 				"north": {
 					"uv": [33, 6, 36, 7],
@@ -2491,7 +2492,7 @@
 											"mirror_uv": false,
 											"isOpen": true,
 											"locked": false,
-											"visibility": true,
+											"visibility": false,
 											"autouv": 0,
 											"selected": false,
 											"children": ["dd2ea901-7b79-fbf0-7748-f75ce2e3ef41"]
