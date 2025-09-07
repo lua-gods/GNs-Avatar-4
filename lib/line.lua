@@ -58,6 +58,8 @@ function Line.new(preset)
 	new.visible = true
 	new.a = preset.a and preset.a:copy() or vec(0, 0, 0)
 	new.b = preset.a and preset.b:copy() or vec(0, 0, 0)
+	new.dir = new.b - new.a
+	new.length = 0
 	new.width = preset.width or 0.125
 	new.width = preset.width or 0.125
 	new.color = preset.color and preset.color:copy() or vec(1, 1, 1)
