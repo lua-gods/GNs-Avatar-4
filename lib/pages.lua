@@ -58,7 +58,7 @@ function Book:setPage(name)
 	if self.currentPage then
 		local screen = GNUI.newBox()
 		self:addChild(screen)
-		screen:setAnchorMax()
+		screen:maxAnchor()
 		self.currentPage.screen = screen
 		self.currentPage.macro:setActive(true,screen)
 	end

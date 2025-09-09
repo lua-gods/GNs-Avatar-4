@@ -55,7 +55,7 @@ local VEC2HALF = vec(0.5, 0.5)
 identity.processHat = {
 	ON_PROCESS = function(skull, model, delta)
 		local vars = skull.vars
-		local height = vars.hatHeight or 1
+		local height = vars.hatHeight or 0.6
 		local color
 		if vars.color then
 			local ok, value = pcall(Color.parseColor,vars.color)

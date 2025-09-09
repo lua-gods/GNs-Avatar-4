@@ -465,7 +465,7 @@ SKULL_PROCESS.preRender = function (delta, context, part)
 	if next(hatInstances) then
 		---@param instance SkullInstanceHat
 		for key, instance in pairs(hatInstances) do
-			instance.matrix = instance.model:partToWorldMatrix()
+			instance.matrix = instance.model and instance.model:partToWorldMatrix() or matrices.mat4()
 			instance.vars = playerVars[instance.uuid] or {}
 			instance.identity.processHat.ON_PROCESS(instance,instance.model,delta)
 			if time - instance.lastSeen > SKULL_DECAY_TIME then

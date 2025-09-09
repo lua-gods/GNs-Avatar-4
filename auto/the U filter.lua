@@ -1,21 +1,7 @@
 
 local replace = {
-	--a = "а",
-	--c = "с",
-	----d = "ԁ",
-	--h = "һ",
-	--i = "і",
-	--j = "ј",
-	----n = "ո",
-	--o = "о",
-	--p = "р",
-	
-	gnui = "gnսi",
-	GNUI = "GN⋃I",
-	--v = "ν",
-	--x = "х",
-	--y = "у",
-	
+	gnui = "gnuі",
+	GNUI = "GΝUI",
 }
 
 events.CHAT_SEND_MESSAGE:register(function (message)

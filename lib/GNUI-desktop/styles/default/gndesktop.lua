@@ -6,8 +6,8 @@
 \____/_/ |_/ source: link ]]
 
 
-local GNUI = require "../../main" ---@type GNUIAPI
-local atlas = textures[(...):gsub("/",".") ..".gnuiTheme"]
+local GNUI = require "../../../GNUI/main" ---@type GNUIAPI
+local atlas = textures[(...):gsub("/",".") ..".gndesktop"]
 
 ---@type GNUI.Theme
 local theme = {}
@@ -16,13 +16,23 @@ local theme = {}
 --[────────────────────────────────────────-< Button >-────────────────────────────────────────]--
 theme.Button = {
 	windowClose = {
-		normal = GNUI.newSprite(atlas, 7,1,11,7 ,2,2,2,4, 2)
-		:setTextAlign(0.5,0.5)
-		:setDefaultTextColor("#000000"),
-		pressed= GNUI.newSprite(atlas,13,2,17,6 ,2,2,2,2)
-		:setTextAlign(0.5,0.5)
-		:setDefaultTextColor("#000000")
-		:setTextOffset(0,2),
+		normal = GNUI.newSprite(atlas,31,1,41,12 ,1,1,1,1, 0,0,1,0),
+		hover  = GNUI.newSprite(atlas,31,14,41,25 ,1,1,1,1, 0,0,1,0),
+	},
+	windowMaximize = {
+		normal = GNUI.newSprite(atlas,19,1,29,12 ,1,1,1,1, 0,0,1,0),
+		hover  = GNUI.newSprite(atlas,19,14,29,25 ,1,1,1,1, 0,0,1,0),
+	},
+	
+}
+
+theme.Window = {
+	default = {
+		backdrop = GNUI.newSprite(atlas,1,7,5,11, 2,2,2,2)
+		:setPadding(1,1,1,1),
+		backdrop_selected = GNUI.newSprite(atlas,1,1,5,5, 2,2,2,2),
+		titlebar = GNUI.newSprite(atlas,1,13,3,16, 1,1,1,2),
+		titlebar_height = 12,
 	}
 }
 

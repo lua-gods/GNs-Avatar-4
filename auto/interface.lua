@@ -1,21 +1,40 @@
 
 
-if not host:isHost() or true then return end
+if not host:isHost() then return end
 
 local GNUI = require("lib.GNUI.main")
 --[[
-GNUI.debugMode()
+GNUI.showBounds()
 --]]
 local screen = GNUI.getScreen()
 
+local Box = require("lib.GNUI.widget.box")
 local Button = require("lib.GNUI.widget.button")
 local TextField = require("lib.GNUI.widget.textField")
 local Slider = require("lib.GNUI.widget.slider")
 local Stack = require("lib.GNUI.widget.panes.stack")
 
-local cnt = Stack.new(screen)
+
+local Window = require("lib.GNUI-desktop.widget.window")
+
+
+local wndw = Window.new()
+
+wndw
+:setPos(20,20)
+:setSize(200,200)
+
+if true then return end
+
+local grp = Box.new(screen,"group")
 :setSize(200,200)
 :setPos(16,16)
+:setText("balls")
+
+
+local cnt = Stack.new(grp,"group")
+:maxAnchor()
+
 
 local btn = Button.new(cnt)
 :setSize(0,20)
