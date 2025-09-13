@@ -11,7 +11,7 @@ local trueScreen = GNUI:getScreen()
 
 
 
-local SNAP_MARGIN = 10
+local SNAP_MARGIN = 0
 
 
 
@@ -39,11 +39,18 @@ local function registerDrag(window,controller,keybind)
 		if event.key == keybind then
 			if event.state == 1 then
 				local offset = window:getPos() - window.Parent.MousePos
+				local parentSize = window.Parent:getFinalSize()
 				controller.MOUSE_MOVED:register(function (event)
 					local pos = event.pos + offset
 					
 					if pos.x < SNAP_MARGIN then pos.x = 0 end
 					if pos.y < SNAP_MARGIN then pos.y = 0 end
+					if pos.x+window.Size.x > parentSize.x-SNAP_MARGIN then
+						pos.x = parentSize.x-window.Size.x
+					end
+					if pos.y+window.Size.y > parentSize.y-SNAP_MARGIN then
+						pos.y = parentSize.y-window.Size.y
+					end
 					
 					window:setPos(pos)
 				end,"GNUI.Move")
