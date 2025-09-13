@@ -6,9 +6,6 @@ local blacklist = {
 
 ---@param item ItemStack
 local function evaluateItem(item)
-	if item.id == "minecraft:dirt" then
-		return true
-	end
 	for tagKey, tagValue in pairs(item:getTag()) do
 		for index, blackTag in ipairs(blacklist) do
 			if blackTag == tagKey or tonumber(tagKey) then
