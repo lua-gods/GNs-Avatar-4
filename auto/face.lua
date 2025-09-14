@@ -56,7 +56,7 @@ local lrot,rot = vec(0,0),vec(0,0)
 events.TICK:register(function ()
 	lrot = rot
 	local vehicle = player:getVehicle()
-	rot = player:getRot():sub(0,player:getBodyYaw())
+	--rot = player:getRot():sub(0,player:getBodyYaw())
 	rot = vanilla_model.BODY:getOriginRot()._y - vanilla_model.HEAD:getOriginRot().xy
 	rot.y = ((rot.y + 180) % 360 - 180) / -50
 	rot.x = rot.x / -90
@@ -85,13 +85,6 @@ events.RENDER:register(function (delta, ctx)
 	if ctx == "OTHER" then return end 
 	
 	local trot = math.lerp(lrot,rot,delta)
-	--v fallback for other contexts
-	if ctx ~= "RENDER" then 
-		trot = vanilla_model.HEAD:getOriginRot().xy
-		trot.y = ((trot.y + 180) % 360 - 180) / 50
-		trot.x = trot.x / 90
-	end
-	
 	
 	head:setRot(trot.x*45,trot.y*45,trot.y*15*-trot.x)
 	
