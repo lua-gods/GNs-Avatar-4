@@ -55,7 +55,9 @@ animations.player.brightEyes:play():speed(0)
 local lrot,rot = vec(0,0),vec(0,0)
 events.TICK:register(function ()
 	lrot = rot
+	local vehicle = player:getVehicle()
 	rot = player:getRot():sub(0,player:getBodyYaw())
+	rot = vanilla_model.BODY:getOriginRot()._y - vanilla_model.HEAD:getOriginRot().xy
 	rot.y = ((rot.y + 180) % 360 - 180) / -50
 	rot.x = rot.x / -90
 	
