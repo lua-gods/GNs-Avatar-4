@@ -82,8 +82,7 @@ events.RENDER:register(function (delta, ctx)
 	head:setPos(0,player:isCrouching() and -4 or 0)
 	
 	-- avoid recalculating in the shadow pass
-	if ctx == "OTHER" then return end 
-	
+	if ctx == "OTHER" or ctx == "FIRST_PERSON" then return end 
 	local trot = math.lerp(lrot,rot,delta)
 	
 	head:setRot(trot.x*45,trot.y*45,trot.y*15*-trot.x)

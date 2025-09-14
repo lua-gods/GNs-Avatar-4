@@ -61,16 +61,47 @@ local function registerDrag(window,controller,keybind)
 	end
 end
 
+---@param window GNUI.Desktop.Window
+---@param controller GNUI.Box
+---@return function
+local function registerResize(window,controller,x,y)
+	return function (event)
+		if event.key == "key.mouse.left" then
+			if event.state == 1 then
+				local offset = window.Dimensions - window.Parent.MousePos.xyxy
+				controller.MOUSE_MOVED:register(function (event)
+					local pos = event.pos.xyxy + offset
+					local dim = window.Dimensions:copy()
+					if x > 0 then dim.x = pos.x end
+					if x < 0 then dim.z = pos.z end
+					if y < 0 then dim.y = pos.y end
+					if y > 0 then dim.w = pos.w end
+					window:setDimensions(dim)
+				end,"GNUI.Move")
+			else
+				controller.MOUSE_MOVED:remove("GNUI.Move")
+			end
+		end
+	end
+end
+
 
 ---@param screen GNUI.Canvas?
 function WindowAPI.new(screen,variant)
 	screen = screen or trueScreen
 	local self = Box.new(screen,"none")
 	setmetatable(self,Window)
-	self:setSprite(Theme.getStyle(self, "backdrop", variant))
+	local backdrop = Theme.getStyle(self, "backdrop", variant)
+	self:setSprite(backdrop)
 	self.ON_REQUEST_CLOSE = Event.new()
 	self.ON_CLOSE = Event.new()
 	---@cast self GNUI.Desktop.Window
+	
+	local drgGRP = GNUI.newBox(self)
+	:setDimensions(backdrop.Padding:copy():mul(-1,-1,1,1))
+	:maxAnchor()
+	
+	--[────────-< Titlebar >-────────]--
 	
 	local titlebar = Box.new(self,"none")
 	self.boxTitlebar = titlebar
@@ -98,6 +129,58 @@ function WindowAPI.new(screen,variant)
 			self:close()
 		end
 	end)
+	
+	
+	--[────────-< Draggers >-────────]--
+	
+	
+	if true then
+		-- top left
+		local dragTL = Button.new(drgGRP,"windowBorderTopLeft")
+		:setSize(3,3)
+		dragTL.INPUT:register(registerResize(self,dragTL,1,-1))
+		
+		-- top
+		local dragT = Button.new(drgGRP,"windowBorderTop")
+		:setAnchor(0,0,1,0)
+		:setDimensions(3,0,-3,3)
+		dragT.INPUT:register(registerResize(self,dragT,0,-1))
+		
+		-- top right
+		local dragTR = Button.new(drgGRP,"windowBorderTopRight")
+		:setAnchor(1,0,1,0)
+		:setDimensions(-3,0,0,3)
+		dragTR.INPUT:register(registerResize(self,dragTR,-1,-1))
+		
+		-- right
+		local dragR = Button.new(drgGRP,"windowBorderRight")
+		:setAnchor(1,0,1,1)
+		:setDimensions(-3,3,0,-3)
+		dragR.INPUT:register(registerResize(self,dragR,-1,0))
+		
+		-- bottom right
+		local dragBR = Button.new(drgGRP,"windowBorderBottomRight")
+		:setAnchor(1,1,1,1)
+		:setDimensions(-3,-3,0,0)
+		dragBR.INPUT:register(registerResize(self,dragBR,-1,1))
+		
+		-- bottom
+		local dragB = Button.new(drgGRP,"windowBorderBottom")
+		:setAnchor(0,1,1,1)
+		:setDimensions(3,-3,-3,0)
+		dragB.INPUT:register(registerResize(self,dragB,0,1))
+		
+		-- bottom left
+		local dragBL = Button.new(drgGRP,"windowBorderBottomLeft")
+		:setAnchor(0,1,0,1)
+		:setDimensions(0,-3,3,0)
+		dragBL.INPUT:register(registerResize(self,dragBL,1,1))
+		
+		local dragL = Button.new(drgGRP,"windowBorderLeft")
+		:setAnchor(0,0,0,1)
+		:setDimensions(0,3,3,-3)
+		dragL.INPUT:register(registerResize(self,dragL,1,0))
+	end
 	
 	return self
 end

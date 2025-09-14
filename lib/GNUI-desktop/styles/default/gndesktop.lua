@@ -24,6 +24,45 @@ theme.Button = {
 		hover  = GNUI.newSprite(atlas,19,14,29,25 ,1,1,1,1, 0,0,1,0),
 	},
 	
+	windowBorderTopRight = {
+		normal = GNUI.newSprite(atlas,3,7,5,9),
+		hover = GNUI.newSprite(atlas,3,1,5,3),
+	},
+	
+	windowBorderTop = {
+		normal = GNUI.newSprite(atlas,3,7,3,9),
+		hover = GNUI.newSprite(atlas,3,1,3,3),
+	},
+	
+	windowBorderTopLeft = {
+		normal = GNUI.newSprite(atlas,1,7,3,9),
+		hover = GNUI.newSprite(atlas,1,1,3,3),
+	},
+	
+	windowBorderRight = {
+		normal = GNUI.newSprite(atlas,3,9,5,9),
+		hover = GNUI.newSprite(atlas,3,3,5,3),
+	},
+	
+	windowBorderBottomRight = {
+		normal = GNUI.newSprite(atlas,3,9,5,11),
+		hover = GNUI.newSprite(atlas,3,3,5,5),
+	},
+	
+	windowBorderBottom = {
+		normal = GNUI.newSprite(atlas,3,9,3,11),
+		hover = GNUI.newSprite(atlas,3,3,3,5),
+	},
+	
+	windowBorderBottomLeft = {
+		normal = GNUI.newSprite(atlas,1,9,3,11),
+		hover = GNUI.newSprite(atlas,1,3,3,5),
+	},
+	
+	windowBorderLeft = {
+		normal = GNUI.newSprite(atlas,1,9,3,9),
+		hover = GNUI.newSprite(atlas,1,3,3,3),
+	},
 }
 
 theme.Window = {
