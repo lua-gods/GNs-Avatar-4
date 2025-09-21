@@ -13,6 +13,16 @@ local atlas = textures[(...):gsub("/",".") ..".gndesktop"]
 local theme = {}
 
 --[────────────────────────────────────────-< Box >-────────────────────────────────────────]--
+theme.Box = {
+	iconFolder = {icon=GNUI.newSprite(atlas,0,39,6,45)},
+	iconSound =  {icon=GNUI.newSprite(atlas,7,39,13,45)},
+	iconText =   {icon=GNUI.newSprite(atlas,14,39,20,45)},
+	iconImage =  {icon=GNUI.newSprite(atlas,21,39,27,45)},
+	iconLua =    {icon=GNUI.newSprite(atlas,28,39,34,45)},
+	iconJson =   {icon=GNUI.newSprite(atlas,35,39,41,45)},
+	iconNBT =    {icon=GNUI.newSprite(atlas,42,39,48,45)},
+	iconVideo =  {icon=GNUI.newSprite(atlas,49,39,55,45)},
+}
 --[────────────────────────────────────────-< Button >-────────────────────────────────────────]--
 theme.Button = {
 	windowClose = {
@@ -70,7 +80,9 @@ theme.Window = {
 		backdrop = GNUI.newSprite(atlas,1,7,5,11, 2,2,2,2)
 		:setPadding(1,1,1,1),
 		backdrop_selected = GNUI.newSprite(atlas,1,1,5,5, 2,2,2,2),
-		titlebar = GNUI.newSprite(atlas,1,13,3,16, 1,1,1,2),
+		titlebar = GNUI.newSprite(atlas,1,13,3,16, 1,1,1,2)
+		:setTextMargin(2,2,2,2)
+		:setDefaultTextColor("#0c2e44"),
 		titlebar_height = 12,
 	}
 }

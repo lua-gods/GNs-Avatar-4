@@ -7,7 +7,7 @@ local leftPupil = models.player.Base.Torso.Head.Face.Leye.LPupil
 local leftEyelash = models.player.Base.Torso.Head.Face.Leye.Leyelash
 local leftBrow = models.player.Base.Torso.Head.Face.LBrow
 
-local rightPupil = models.player.Base.Torso.Head.Face.Reye.Rpupil
+local rightPupil = models.player.Base.Torso.Head.Face.Reye.RPupil
 local rightEyelash = models.player.Base.Torso.Head.Face.Reye.Reyelash
 local rightBrow = models.player.Base.Torso.Head.Face.RBrow
 
@@ -19,49 +19,9 @@ head:setParentType("None")
 
 
 
-local lastAnimation
----@param animation Animation
-local function setEmote(animation)
-	if lastAnimation ~= animation then
-		lastAnimation = animation
-		if lastAnimation then
-			Tween.new({
-				from = 1,
-				to = 0,
-				easing = "linear",
-				duration = 0.5,
-				tick = function (v) lastAnimation:blend(v) end,
-				onFinish = function () lastAnimation:stop() end,
-				id = "emote"
-			})
-		end
-		if animation then
-			Tween.new({
-				from = 0,
-				to = 1,
-				easing = "linear",
-				duration = 0.5,
-				tick = function (v) animation:blend(v) end,
-				onFinish = function () animation:play() end,
-				id = "emote"
-			})
-		end
-	end
-end
-
-
 local blinkTime = 0
 animations.player.brightEyes:play():speed(0)
-local lrot,rot = vec(0,0),vec(0,0)
 events.TICK:register(function ()
-	lrot = rot
-	local vehicle = player:getVehicle()
-	--rot = player:getRot():sub(0,player:getBodyYaw())
-	rot = vanilla_model.BODY:getOriginRot()._y - vanilla_model.HEAD:getOriginRot().xy
-	rot.y = ((rot.y + 180) % 360 - 180) / -50
-	rot.x = rot.x / -90
-	
-	--host:setActionbar(rot:toString())
 	
 	blinkTime = blinkTime - 1
 	if blinkTime <= 0 then
@@ -83,12 +43,15 @@ events.RENDER:register(function (delta, ctx)
 	
 	-- avoid recalculating in the shadow pass
 	if ctx == "OTHER" or ctx == "FIRST_PERSON" then return end 
-	local trot = math.lerp(lrot,rot,delta)
+	local rot = vanilla_model.BODY:getOriginRot()._y - vanilla_model.HEAD:getOriginRot().xy
+	rot.y = ((rot.y + 180) % 360 - 180) / -50
+	rot.x = rot.x / -90
+	---@cast rot Vector2
 	
-	head:setRot(trot.x*45,trot.y*45,trot.y*15*-trot.x)
+	head:setRot(rot.x*45,rot.y*45,rot.y*15*-rot.x)
 	
-	rightPupil:setUVPixels(math.clamp(trot.y*0.5+0.8,-1,1),trot.x*0.5)
-	leftPupil:setUVPixels(math.clamp(trot.y*0.5-0.8,-1,1),trot.x*0.5)
+	rightPupil:setUVPixels(math.clamp(rot.y*0.5+0.8,-1,1),rot.x*0.5)
+	leftPupil:setUVPixels(math.clamp(rot.y*0.5-0.8,-1,1),rot.x*0.5)
 end)
 
 

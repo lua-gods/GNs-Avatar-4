@@ -2,6 +2,8 @@ local Skull = require("lib.skull")
 
 local source = models.player:copy("playerClone")
 
+source.Base.Torso.Head.Face.Leye.LPupil:setUVPixels(-0.6,0)
+source.Base.Torso.Head.Face.Reye.RPupil:setUVPixels(0.6,0)
 
 function hash(str)
 	local hash = 0

@@ -14853,32 +14853,33 @@ local words = {"aahed",
 "zygon",
 "zymes",
 "zymic"}
+-- every wordle word
 
 
--- ALONG
+local today = "coven" -- today's worlde word
 
-local today = "along"
-
-local filters = {
+local filters = { -- boxes to match on what to draw
+	"_____",
 	"_#_#_",
-	"_#_#_",
+	"#___#",
 	"_____",
 	"#___#",
 	"_###_",
 }
 local match = {}
 
-for i = 1, 5, 1 do
-	if filters[5]:sub(i,i) == "#" then
-		local chars = today:gsub(today:sub(i,i),"")
-		match[i] = "["..chars.."]"
+for j = 1, 5, 1 do
+	-- generate a 3D 5x6x5 tensor regex string match matrix for quick word matching
+	if filters[6]:sub(j,j) == "#" then
+		local chars = today:gsub(today:sub(j,j),"")
+		match[j] = "["..chars.."]"
 	else
-		match[i] = "[^"..today.."]"
+		match[j] = "[^"..today.."]"
 	end
 end
 
-print(match)
 
+--- hash through all and print out all the possible matches
 for i, word in ipairs(words) do
 	if word:sub(1,1):match(match[1])
 	and word:sub(2,2):match(match[2])

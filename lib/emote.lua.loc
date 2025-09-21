@@ -1,0 +1,41 @@
+local Tween = require("lib.tween")
+
+local EmoteLib = {}
+
+---@class Emote
+---@field name string
+---@field emote Animation
+---@field endEmote Animation?
+
+local emotes = {}
+local currentEMote
+
+function EmoteLib.newEmote(name,emote,endEmote)
+	emotes[name] = {
+		name = name,
+		emote = emote,
+		endEmote = endEmote
+	}
+end
+
+
+function EmoteLib.playEmote(name)
+	if currentEMote then
+		currentEMote:stop()
+	end
+
+	currentEMote = emotes[name]
+	if currentEMote then
+		currentEMote.emote:play()
+		Tween.new{
+			from = 0,
+			to = 1,
+			duration = 0.25,
+			tick = function (w)
+				currentEMote.emote:setBlend(w)
+			end
+		}
+	end
+end
+
+return EmoteLib

@@ -12,16 +12,10 @@ local TextField = require("lib.GNUI.widget.textField")
 local Slider = require("lib.GNUI.widget.slider")
 local Stack = require("lib.GNUI.widget.panes.stack")
 
-local tx = TextField.new(screen)
-tx.FIELD_CONFIRMED:register(function (value)
-	print(value)
-end)
+
 
 local Window = require("lib.GNUI-desktop.widget.window")
 
-local wndw = Window.new()
+local FileDialog = require("lib.GNUI-desktop.widget.fileDialog")
 
-wndw
-:setPos(20,20)
-:setSize(100,100)
-
+FileDialog.new(screen)

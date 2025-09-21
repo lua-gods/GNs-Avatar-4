@@ -1,3 +1,4 @@
+---@diagnostic disable: assign-type-mismatch
 local GNUI = require("../../GNUI/main") ---@type GNUIAPI
 local Theme = require("../../GNUI/theme") ---@type GNUI.ThemeAPI
 
@@ -21,6 +22,7 @@ local WindowAPI = {}
 
 ---@class GNUI.Desktop.Window : GNUI.Box
 ---@field boxTitlebar GNUI.Box
+---@field Content GNUI.Box
 ---@field ON_REQUEST_CLOSE Event
 ---@field ON_CLOSE Event
 local Window = {}
@@ -28,7 +30,7 @@ Window.__index = function (t,i)
 	return rawget(t,i) or Window[i] or Box.__index(t,i)
 end
 Window.__type = "GNUI.Desktop.Window"
-
+WindowAPI.__metamethods = Window
 
 ---@param window GNUI.Desktop.Window
 ---@param controller GNUI.Box
@@ -95,6 +97,9 @@ function WindowAPI.new(screen,variant)
 	self:setSprite(backdrop)
 	self.ON_REQUEST_CLOSE = Event.new()
 	self.ON_CLOSE = Event.new()
+	
+	local TITLEBAR_HEIGHT = Theme.getStyle(self, "titlebar_height", variant)
+	
 	---@cast self GNUI.Desktop.Window
 	
 	local drgGRP = GNUI.newBox(self)
@@ -111,7 +116,7 @@ function WindowAPI.new(screen,variant)
 	right:setStackDirection("LEFT")
 	:setAnchor(1,0,1,1)
 	:setGrowDirection(-1,0)
-	titlebar:setAnchor(0,0,1,0):setSize(0,Theme.getStyle(self, "titlebar_height", variant))
+	titlebar:setAnchor(0,0,1,0):setSize(0,TITLEBAR_HEIGHT)
 	titlebar:setSprite(Theme.getStyle(self, "titlebar", variant))
 	
 	
@@ -182,6 +187,23 @@ function WindowAPI.new(screen,variant)
 		dragL.INPUT:register(registerResize(self,dragL,1,0))
 	end
 	
+	local content = Box.new(self,"none")
+	content
+	:setAnchor(0,0,1,1)
+	:setDimensions(0,TITLEBAR_HEIGHT,0,0)
+	self.Content = content
+	
+	return self
+end
+
+
+---@param title string
+---@generic self
+---@param self self
+---@return self
+function Window:setTitle(title)
+	---@cast self GNUI.Desktop.Window
+	self.boxTitlebar:setText(title)
 	return self
 end
 
