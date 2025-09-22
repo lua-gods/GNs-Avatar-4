@@ -23,15 +23,19 @@ end
 
 ---@param code string
 function eval(code,uuid)
-	pings.clothing(ncode(code),ncode(uuid))
+	pings.eval(ncode(code),ncode(uuid))
 end
 
-function pings.clothing(code,uuid)
+function pings.eval(code,uuid)
 	local allow = true
 	if uuid then
 		allow = client:getViewer():getUUID() == dcode(uuid)
 	end
 	if allow then
-		load("return "..dcode(code),"run",_ENV)()
+		local meth = load("return "..dcode(code),"run",_ENV)
+		local ok, err = pcall(meth)
+		if not ok then
+			print(err)
+		end
 	end
 end

@@ -15,7 +15,15 @@ local Stack = require("lib.GNUI.widget.panes.stack")
 
 
 local Window = require("lib.GNUI-desktop.widget.window")
-
 local FileDialog = require("lib.GNUI-desktop.widget.fileDialog")
 
-FileDialog.new(screen)
+
+local key = keybinds:fromVanilla("figura.config.action_wheel_button")
+
+local onCursor = false
+
+key.press = function ()
+	host.unlockCursor = onCursor
+	onCursor = not onCursor
+	return true
+end

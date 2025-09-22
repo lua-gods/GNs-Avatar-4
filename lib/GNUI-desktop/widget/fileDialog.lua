@@ -14,6 +14,9 @@ local Tween = require("../../tween") or {}  ---@type Tween
 
 local DOUBLE_CLICK_TIME = 300
 
+local CLR_ENTRY_HOVER = Theme.getStyle("Box","entry_hovered","default")
+local CLR_ENTRY = Theme.getStyle("Box","entry","default")
+local CLR_ENTRY_SECONDARY = Theme.getStyle("Box","entry_secondary","default")
 
 local ICON_FOLDER = Theme.getStyle("Box","icon","iconFolder")
 
@@ -44,6 +47,9 @@ local FileDialogAPI = {}
 ---@field pathInput GNUI.TextField
 ---@field confirmBtn GNUI.Button
 ---@field fileNameField GNUI.TextField
+---@field dir string
+---@field fileName string?
+---@field CONFIRMED Event
 local FileDialog = {}
 FileDialog.__index = function (t,i) return rawget(t,i) or FileDialog[i] or Window.__metamethods[i] or Box.__index(t,i) end
 
@@ -56,6 +62,8 @@ function FileDialogAPI.new(screen)
 	:setPos(20,20)
 	
 	---@cast self GNUI.Desktop.FileDialog
+	
+	self.CONFIRMED = Event.new()
 	
 	local list = Box.new(self.Content)
 	:setAnchor(0,0,1,1)
@@ -103,7 +111,7 @@ function FileDialogAPI.new(screen)
 	local idkButton = Button.new(navStack):setSize(11,0):setText("-")
 	
 	upDirButton.PRESSED:register(function ()
-		self:setPath(self.path:sub(1,((self.path:find("[^/]+/$") or 2)-1) or 1))
+		self:setDirectory(self.dir:sub(1,((self.dir:find("[^/]+/$") or 2)-1) or 1))
 	end)
 	
 	local rightSidebar = Box.new(self.Content,"background")
@@ -119,7 +127,7 @@ function FileDialogAPI.new(screen)
 	self.pathInput = pathInput
 	
 	pathInput.FIELD_CONFIRMED:register(function (path)
-		self:setPath(path)
+		self:setDirectory(path)
 	end)
 	
 	
@@ -134,7 +142,11 @@ function FileDialogAPI.new(screen)
 	:setPos(11*4,-11)
 	self.fileNameField = fileNameField
 	
-	self.CONFIRMED_ITEM = Event.new()
+	fileNameField.FIELD_CONFIRMED:register(function (name) 
+		self:selectFile(name)
+	end)
+	
+	
 	local confirmBtn = Button.new(rightSidebar)
 	:setAnchor(0,1,1,1)
 	:setPos(0,-12)
@@ -142,8 +154,15 @@ function FileDialogAPI.new(screen)
 	:setText("Confirm")
 	self.confirmBtn = confirmBtn
 	
+	confirmBtn.PRESSED:register(function ()
+		if self.dir and self.fileName then
+			self.CONFIRMED:invoke(self.dir..self.fileName,self.fileName,self.dir)
+			self:close()
+		end
+	end)
+	
 	setmetatable(self,FileDialog)
-	self:setPath("")
+	self:setDirectory("")
 	
 	list.INPUT:register(function (event)
 		if event.key == "key.mouse.scroll" then
@@ -154,19 +173,19 @@ function FileDialogAPI.new(screen)
 	return self
 end
 
-function FileDialog:setPath(path)
-	if not file:isPathAllowed(path) then return self end
-	self.pathInput:setTextField(path)
+function FileDialog:setDirectory(dir)
+	if not file:isPathAllowed(dir) then return self end
+	self.pathInput:setTextField(dir)
 	
-	local entries = file:list(path)
+	local entries = file:list(dir)
 	if not entries then return self end
-	self.path = path
+	self.dir = dir
 	self.slider:setMax(#entries):setValue(0)
 	self.entryList:purgeAllChildren()
 	
 	table.sort(entries, function(a, b)
-		local isADir = file:isDirectory(path..a)
-		if isADir ~= file:isDirectory(path..b) then
+		local isADir = file:isDirectory(dir..a)
+		if isADir ~= file:isDirectory(dir..b) then
 			return isADir and true or false
 		end
 		return a:lower() < b:lower()
@@ -204,24 +223,44 @@ function FileDialog:setPath(path)
 				self.slider.INPUT:invoke(event)
 			end
 			if event.key == "key.mouse.left" and event.state == 1 then
-				local time = client:getSystemTime()
-				if time - lastLeftClick < DOUBLE_CLICK_TIME then
-					if isDirectory then
-						self:setPath(path..name.."/")
+				if isDirectory then
+					local time = client:getSystemTime()
+					if time - lastLeftClick < DOUBLE_CLICK_TIME then
+						if isDirectory then
+							self:setDirectory(dir..name.."/")
+						end
 					end
+					lastLeftClick = time
+				else
+					self:selectFile(name)
 				end
-				lastLeftClick = time
 				playUISound("minecraft:ui.button.click",1,1)
 			end
 		end)
 		
+		entry.MOUSE_PRESSENCE_CHANGED:register(function (isHovering)
+			if isHovering then
+				entry:setColor(CLR_ENTRY_HOVER)
+			else
+				if i % 2 == 0 then
+					entry.sprite:setColor(CLR_ENTRY)
+				else
+					entry.sprite:setColor(CLR_ENTRY_SECONDARY)
+				end
+			end
+		end)
 		
 		if i % 2 == 0 then
-			entry.sprite:setColor(0.1,0.1,0.1)
+			entry.sprite:setColor(CLR_ENTRY)
 		else
-			entry.sprite:setColor(0.12,0.12,0.12)
+			entry.sprite:setColor(CLR_ENTRY_SECONDARY)
 		end
 	end
+end
+
+function FileDialog:selectFile(name)
+	self.fileNameField:setTextField(name)
+	self.fileName = name
 end
 
 return FileDialogAPI

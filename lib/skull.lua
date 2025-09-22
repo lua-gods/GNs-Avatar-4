@@ -289,18 +289,6 @@ end)
 
 local lastDrawInstances = {}
 
-avatar:store("get",function ()
-	local data = {}
-	
-	local c = 0
-	for key, value in pairs(entityInstances) do
-		c = c + 1
-		data[#data+1] = c..". "..value.identifier
-	end
-	
-	return data
-end)
-
 events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 	if startupStall then return end
 

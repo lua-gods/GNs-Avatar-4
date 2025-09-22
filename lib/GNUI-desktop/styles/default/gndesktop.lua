@@ -22,6 +22,14 @@ theme.Box = {
 	iconJson =   {icon=GNUI.newSprite(atlas,35,39,41,45)},
 	iconNBT =    {icon=GNUI.newSprite(atlas,42,39,48,45)},
 	iconVideo =  {icon=GNUI.newSprite(atlas,49,39,55,45)},
+	
+	
+	default = {
+		entry = vectors.hexToRGB("#202020"),
+		entry_secondary = vectors.hexToRGB("#2e2e2e"),
+		entry_hovered = vectors.hexToRGB("#6b6b6b"),
+		entry_selected = vectors.hexToRGB("#527e52"),
+	}
 }
 --[────────────────────────────────────────-< Button >-────────────────────────────────────────]--
 theme.Button = {
@@ -86,5 +94,4 @@ theme.Window = {
 		titlebar_height = 12,
 	}
 }
-
 return theme
