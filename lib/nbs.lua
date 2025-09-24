@@ -10,7 +10,7 @@ local hasEvents,Events = pcall(require,"./event")
 local MAX_NOTES_PER_TICK=16
 -- the maximum amount of notes that can play at the same time
 
-local PROCESS_MODE=0
+local PROCESS_MODE=2
 -- 0: MODEL RENDER, plays when the player is loaded, runs on RENDER, works on lower permission levels
 -- 1: WORLD RENDER, plays when the avatar is loaded, run on WORLD_RENDER, requires higher permission levels
 ---2: SKULL RENDER, plays when the player head is loaded, runs on RENDER, works on lower permission levels
@@ -320,15 +320,21 @@ end
 ---`NBS.loadTrack(<path>)` -> `<path>.nbs`
 ---@param path string
 ---@return NBS.Track
-function Nbs.loadTrack(path)
+function Nbs.loadFromPath(path)
 	local stream=resources:get(path..".nbs")
 	assert(stream, 'Could not find "'..path..'.nbs"')
 	local buffer=data:createBuffer(stream:available())
 	buffer:readFromStream(stream)
 	buffer:setPosition(0)
 	-- check if NBS version is valid
-	assert(buffer:readShort() == 0, 'attempted to load a legacy NBS file "'..path..'.nbs".')
 	
+	return Nbs.parseBuffer(buffer)
+end
+
+---@param buffer Buffer
+---@return NBS.Track
+function Nbs.parseBuffer(buffer)
+	assert(buffer:readShort() == 0, 'attempted to load a legacy NBS file')
 	--[────────────────────────-< HEADER >-────────────────────────]--
 	local version=buffer:read()
 	local instrumentCount=buffer:read()

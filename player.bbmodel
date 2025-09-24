@@ -1020,6 +1020,7 @@
 			"to": [5, 24, 2],
 			"autouv": 0,
 			"color": 4,
+			"visibility": false,
 			"rotation": [0, -180, 0],
 			"origin": [0, 23, 2],
 			"faces": {
@@ -1063,6 +1064,7 @@
 			"to": [5, 24, 3],
 			"autouv": 0,
 			"color": 3,
+			"visibility": false,
 			"origin": [-19, 0, 0],
 			"uv_offset": [22, 0],
 			"faces": {
@@ -1106,6 +1108,7 @@
 			"to": [5, 24, 3],
 			"autouv": 0,
 			"color": 3,
+			"visibility": false,
 			"mirror_uv": true,
 			"origin": [-9, 0, 0],
 			"uv_offset": [22, 0],
@@ -2401,9 +2404,9 @@
 									"uuid": "6933cba8-7f8e-046f-664f-56228b7ec9b4",
 									"export": true,
 									"mirror_uv": false,
-									"isOpen": false,
+									"isOpen": true,
 									"locked": false,
-									"visibility": true,
+									"visibility": false,
 									"autouv": 0,
 									"selected": false,
 									"children": ["a0dcb401-0587-1878-8a59-8b5042affe37"]
@@ -2417,7 +2420,7 @@
 									"mirror_uv": false,
 									"isOpen": false,
 									"locked": false,
-									"visibility": true,
+									"visibility": false,
 									"autouv": 0,
 									"selected": false,
 									"children": ["894b605c-e342-57c1-d43a-5a82757200f9"]
@@ -2431,7 +2434,7 @@
 									"mirror_uv": false,
 									"isOpen": false,
 									"locked": false,
-									"visibility": true,
+									"visibility": false,
 									"autouv": 0,
 									"selected": false,
 									"children": ["1a74e7f3-462e-8ebd-1f4b-d4e93eec0671"]
@@ -31475,7 +31478,7 @@
 			"override": false,
 			"length": 2,
 			"snapping": 24,
-			"selected": true,
+			"selected": false,
 			"anim_time_update": "",
 			"blend_weight": "",
 			"start_delay": "",

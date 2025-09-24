@@ -2,20 +2,11 @@
 local Skull = require("lib.skull")
 
 
-function hash(str)
-	local hash = 0
-	for i = 1, #str do
-		local c = str:byte(i)
-		hash = (hash * math.pi + c) % 100000 -- keep it within 5 digits
-	end
-	return hash
-end
-
 local SCALE = 0.8
 
 
 local NBS = require("lib.nbs")
-local track = NBS.loadTrack("sunny")
+local track = NBS.loadFromPath("sunny")
 
 local Tween = require("lib.tween")
 

@@ -22,7 +22,7 @@ local identity = {
 	name = "layser",
 	modelBlock = models.lazer.hat,
 	modelHat = models.lazer.hat,
-	modelHud = Skull.makeIcon(models.lazer.icon),
+	modelHud = Skull.makeIcon(textures["textures.item_icons"],1,0),
 	modelItem = models.lazer.hat,
 	
 	processHat = {

@@ -25,7 +25,6 @@ local identity = {
 	support = "minecraft:orange_wool",
 	modelBlock = models.skull.block,
 	modelHat = models.skull.hat,
-	modelHud = Skull.makeIcon(models.skull.icon),
 	modelItem = models.skull.entity
 }
 
@@ -36,7 +35,7 @@ ON_ENTER = function (skull, model)
 	model:setColor(1,0.5,0)
 	skull.sounds = {}
 	events.ON_PLAY_SOUND:register(function (id, pos, volume, pitch, loop, category, path)
-		if path and (pos-skull.pos):length() < DISTANCE then
+		if path and(pos-skull.pos):length() < DISTANCE then
 			local s = sounds[id]:pos(pos):volume(0):pitch(pitch):play()
 			local data = {
 				sound = s,
@@ -44,16 +43,16 @@ ON_ENTER = function (skull, model)
 				pos = pos,
 			}
 			local lines = {}
-			for i = 1, 5, 1 do
+			for i = 1, 3, 1 do
 				lines[i] = Line:new():setColor(1,0.5,0)
 			end
-			for i = 6, 10, 1 do
+			for i = 4, 6, 1 do
 				lines[i] = Line:new():setDepth(-0.02):setWidth(0.05)
 			end
 			data.lines = lines
 			skull.sounds[#skull.sounds+1] = data
 		end
-	end,skull.identifier)
+	end,skull.hash)
 end,
 
 
@@ -73,16 +72,16 @@ ON_PROCESS = function (skull, model,delta)
 		else
 			local source = skull.pos + vec(0.5,0.5,0.5)
 			local target = value.pos
-			for i = 1, 5, 1 do
+			for i = 1, 3, 1 do
 				local line = value.lines[i] ---@type Line
-				local a = math.lerp(source,target,(i-1)/5) + samp(i+t)
-				local b = math.lerp(source,target,i/5) + samp(i+1+t)
+				local a = math.lerp(source,target,(i-1)/3) + samp(i+t)
+				local b = math.lerp(source,target,i/3) + samp(i+1+t)
 				line:setAB(a,b)
 			end
-			for i = 1, 5, 1 do
-				local line = value.lines[i+5] ---@type Line
-				local a = math.lerp(source,target,(i-1)/5) + samp(i+t)
-				local b = math.lerp(source,target,i/5) + samp(i+1+t)
+			for i = 1, 3, 1 do
+				local line = value.lines[i+3] ---@type Line
+				local a = math.lerp(source,target,(i-1)/3) + samp(i+t)
+				local b = math.lerp(source,target,i/3) + samp(i+1+t)
 				line:setAB(a,b)
 			end
 		end
@@ -92,7 +91,7 @@ end,
 ---@param skull SkullInstanceBlock
 ---@param model ModelPart
 ON_EXIT = function (skull, model)
-	events.ON_PLAY_SOUND:remove(skull.identifier)
+	events.ON_PLAY_SOUND:remove(skull.hash)
 	for key, value in pairs(skull.sounds) do
 		value.sound:stop()
 		for key, value in pairs(value.lines) do

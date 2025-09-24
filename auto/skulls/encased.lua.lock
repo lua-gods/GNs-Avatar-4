@@ -1,7 +1,7 @@
 local Skull = require("lib.skull")
 
 
-function hash(str)
+local function hash(str)
 	local hash = 0
 	for i = 1, #str do
 		local c = str:byte(i)

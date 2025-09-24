@@ -49,12 +49,12 @@ local FileDialogAPI = {}
 ---@field fileNameField GNUI.TextField
 ---@field dir string
 ---@field fileName string?
----@field CONFIRMED Event
+---@field ITEM_CONFIRMED Event
 local FileDialog = {}
 FileDialog.__index = function (t,i) return rawget(t,i) or FileDialog[i] or Window.__metamethods[i] or Box.__index(t,i) end
 
----@param screen GNUI.Canvas
----@return GNUI.Desktop.Window
+---@param screen GNUI.Canvas?
+---@return GNUI.Desktop.FileDialog
 function FileDialogAPI.new(screen)
 	local self = Window.new(screen)
 	self:setSize(300,200)
@@ -63,7 +63,7 @@ function FileDialogAPI.new(screen)
 	
 	---@cast self GNUI.Desktop.FileDialog
 	
-	self.CONFIRMED = Event.new()
+	self.ITEM_CONFIRMED = Event.new()
 	
 	local list = Box.new(self.Content)
 	:setAnchor(0,0,1,1)
@@ -156,7 +156,7 @@ function FileDialogAPI.new(screen)
 	
 	confirmBtn.PRESSED:register(function ()
 		if self.dir and self.fileName then
-			self.CONFIRMED:invoke(self.dir..self.fileName,self.fileName,self.dir)
+			self.ITEM_CONFIRMED:invoke(self.dir..self.fileName,self.fileName,self.dir)
 			self:close()
 		end
 	end)

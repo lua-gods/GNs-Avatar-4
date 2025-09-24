@@ -2,15 +2,6 @@ local Skull = require("lib.skull")
 local Color = require("lib.color")
 
 
-function hash(str)
-	local hash = 0
-	for i = 1, #str do
-		local c = str:byte(i)
-		hash = (hash * math.pi + c) % 100000 -- keep it within 5 digits
-	end
-	return hash
-end
-
 
 local SCALE = 0.85
 models.glasses.hat:scale(SCALE,SCALE,SCALE)
@@ -22,7 +13,7 @@ local DEFAULT_TINT = vectors.hexToRGB("#c7cfdd")
 local identity = {
 	name = "glasses",
 	modelHat = models.glasses.hat,
-	modelHud = Skull.makeIcon(models.glasses.icon),
+	modelHud = Skull.makeIcon(textures["textures.item_icons"],2,1),
 	modelItem = models.glasses.hat,
 	
 	processHat = {
@@ -41,8 +32,8 @@ local identity = {
 			model.Lens:setColor((color-1)*0.5+1)
 		end,
 		ON_PROCESS = function (skull, model, delta)
-			local cpos = vectors.toCameraSpace(skull.matrix:apply(0,0,0))
-			local shift = (-cpos.x-cpos.y)*2
+			local crot = client:getCameraRot()
+			local shift = -(crot.y / 360)*10 - crot.x / 30
 			model.Lens:setUV(0,shift)
 		end
 	}

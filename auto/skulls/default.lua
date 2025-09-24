@@ -45,7 +45,7 @@ local identity = {
 	name = "default",
 	modelBlock = models.skull.block,
 	modelHat = models.skull.hat,
-	modelHud = Skull.makeIcon(models.skull.icon),
+	modelHud = Skull.makeIcon(textures["textures.item_icons"],1,1),
 	modelItem = models.skull.entity,
 }
 

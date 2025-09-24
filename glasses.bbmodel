@@ -17,49 +17,6 @@
 	},
 	"elements": [
 		{
-			"name": "icon",
-			"box_uv": false,
-			"rescale": false,
-			"locked": false,
-			"light_emission": 0,
-			"render_order": "default",
-			"allow_mirror_modeling": true,
-			"from": [-8, 0, 8],
-			"to": [8, 16, 8],
-			"autouv": 1,
-			"color": 1,
-			"visibility": false,
-			"origin": [-8, 0, 8],
-			"faces": {
-				"north": {
-					"uv": [0, 0, 16, 16],
-					"texture": 1
-				},
-				"east": {
-					"uv": [0, 0, 0, 16],
-					"texture": null
-				},
-				"south": {
-					"uv": [0, 0, 16, 16],
-					"texture": null
-				},
-				"west": {
-					"uv": [0, 0, 0, 16],
-					"texture": null
-				},
-				"up": {
-					"uv": [0, 0, 16, 0],
-					"texture": null
-				},
-				"down": {
-					"uv": [0, 0, 16, 0],
-					"texture": null
-				}
-			},
-			"type": "cube",
-			"uuid": "cb087c83-738f-6a7c-5eec-46a33d0f482d"
-		},
-		{
 			"name": "Frame",
 			"color": 0,
 			"origin": [0, -27.25, 0],
@@ -1439,8 +1396,7 @@
 			"autouv": 0,
 			"selected": false,
 			"children": ["bc3df825-95b8-d438-ad0e-34bcc8146a9d", "e2608998-313e-ba1b-b0f1-796e5306eb49", "a77e3ab2-a4a5-b4d7-dfba-494eac1bb7f8"]
-		},
-		"cb087c83-738f-6a7c-5eec-46a33d0f482d"
+		}
 	],
 	"textures": [
 		{
@@ -1500,6 +1456,35 @@
 			"uuid": "95a847f6-5c6b-ce7a-d7ad-5f6a614bb161",
 			"relative_path": "textures/sunglasses_item.png",
 			"source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAPZJREFUOE/dUysOg0AQnXUIHAQDHk5QuaqqQVZUkZ6nsidA9gQ9AIcg4BBgCDgEjuZNMpvthtTgOobdN+895gOKDoY6qKd/MwiCYAvD0IylbVtuMU3TTcBpmmieZ9O6OYgYBAkhIicYXmCbsIEttt33NuRyFQDP82hd16/Sfq3X1qg4jjeI92KvBZfHBn3fM661pqqqqCgK6rqO6rpmHD27uXEcGVeYcBRFLERkWUZN01CSJHz3fZ/vdg6cZVm4ba4AJNekfL3pmuufJlyBDERMHs+S8vOJhfYMsD6YIu63C5/xNGu09ywfkDswqRY4WhiGQR3+mT6xMZOdZb7xzwAAAABJRU5ErkJggg=="
+		},
+		{
+			"path": "/home/gn/games/Figura/avatars/A Favorites/GNs-Avatar-4/textures/item_icons.png",
+			"name": "item_icons.png",
+			"folder": "",
+			"namespace": "",
+			"id": "2",
+			"group": "",
+			"width": 64,
+			"height": 64,
+			"uv_width": 64,
+			"uv_height": 64,
+			"particle": false,
+			"use_as_default": false,
+			"layers_enabled": false,
+			"sync_to_project": "",
+			"render_mode": "default",
+			"render_sides": "auto",
+			"pbr_channel": "color",
+			"frame_time": 1,
+			"frame_order_type": "loop",
+			"frame_order": "",
+			"frame_interpolate": false,
+			"visible": true,
+			"internal": true,
+			"saved": true,
+			"uuid": "ea785efa-7048-614f-797a-bb3cd9860f92",
+			"relative_path": "textures/item_icons.png",
+			"source": "data:image/png;base64,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"
 		}
 	]
 }

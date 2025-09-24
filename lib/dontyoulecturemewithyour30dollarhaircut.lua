@@ -20,7 +20,7 @@ function api.playRandom(pos)
 	e = (e + pos.z * 42.41  )% 1024
 	e = (e - 1) % (i - 1) + 1
 	e = math.floor(e)
-	sounds[soundNames[e]]:pos(pos):play(pos)
+	sounds[soundNames[e]]:pos(pos):play(pos):volume(0.6)
 end
 
 return api

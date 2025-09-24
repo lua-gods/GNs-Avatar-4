@@ -21,21 +21,32 @@ local skullIdentities = {}        ---@type table<string,SkullIdentity>
 local skullSupportIdentities = {} ---@type table<string,SkullIdentity>
 
 local time = client:getSystemTime()
-local startupStall = 20
+local STARTUP_STALL = 20
 
 ---@class SkullAPI
 local SkullAPI = {}
 
 
+
 local id = 0
----@param iconModelTextureSource ModelPart
-function SkullAPI.makeIcon(iconModelTextureSource)
+---@param texture Texture
+---@param iconX number
+---@param iconY number
+---@return ModelPart
+function SkullAPI.makeIcon(texture,iconX,iconY)
 	id = id + 1
+	iconX = iconX or 0
+	iconY = iconY or 0
+	
 	local model = models:newPart("Icon"..id)
 	model:setParentType("SKULL")
 	:rot(38,-45,0)
 	:pos(5.58,13.65,5.58)
-	model:newSprite("Icon"):texture(textures[next(iconModelTextureSource:getAllVertices())],16,16):setRenderType("CUTOUT_EMISSIVE_SOLID")
+	model:newSprite("Icon")
+	:texture(texture,16,16)
+	:setRenderType("CUTOUT_EMISSIVE_SOLID")
+	:setDimensions(64,64)
+	:setUVPixels(iconX*16,iconY*16)
 	return model
 end
 
@@ -44,7 +55,7 @@ end
 
 
 ---@class SkullInstance
----@field params any[] # Note: does not exist for blocks
+---@field params {} # Note: does not exist for blocks
 ---@field identity SkullIdentity
 ---@field queueFree boolean
 ---@field model ModelPart
@@ -94,39 +105,72 @@ local function modelIdentityPeprocess(model)
 end
 
 
-local escapeCharMap = {
-   ['\\,'] = '\\a',
-   ['\\;'] = '\\b',
-}
+local identityCache = {}
 
-local unescapeCharMap = {
-   ['\\\\'] = '\\',
-   ['\\a'] = ',',
-   ['\\b'] = ';',
-   ['\\_'] = '',
-   ['\\n'] = '\n'
-}
+---@param item ItemStack
+---@return {name:string,params:string[],hash:string}[]
+local function parseItem(item)
+	local sourceString = item:getName()
+	if identityCache[sourceString] then
+		return identityCache[sourceString]
+	end
 
----@param itemName string
----@return {name:string,params:string[],identifier:string}[]
-local function extractNamesAndParams(itemName)
 	local identities = {}
-	for identityString in (itemName:gsub('\\.', escapeCharMap)..","):gmatch("([^,]+),") do
-		local params = {}
-		for param in (identityString..';'):gmatch('([^;]*);') do
-		   table.insert(params, (param:gsub('\\.', unescapeCharMap)))
-		end
-		local name = table.remove(params, 1)
+	local json = sourceString:gsub("\n","")
+	
+	--[[ Turned off because this is already done by Minecraft's json parser, kept just in case
+	-- convert text to double quoted strings
+	json = json:gsub("[^,:%[%]%(%)%{%}]+",function (str)
+		return (tonumber(str) and str or '"'..str..'"')
+	end)
+	--]]
+	
+	for i = 1, 2, 1 do -- needs to be ran twice because of overlapping match sequence
+		-- convert lone string entry to a key with an empty array
+		json = (","..json..","):gsub("(,[^:,]+),",function (str)
+			return str..":[],"
+		end):sub(2,-2)
+	end
+	json = "{"..json.."}"
+	local ok, result = pcall(parseJson,json)
+	
+	if not ok then -- insert fallback identity here
+		return {
+			{
+				name="default",
+				params={},
+				hash="default"
+			}
+		}
+	end
+	
+	for name, params in pairs(result) do
+		local name = name
 		table.insert(identities, {
 			name = name,
-			params = params or {},
-			identifier = identityString,
+			params = params,
+			hash = name
 		})
 	end
+	
+	
+	--for identityString in (item:getName():gsub('\\.', escapeCharMap)..","):gmatch("([^,]+),") do
+	--	local params = {}
+	--	for param in (identityString..';'):gmatch('([^;]*);') do
+	--	   table.insert(params, (param:gsub('\\.', unescapeCharMap)))
+	--	end
+	--	local name = table.remove(params, 1)
+	--	table.insert(identities, {
+	--		name = name,
+	--		params = params or {},
+	--		hash = identityString,
+	--	})
+	--end
+	
+	identityCache[sourceString] = identities
 	return identities
 end
 
-extractNamesAndParams("test;test2,4;test3,513")
 
 local PROCESS_PLACEHOLDER = {
 	ON_ENTER = function ()end,
@@ -141,6 +185,13 @@ local function applyPlaceholders(tbl)
 	tbl.ON_EXIT = tbl.ON_EXIT or PROCESS_PLACEHOLDER.ON_EXIT
 	return tbl
 end
+
+
+---@param item ItemStack
+local function getItemParams(item)
+	
+end
+
 
 ---@param cfg SkullIdentity|{}
 function SkullAPI.registerIdentity(cfg)
@@ -183,7 +234,7 @@ end
 ---@class SkullInstanceEntity : SkullInstance
 ---@field entity Entity
 ---@field isFirstPerson boolean
----@field params any[]
+---@field params {}
 ---@field isHand boolean
 
 ---@class SkullProcessEntity
@@ -205,6 +256,7 @@ end
 --[────────-< Block Instance >-────────]--
 ---@class SkullInstanceBlock : SkullInstance
 ---@field blockModel ModelPart
+---@field params string
 ---@field block BlockState
 ---@field pos Vector3
 ---@field isWall boolean
@@ -234,7 +286,7 @@ end
 ---@class SkullInstanceHat : SkullInstance
 ---@field item ItemStack
 ---@field entity Entity
----@field params any[]
+---@field params {}
 ---@field uuid string
 ---@field vars table
 
@@ -256,7 +308,7 @@ end
 --[────────-< HUD Instance >-────────]--
 ---@class SkullInstanceHud : SkullInstance
 ---@field item ItemStack
----@field params any[]
+---@field params {}
 
 ---@class SkullProcessHud
 ---@field ON_ENTER fun(skull: SkullInstanceHud, model: ModelPart)?
@@ -290,7 +342,7 @@ end)
 local lastDrawInstances = {}
 
 events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
-	if startupStall then return end
+	if STARTUP_STALL then return end
 
 	local instance
 
@@ -323,6 +375,28 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 			instance.rot     = rot
 			instance.dir     = dir
 			instance.matrix  = matrix
+			
+			local NBT = block:getEntityData()
+			
+			local str = ""
+			
+			if NBT 
+			and NBT.SkullOwner 
+			and NBT.SkullOwner.Properties 
+			and NBT.SkullOwner.Properties.textures then
+				for index, entry in ipairs(NBT.SkullOwner.Properties.textures) do
+					if entry.Value then
+						str = str..entry.Value
+					end
+				end
+			end
+			local buffer = data:createBuffer(#str)
+			
+			buffer:writeBase64(str)
+			buffer:setPosition(0)
+			instance.params = buffer
+			
+			--instance.params = 
 
 			local blockModel = instance.model
 			:newPart("blockModelArm")
@@ -333,7 +407,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 
 			blockInstances[id] = instance
 
-			instance.identifier = id
+			instance.hash = id
 			instance.identity.processBlock.ON_ENTER(instance,instance.model)
 		else
 			instance.lastSeen = time
@@ -344,8 +418,8 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 		local uuid = entity:getUUID()
 		local rawName = item:getName()
 
-		for i, identityString in ipairs(extractNamesAndParams(rawName)) do
-			local identify = uuid..","..identityString.identifier
+		for i, identityString in ipairs(parseItem(item)) do
+			local identify = uuid..","..identityString.hash
 			instance = hatInstances[identify] ---@cast instance SkullInstanceEntity
 
 			if not instance then -- new instance
@@ -356,7 +430,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				instance.item = item
 				instance.uuid = uuid
 				instance.params = identityString.params
-				instance.identifier = identityString.identifier
+				instance.hash = identityString.hash
 				instance.identity.processHat.ON_ENTER(instance,instance.model)
 				hatInstances[identify] = instance
 			else
@@ -367,10 +441,9 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 		--[────────────────────────-< 🟠 ENTITY >-────────────────────────]--
 	elseif ctx == "ITEM_ENTITY" or ctx:find("HAND$") then
 		local uuid = entity:getUUID()
-		local rawName = item:getName()
 
-		for i, identityString in ipairs(extractNamesAndParams(rawName)) do
-			local identify = uuid..","..identityString.identifier
+		for i, identityString in ipairs(parseItem(item)) do
+			local identify = uuid..","..identityString.hash
 			instance = entityInstances[identify] ---@cast instance SkullInstanceEntity
 			if not instance then -- new instance
 				instance = (skullIdentities[identityString.name] or skullIdentities.default):newEntityInstance()
@@ -379,7 +452,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				instance.item = item
 				instance.uuid = uuid
 				instance.params = identityString.params
-				instance.identifier = identify
+				instance.hash = identify
 				instance.identity.processEntity.ON_ENTER(instance,instance.model)
 				entityInstances[identify] = instance
 			else
@@ -388,18 +461,16 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 			drawInstances[#drawInstances+1] = instance
 		end
 	else --[────────────────────────-< 🟢 HUD >-────────────────────────]--
-		local rawName = item:getName()
-
-		for i, identityString in ipairs(extractNamesAndParams(rawName)) do
-			instance = hudInstances[identityString.identifier] ---@cast instance SkullInstanceEntity
+		for i, identityString in ipairs(parseItem(item)) do
+			instance = hudInstances[identityString.hash] ---@cast instance SkullInstanceEntity
 			if not instance then -- new instance
 				instance = skullIdentities[identityString.name] or skullIdentities.default
 				instance = instance:newHudInstance()
 				instance.item = item
 				instance.params = identityString.params
-				instance.identifier = identityString.identifier
+				instance.hash = identityString.hash
 				instance.identity.processHud.ON_ENTER(instance,instance.model)
-				hudInstances[identityString.identifier] = instance
+				hudInstances[identityString.hash] = instance
 			else
 				instance.lastSeen = time
 			end
@@ -503,9 +574,9 @@ end
 
 
 SKULL_PROCESS.midRender	 = function (delta, context, part)
-	startupStall = startupStall - 1
-	if startupStall < 0 then
-		startupStall = nil
+	STARTUP_STALL = STARTUP_STALL - 1
+	if STARTUP_STALL < 0 then
+		STARTUP_STALL = nil
 		SKULL_PROCESS.midRender = nil
 	end
 end

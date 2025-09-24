@@ -2,15 +2,6 @@ local Skull = require("lib.skull")
 local Color = require("lib.color")
 
 
-function hash(str)
-	local hash = 0
-	for i = 1, #str do
-		local c = str:byte(i)
-		hash = (hash * math.pi + c) % 100000 -- keep it within 5 digits
-	end
-	return hash
-end
-
 
 local SCALE = 0.845
 
@@ -22,7 +13,7 @@ local identity = {
 	name = "toiletpaper",
 	modelBlock = models.info.Item,
 	modelHat = models.info.Item,
-	modelHud = Skull.makeIcon(models.info.icon),
+	modelHud = Skull.makeIcon(textures["textures.item_icons"],0,1),
 	modelItem = models.info.Item,
 
 	processEntity = {

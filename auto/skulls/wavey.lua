@@ -14,7 +14,6 @@ local identity = {
 	support = "minecraft:gray_wool",
 	modelBlock = models.skull.block,
 	modelHat = models.skull.hat,
-	modelHud = Skull.makeIcon(models.skull.icon),
 	modelItem = models.skull.entity
 }
 
@@ -34,7 +33,7 @@ ON_ENTER = function (skull, model)
 			}
 			return true
 		end
-	end,skull.identifier)
+	end,skull.hash)
 end,
 
 
@@ -62,7 +61,7 @@ end,
 ---@param skull SkullInstanceBlock
 ---@param model ModelPart
 ON_EXIT = function (skull, model)
-	events.ON_PLAY_SOUND:remove(skull.identifier)
+	events.ON_PLAY_SOUND:remove(skull.hash)
 	for key, value in pairs(skull.sounds) do
 		value.sound:stop()
 	end
