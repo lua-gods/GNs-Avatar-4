@@ -7,7 +7,7 @@
 local hasEvents,Events = pcall(require,"./event")
 
 --[────────-< CONFIG >-────────]--
-local MAX_NOTES_PER_TICK=16
+local MAX_NOTES_PER_TICK=64
 -- the maximum amount of notes that can play at the same time
 
 local PROCESS_MODE=2
@@ -48,6 +48,7 @@ local PROCESS_MODE=2
 ---@field loopStartTick integer
 ---@field maxLoopCount integer
 ---@field notes NBS.Noteblock[]
+---@field loudest number
 
 local Nbs={}
 
@@ -106,7 +107,6 @@ local function process()
 	for _, mp in pairs(activeMusicPlayers) do
 		
 		mp.tick=mp.tick+delta * (mp.songTempo or mp.track.songTempo) * mp.speed
-		
 		for i=1, MAX_NOTES_PER_TICK, 1 do
 			local currentNote=mp.track.notes[mp.currentNote]
 			if currentNote then
@@ -115,9 +115,11 @@ local function process()
 					mp.currentNote=mp.currentNote+math.sign(mp.tick-currentNote.tick)
 					if mp.loopCount == 0 or mp.track.loopStartTick <= currentNote.tick then
 						local pitch=2^(((currentNote.key-9)/12+mp.transposition)-3)
-						sounds[instruments[currentNote.instrument]]:pos(mp.pos):pitch(pitch):attenuation(mp.attenuation):volume(currentNote.volume*mp.volume):play()
-						if hasEvents then
-							mp.NOTE_PLAYED:invoke(currentNote)
+						if instruments[currentNote.instrument] then
+							sounds[instruments[currentNote.instrument]]:pos(mp.pos):pitch(pitch):attenuation(mp.attenuation):volume(currentNote.volume*mp.volume):play()
+							if hasEvents then
+								mp.NOTE_PLAYED:invoke(currentNote)
+							end
 						end
 					end
 				else
@@ -382,8 +384,9 @@ function Nbs.parseBuffer(buffer)
 	local notes={}
 	
 	local tick=-1
+	local loudest = 0
 	
-	for i=1, 10000 do -- tick loop
+	for i=1, 100000 do -- tick loop
 		local jump=buffer:readShort()
 		if jump == 0 then
 			break -- End of note block section
@@ -392,7 +395,7 @@ function Nbs.parseBuffer(buffer)
 	
 		local layer=-1 -- reset layer counter per tick
 	
-		for j=1, 1000 do -- layer loop
+		for j=1, 100000 do -- layer loop
 			local layerJump=buffer:readShort()
 			if layerJump == 0 then
 				break -- end of layers for this tick
@@ -406,7 +409,6 @@ function Nbs.parseBuffer(buffer)
 			local volume=buffer:read() -- panning (ignored here)
 			local pitch=buffer:readShortLE()
 			c=c+1
-			
 			local noteblock={
 				tick=tick,
 				layer=layer,
@@ -415,10 +417,11 @@ function Nbs.parseBuffer(buffer)
 				volume=volume/255,
 				pitch=pitch
 			}
+			loudest = math.max(loudest, noteblock.volume)
 			notes[c]=noteblock
 		end
 	end
-	
+	new.loudest = loudest
 	new.notes=notes
 	return new
 end
