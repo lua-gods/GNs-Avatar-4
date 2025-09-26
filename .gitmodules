@@ -1,3 +1,4 @@
 [submodule "lib/GNUI"]
 	path = lib/GNUI
 	url = https://github.com/lua-gods/GNUI
+	branch = v4.x
