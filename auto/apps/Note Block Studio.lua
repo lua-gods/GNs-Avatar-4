@@ -35,14 +35,12 @@ return {
 				table.insert(textures, {Value = string.sub(data, i, i+32767)})
 			end
 			
-			local item = ([=[minecraft:player_head{display:{Name:%s},SkullOwner:{Id:[I;%s,%s,%s,%s],Properties:{textures:%s}}}]=]):format(toJson(toJson({text=name})):sub(2,-2),u1,u2,u3,u4,"")--toJson(textures)
+			local item = ([=[minecraft:player_head{display:{Name:%s},SkullOwner:{Id:[I;%s,%s,%s,%s],Properties:{textures:%s}}}]=]):format(toJson(toJson({text=name})),u1,u2,u3,u4,toJson(textures))--
 			
 			host:setClipboard(item)
 			if #item < 65536*999 then
 				give(item)
-				print("Generated ("..#item.." < 65536)")
-			else
-				print("Exceeded byte limit ("..#item.." > 65536)")
+				print("Generated ("..#item..")")
 			end
 		end)
 	end
