@@ -14,15 +14,23 @@ local identity = {
 	modelItem = models.skull.entity,
 }
 
-local HALF = vec(0.5,0.5,0.5)
+local zlib = require("lib.zlib")
+
+local HALF = vec(0.5,0.35,0.5)
 
 identity.processBlock = {
 	---@param skull SkullInstanceBlock
 	---@param model ModelPart
 	ON_ENTER = function (skull, model)
 		local musicPlayer = NBS.newMusicPlayer():setPos(skull.pos + vec(0.5,0.5,0.5))
-		local track = NBS.parseBuffer(skull.params)
-		skull.params:close()
+		
+		--zlib.Deflate.Decompress(skull.params)
+		local buffer = data:createBuffer(#skull.params)
+		buffer:setPosition(0)
+		buffer:writeByteArray(skull.params)
+		buffer:setPosition(0)
+		local track = NBS.parseBuffer(buffer)
+		buffer:close()
 		musicPlayer:setTrack(track):play()
 		
 		skull.musicPlayer = musicPlayer
@@ -31,7 +39,7 @@ identity.processBlock = {
 		skull.notes = {}
 		---@param note NBS.Noteblock
 		musicPlayer.NOTE_PLAYED:register(function (note)
-			skull.notes[#skull.notes+1] = particles:newParticle("minecraft:note",skull.pos + HALF + skull.dir*0.25,vectors.vec3((note.instrument)/24,0,0)):setVelocity(skull.matrix:applyDir(-note.key%24/24-0.5,0,0.2)):setLifetime(100)
+			skull.notes[#skull.notes+1] = particles:newParticle("minecraft:note",skull.pos + HALF + skull.dir*0.25,vectors.vec3((note.instrument)/24,0,0)):setVelocity(skull.matrix:applyDir(note.key%24/24-0.5,0,0.2)):setLifetime(100)
 			skull.squish = math.min(skull.squish, 1 - note.volume)
 		end)
 	end,

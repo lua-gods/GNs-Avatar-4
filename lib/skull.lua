@@ -394,7 +394,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 			
 			buffer:writeBase64(str)
 			buffer:setPosition(0)
-			instance.params = buffer
+			instance.params = buffer:readByteArray()
 			
 			--instance.params = 
 
