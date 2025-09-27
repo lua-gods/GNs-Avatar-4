@@ -42,7 +42,8 @@ end
 
 ---@type SkullIdentity|{}
 local identity = {
-	name = "default",
+	name = "Default",
+	id = "default",
 	modelBlock = models.skull.block,
 	modelHat = models.skull.hat,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],1,1),

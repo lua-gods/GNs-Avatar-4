@@ -9,7 +9,8 @@ models.cappie.hat:scale(SCALE,SCALE,SCALE)
 
 ---@type SkullIdentity|{}
 local identity = {
-	name = "cappie",
+	name = "Cappie",
+	id = "cappie",
 	modelBlock = models.cappie.hat,
 	modelHat = models.cappie.hat,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],0,0),

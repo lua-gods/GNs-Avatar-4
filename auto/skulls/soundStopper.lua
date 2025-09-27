@@ -10,7 +10,8 @@ local DISTANCE = 6
 
 ---@type SkullIdentity|{}
 local identity = {
-	name = "Sound Stopper",
+	name = "Sound Slower",
+	id = "sound_slower",
 	support = "minecraft:black_wool",
 	modelBlock = models.skull.block,
 	modelHat = models.skull.hat,

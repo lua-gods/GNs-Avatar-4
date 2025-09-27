@@ -9,7 +9,8 @@ models.fez.hat:scale(SCALE,SCALE,SCALE)
 
 ---@type SkullIdentity|{}
 local identity = {
-	name = "sign",
+	name = "Sign",
+	id = "sign",
 	
 	processHud = {
 		ON_ENTER = function (skull, model)

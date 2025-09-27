@@ -18,7 +18,7 @@ local process = {
 
 local identity = Skull.registerIdentity{
 	name = "Copy",
-
+	id = "copy",
 	processHat = process,
 	processHud = process,
 	processEntity = process,

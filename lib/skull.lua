@@ -11,6 +11,8 @@ local ZERO = vec(0,0,0)
 local UP = vec(0,1,0)
 local SKULL_DECAY_TIME = 1000
 
+local zlib = require("lib.zlib")
+
 -- this is used to avoid using world render when I am offline
 local SKULL_PROCESS = models:newPart("SkullRenderer","SKULL")
 SKULL_PROCESS:newBlock("forceRenderer"):block("minecraft:emerald_block"):scale(0,0,0)
@@ -71,6 +73,7 @@ SkullInstance.__index = SkullInstance
 
 ---@class SkullIdentity
 ---@field name string
+---@field id string
 ---@field support Minecraft.blockID
 ---
 ---@field modelBlock ModelPart|{[1]:ModelPart}
@@ -103,20 +106,90 @@ local function modelIdentityPeprocess(model)
 		return models:newPart("Placeholder"..placeholderID,"SKULL"):setVisible(false)
 	end
 end
+local texDataCache = {}
 
+
+---Checks if the given array of identities exist.
+---@param identities table<string,table>
+---@return boolean
+local function areIdentitiesValid(identities)
+	for key, value in pairs(identities) do
+		if not skullIdentities[key] then
+			return false
+		end
+	end
+	return true
+end
+
+
+---@param nbt table
+local function parseTexture(identities,nbt,hash)
+	local texData
+	if texDataCache[hash] then
+		for _, value in pairs(texDataCache[hash]) do
+			table.insert(identities,value)
+		end
+		return
+	end
+	local texStr = ""
+	
+	local c = 0
+	if nbt 
+	and nbt.SkullOwner
+	and nbt.SkullOwner.Properties
+	and nbt.SkullOwner.Properties.textures then
+		for index, entry in ipairs(nbt.SkullOwner.Properties.textures) do
+			if entry.Value then
+				c = c + 1
+				if c > 1 then
+					texStr = texStr..entry.Value
+				end
+			end
+		end
+	end
+	if texDataCache[texStr] then
+		texData = texDataCache[texStr]
+	else
+		if texStr and #texStr > 0 then
+			local buffer = data:createBuffer(#texStr)
+			
+			buffer:writeBase64(texStr)
+			buffer:setPosition(0)
+			local str = buffer:readByteArray(buffer:available())
+			if true then
+				str = zlib.Deflate.Decompress(str)
+			end
+			local ok, result = pcall(parseJson,str) --parseJson(str)
+			if not ok then return
+			else
+				texData = result
+			end
+			texDataCache[str] = texData
+		else
+			texData = {}
+		end
+	end
+	if type(texData) == "table" then
+		local added = {}
+		for id, params in pairs(texData) do
+			local entry = {
+				id = id,
+				params = params,
+				hash = id
+			}
+			table.insert(identities, entry)
+			table.insert(added, entry)
+		end
+		texDataCache[hash] = added
+	end
+end
 
 local identityCache = {}
 
----@param item ItemStack
----@return {name:string,params:string[],hash:string}[]
-local function parseItem(item)
-	local sourceString = item:getName()
-	if identityCache[sourceString] then
-		return identityCache[sourceString]
-	end
 
-	local identities = {}
-	local json = sourceString:gsub("\n","")
+---@param name string
+local function parseName(identities,name)
+	local json = name:gsub("\n","")
 	
 	--[[ Turned off because this is already done by Minecraft's json parser, kept just in case
 	-- convert text to double quoted strings
@@ -132,43 +205,83 @@ local function parseItem(item)
 		end):sub(2,-2)
 	end
 	json = "{"..json.."}"
-	local ok, result = pcall(parseJson,json)
 	
-	if not ok then -- insert fallback identity here
-		return {
+	local ok,result = pcall(parseJson,json)
+	if ok then
+		for id, params in pairs(result) do
+			table.insert(identities, {
+				id = id,
+				params = params,
+				hash = id
+			})
+		end
+	end
+end
+
+
+---@param item ItemStack
+---@return {id:string,params:string[],hash:string}[]
+local function readItem(item)
+	local sourceString = item:toStackString()
+	if identityCache[sourceString] then
+		return identityCache[sourceString]
+	end
+	
+	local identities = {}
+	
+	parseTexture(identities,item.tag,item:toStackString())
+	parseName(identities,item:getName())
+	
+	if #identities == 0 then
+		identities = {
 			{
-				name="default",
+				id="default",
 				params={},
 				hash="default"
 			}
 		}
 	end
 	
-	for name, params in pairs(result) do
-		local name = name
-		table.insert(identities, {
-			name = name,
-			params = params,
-			hash = name
-		})
-	end
-	
-	
-	--for identityString in (item:getName():gsub('\\.', escapeCharMap)..","):gmatch("([^,]+),") do
-	--	local params = {}
-	--	for param in (identityString..';'):gmatch('([^;]*);') do
-	--	   table.insert(params, (param:gsub('\\.', unescapeCharMap)))
-	--	end
-	--	local name = table.remove(params, 1)
-	--	table.insert(identities, {
-	--		name = name,
-	--		params = params or {},
-	--		hash = identityString,
-	--	})
-	--end
-	
 	identityCache[sourceString] = identities
 	return identities
+end
+
+
+local u1,u2,u3,u4 = client.uuidToIntArray("e4b91448-3b58-4c1f-8339-d40f75ecacc4")
+---@param identityArray table
+function SkullAPI.writeSkull(identityArray,customName)
+	
+	local str = toJson(identityArray)
+	if true then
+		str = zlib.Deflate.Compress(str,{level=1})
+	end
+	local buffer = data:createBuffer(#str)
+	buffer:writeByteArray(str)
+	buffer:setPosition(0)
+	
+	local data = buffer:readBase64(buffer:available())
+	local textures = {
+		-- first texture is the tophat texture for the head to fallback into
+		{Signature="jO6gPIP5+XJhM7XpLCaDQgBkLfdczmWROb90w1h2PlhxMOf2Xc9LpC1LnidJkwusKnVY33wCT7tNwJrVLocDRnafFQ/NSQwZJs4cbDGp7o9sZ4gV8eoMY1bX2xiF9o+KwwCOXbL5ufxYWHSLxzj88goiYD0yrYu7W8rplWviPrpkQThWJEo9f0KmMDVJR3ubZ2YQhZIqvRgNsjubX/rejLXxaP5w2EwPWoB+kmH7sbXUZQCPU1ZCEkCfRSg5l0aIz4Ie2fQr3Er8/gHHoiILV/vpv0Le2de2Cn4hcF/XqTQJIhYELkMhL8Jlt5RR463Av7yD4+sSkEJDk2ByFhNOL2I9aNW+AJD4zRbtbT85+kTVd5fWzaOOnzz7Dq32T0k5zLEGnELz16gc/OYqjvPHmQHKva5lLad37r4HLiGxrUR9PfTLownsKtl9S0toMXkyMzH7psqqhtwNHXGrKdhqfEBwJ7KsBC1Bsds8dK70KC23mQxziTgD5rXKjcaxFm+B2yLicNzm5mwJZ2wYCfE07kEf0D/KeSdxT4i9zeNz6/PWO8vA9otIB4maywnhuWHS8Xco7V1TCEQEa/xuwT2HFImLXISiLeBfTaByWk9qeT72oFjcIWmxNnU9ZtYdwW2UpDLMEv0U9pkrbFW03rJQdvXIzUO2Zp8S8OdjooxsAAo=",Value="ewogICJ0aW1lc3RhbXAiIDogMTc1ODk3NDEzMDAwNSwKICAicHJvZmlsZUlkIiA6ICJlNGI5MTQ0ODNiNTg0YzFmODMzOWQ0MGY3NWVjYWNjNCIsCiAgInByb2ZpbGVOYW1lIiA6ICJHTlVJIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzhmMzIzYmM5ODc5NjBhMTY0MWJmNzBiMzQyMTQ2NjRkZTlhMjNjYzRiMTQ0YzMzYWVmMWY5ZmM2MjA4NjUwNTciCiAgICB9CiAgfQp9"}
+	}
+	-- split the string to 32kb chunks
+	for i=1, #data, 32768 do
+		table.insert(textures, {Value = string.sub(data, i, i+32767)})
+	end
+	
+	local name = customName or "GN's Head"
+	
+	local item = ([=[minecraft:player_head{display:{Name:%s},SkullOwner:{Id:[I;%s,%s,%s,%s],Properties:{textures:%s}}}]=]):format(toJson(toJson({text=name})),u1,u2,u3,u4,toJson(textures))
+	return item
+end
+
+
+---Returns the skull identity to use with the given name  
+---This exist to allow fallback manipulation
+---@param id string
+---@return SkullIdentity
+function SkullAPI.getIdentity(id)
+	return skullIdentities[id] or skullIdentities.default
 end
 
 
@@ -187,12 +300,6 @@ local function applyPlaceholders(tbl)
 end
 
 
----@param item ItemStack
-local function getItemParams(item)
-	
-end
-
-
 ---@param cfg SkullIdentity|{}
 function SkullAPI.registerIdentity(cfg)
 	local root = models:newPart(cfg.name.."root")
@@ -200,6 +307,7 @@ function SkullAPI.registerIdentity(cfg)
 	local identity = {
 		name = cfg.name,
 		support = cfg.support,
+		id = cfg.id,
 
 		modelBlock = modelIdentityPeprocess(cfg.modelBlock),
 		modelHat   = modelIdentityPeprocess(cfg.modelHat),
@@ -222,7 +330,7 @@ function SkullAPI.registerIdentity(cfg)
 	--root:addChild(identity.modelItem)
 
 	setmetatable(identity,SkullIdentity)
-	skullIdentities[cfg.name] = identity
+	skullIdentities[cfg.id] = identity
 	if identity.support then
 		skullSupportIdentities[identity.support] = identity
 	end
@@ -356,81 +464,49 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 
 		instance = blockInstances[id] ---@cast instance SkullInstanceBlock
 
-
-		if not blockInstances[id] then -- new instance
-			local isWall = block.id:find("wall_head$") and true or false
-			local rot = isWall and (({north=180,south=0,east=90,west=270})[block.properties.facing]) or ((tonumber(block.properties.rotation) * -22.5 + 180) % 360)
-			local matrix = matrices.mat4():rotateY(rot):translate(pos)
-			local dir = matrix:applyDir(0,0,1)
-
-			local support = world.getBlockState(pos - (isWall and dir or UP))
-			local identity = skullSupportIdentities[support.id] or skullIdentities.default
-			instance = identity:newBlockInstance() ---@type SkullInstanceBlock
-
-
-			instance.support = support
-			instance.block   = block
-			instance.pos     = pos
-			instance.isWall  = isWall
-			instance.rot     = rot
-			instance.dir     = dir
-			instance.matrix  = matrix
-			
-			local NBT = block:getEntityData()
-			
-			local str = ""
-			
-			if NBT 
-			and NBT.SkullOwner 
-			and NBT.SkullOwner.Properties 
-			and NBT.SkullOwner.Properties.textures then
-				for index, entry in ipairs(NBT.SkullOwner.Properties.textures) do
-					if entry.Value then
-						str = str..entry.Value
-					end
-				end
+		local isWall = block.id:find("wall_head$") and true or false
+		local rot = isWall and (({north=180,south=0,east=90,west=270})[block.properties.facing]) or ((tonumber(block.properties.rotation) * -22.5 + 180) % 360)
+		local matrix = matrices.mat4():rotateY(rot):translate(pos)
+		local dir = matrix:applyDir(0,0,1)
+		
+		local identities = {}
+		parseTexture(identities,block:getEntityData(),block:toStateString())
+		
+		for i, identity in ipairs(identities) do
+			local fullHash = id..","..identity.hash
+			instance = blockInstances[fullHash] ---@cast instance SkullInstanceBlock
+			if not instance then -- new instance
+				instance = SkullAPI.getIdentity(identity.id):newBlockInstance() ---@type SkullInstanceBlock
+				instance.block = block
+				instance.pos = pos
+				instance.isWall = isWall
+				instance.rot = rot
+				instance.dir = dir
+				instance.matrix = matrix
+				instance.params = identity.params
+				instance.support = world.getBlockState(pos - (isWall and dir or UP))
+				blockInstances[fullHash] = instance
+				instance.identity.processBlock.ON_ENTER(instance,instance.model)
+			else
+				instance.lastSeen = time
 			end
-			local buffer = data:createBuffer(#str)
-			
-			buffer:writeBase64(str)
-			buffer:setPosition(0)
-			instance.params = buffer:readByteArray()
-			
-			--instance.params = 
-
-			local blockModel = instance.model
-			:newPart("blockModelArm")
-			:rot(0,-rot)
-			:newPart("blockModel")
-			:pos(vec(-8,0,-8) + (isWall and matrix:applyDir(0,-4,-4) or ZERO))
-			instance.blockModel = blockModel
-
-			blockInstances[id] = instance
-
-			instance.hash = id
-			instance.identity.processBlock.ON_ENTER(instance,instance.model)
-		else
-			instance.lastSeen = time
+			drawInstances[#drawInstances+1] = instance
 		end
-		drawInstances[#drawInstances+1] = instance
 	elseif ctx == "HEAD" then --[────────────────────────-< 🟡 HAT / HEAD >-────────────────────────]--
 
 		local uuid = entity:getUUID()
-		local rawName = item:getName()
 
-		for i, identityString in ipairs(parseItem(item)) do
-			local identify = uuid..","..identityString.hash
+		for i, identity in ipairs(readItem(item)) do
+			local identify = uuid..","..identity.hash
 			instance = hatInstances[identify] ---@cast instance SkullInstanceEntity
-
 			if not instance then -- new instance
-				instance = skullIdentities[identityString.name] or skullIdentities.default
-				instance = instance:newHatInstance()
+				instance = SkullAPI.getIdentity(identity.id):newHatInstance()
 				instance.entity = entity
 				instance.vars = playerVars[uuid] or {}
 				instance.item = item
 				instance.uuid = uuid
-				instance.params = identityString.params
-				instance.hash = identityString.hash
+				instance.params = identity.params
+				instance.hash = identity.hash
 				instance.identity.processHat.ON_ENTER(instance,instance.model)
 				hatInstances[identify] = instance
 			else
@@ -442,16 +518,16 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 	elseif ctx == "ITEM_ENTITY" or ctx:find("HAND$") then
 		local uuid = entity:getUUID()
 
-		for i, identityString in ipairs(parseItem(item)) do
-			local identify = uuid..","..identityString.hash
+		for i, identity in ipairs(readItem(item)) do
+			local identify = uuid..","..identity.hash
 			instance = entityInstances[identify] ---@cast instance SkullInstanceEntity
 			if not instance then -- new instance
-				instance = (skullIdentities[identityString.name] or skullIdentities.default):newEntityInstance()
+				instance = SkullAPI.getIdentity(identity.id):newEntityInstance()
 				instance.entity = entity
 				instance.vars = playerVars[uuid] or {}
 				instance.item = item
 				instance.uuid = uuid
-				instance.params = identityString.params
+				instance.params = identity.params
 				instance.hash = identify
 				instance.identity.processEntity.ON_ENTER(instance,instance.model)
 				entityInstances[identify] = instance
@@ -461,16 +537,15 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 			drawInstances[#drawInstances+1] = instance
 		end
 	else --[────────────────────────-< 🟢 HUD >-────────────────────────]--
-		for i, identityString in ipairs(parseItem(item)) do
-			instance = hudInstances[identityString.hash] ---@cast instance SkullInstanceEntity
+		for i, identity in ipairs(readItem(item)) do
+			instance = hudInstances[identity.hash] ---@cast instance SkullInstanceEntity
 			if not instance then -- new instance
-				instance = skullIdentities[identityString.name] or skullIdentities.default
-				instance = instance:newHudInstance()
+				instance = SkullAPI.getIdentity(identity.id):newHudInstance()
 				instance.item = item
-				instance.params = identityString.params
-				instance.hash = identityString.hash
+				instance.params = identity.params
+				instance.hash = identity.hash
 				instance.identity.processHud.ON_ENTER(instance,instance.model)
-				hudInstances[identityString.hash] = instance
+				hudInstances[identity.hash] = instance
 			else
 				instance.lastSeen = time
 			end
@@ -581,6 +656,7 @@ SKULL_PROCESS.midRender	 = function (delta, context, part)
 	end
 end
 
+--[────────────────────────-< Generic APIs >-────────────────────────]--
 
 ---@param pos Vector3
 ---@return SkullInstanceBlock?
@@ -592,11 +668,13 @@ function SkullAPI.getSkull(pos)
 end
 
 
+---@return table<string, SkullIdentity>
 function SkullAPI.getSkullIdentities()
 	return skullIdentities
 end
 
 
+---@return table<string, SkullInstanceBlock>
 function SkullAPI.getSkullBlockInstances()
 	return blockInstances
 end
@@ -607,7 +685,6 @@ end
 function SkullAPI.toID(pos)
 	return pos.x.. "," ..pos.y .. "," .. pos.z
 end
-
 
 
 return SkullAPI

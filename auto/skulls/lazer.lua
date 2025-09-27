@@ -19,7 +19,8 @@ models.lazer.hat:scale(SCALE,SCALE,SCALE)
 
 ---@type SkullIdentity|{}
 local identity = {
-	name = "layser",
+	name = "Laser",
+	id = "laser",
 	modelBlock = models.lazer.hat,
 	modelHat = models.lazer.hat,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],1,0),

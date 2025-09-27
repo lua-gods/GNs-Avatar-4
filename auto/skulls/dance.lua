@@ -42,6 +42,7 @@ end
 local identity = {
 	support = "minecraft:crimson_planks",
 	name = "Statue Emotes",
+	id = "statue_dance",
 	modelBlock = source,
 	modelHat = source,
 	modelHud = source,

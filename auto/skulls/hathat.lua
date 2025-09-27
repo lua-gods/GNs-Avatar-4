@@ -43,6 +43,7 @@ end
 ---@type SkullIdentity|{}
 local identity = {
 	name = "hathat",
+	id = "hathat",
 	modelBlock = models.skull.hat,
 	modelHat = models.skull.hat,
 	modelHud = models.skull.hat,

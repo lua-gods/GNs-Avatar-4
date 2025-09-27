@@ -9,7 +9,8 @@ models.fez.hat:scale(SCALE,SCALE,SCALE)
 
 ---@type SkullIdentity|{}
 local identity = {
-	name = "fez",
+	name = "Fez Hat",
+	id = "fez",
 	modelBlock = models.fez.hat,
 	modelHat = models.fez.hat,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],1,0),

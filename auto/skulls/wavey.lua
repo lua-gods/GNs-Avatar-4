@@ -11,6 +11,7 @@ local DISTANCE = 6
 ---@type SkullIdentity|{}
 local identity = {
 	name = "Sound Wobbler",
+	id = "sound_wobbler",
 	support = "minecraft:gray_wool",
 	modelBlock = models.skull.block,
 	modelHat = models.skull.hat,

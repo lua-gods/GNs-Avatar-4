@@ -10,7 +10,8 @@ local SCALE = 0.845
 
 ---@type SkullIdentity|{}
 local identity = {
-	name = "toiletpaper",
+	name = "Toiletpaper",
+	id = "toiletpaper",
 	modelBlock = models.info.Item,
 	modelHat = models.info.Item,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],0,1),

@@ -22,6 +22,7 @@ end
 ---@type SkullIdentity|{}
 local identity = {
 	name = "Sound Spotter",
+	id = "sound_spotter",
 	support = "minecraft:orange_wool",
 	modelBlock = models.skull.block,
 	modelHat = models.skull.hat,

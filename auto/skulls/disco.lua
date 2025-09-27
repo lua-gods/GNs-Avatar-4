@@ -9,8 +9,10 @@ require("lib.animation")
 ---@type SkullIdentity|{}
 local identity = {
 	support = "minecraft:note_block",
-	name = "Disco",
+	name = "Disco Ball",
+	id = "disco",
 	modelBlock = source,
+	modelHud = Skull.makeIcon(textures["textures.item_icons"],3,1),
 
 	processBlock = {
 		ON_ENTER = function (skull, model)
