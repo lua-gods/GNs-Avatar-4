@@ -12,12 +12,13 @@ local identity = {
 	name = "Disco Ball",
 	id = "disco",
 	modelBlock = source,
+	modelHat = source,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],3,1),
 
 	processBlock = {
 		ON_ENTER = function (skull, model)
 			local beams = {}
-			for i = 1, 5, 1 do
+			for i = 1, skull.params.count or 5, 1 do
 				local beam = model.Beam:copy("beam#"..i):setColor(math.random(),math.random(),math.random())
 				beams[i] = beam
 
@@ -30,5 +31,6 @@ local identity = {
 		end
 	}
 }
+identity.processHat = {ON_ENTER = identity.processBlock.ON_ENTER}
 
 Skull.registerIdentity(identity)

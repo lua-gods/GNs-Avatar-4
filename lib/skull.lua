@@ -9,7 +9,7 @@ local modelUtils = require("lib.modelUtils")
 
 local ZERO = vec(0,0,0)
 local UP = vec(0,1,0)
-local SKULL_DECAY_TIME = 1000
+local SKULL_DECAY_TIME = 100
 
 local zlib = require("lib.zlib")
 
@@ -49,6 +49,33 @@ function SkullAPI.makeIcon(texture,iconX,iconY)
 	:setRenderType("CUTOUT_EMISSIVE_SOLID")
 	:setDimensions(64,64)
 	:setUVPixels(iconX*16,iconY*16)
+	return model
+end
+
+---@param texture Texture
+---@param iconX number
+---@param iconY number
+---@return ModelPart
+function SkullAPI.makeExtrudedIcon(texture,iconX,iconY)
+	id = id + 1
+	iconX = iconX or 0
+	iconY = iconY or 0
+	
+	local model = models:newPart("Icon"..id)
+	:setPos(3,17,9)
+	:rot(38,-45,0)
+	model:setParentType("SKULL")
+	for i = 1, 50, 1 do
+		local task = model:newSprite("Icon"..i)
+		:setPos(0,0,i/50)
+		:texture(texture,16,16)
+		:setRenderType("CUTOUT_EMISSIVE_SOLID")
+		:setDimensions(64,64)
+		:setUVPixels(iconX*16,iconY*16)
+		if i > 0 and i < 10 then
+			task:setColor(0.9,0.9,0.9)
+		end
+	end
 	return model
 end
 
@@ -174,7 +201,7 @@ local function parseTexture(identities,nbt,hash)
 		for id, params in pairs(texData) do
 			local entry = {
 				id = id,
-				params = params,
+				params = type(params) == "table" and params or {},
 				hash = id
 			}
 			table.insert(identities, entry)
@@ -185,12 +212,82 @@ local function parseTexture(identities,nbt,hash)
 end
 
 local identityCache = {}
+local function processWIthPreservedStrings(input, middleApply)
+	local placeholders = {}
+	local parts = {}
+	local n = #input
+	local i = 1
+	local counter = 0
 
+	while i <= n do
+		local c = input:sub(i, i)
+		if c == '"' then
+			-- start of quoted string
+			i = i + 1
+			local buf = {}
+			while i <= n do
+				local ch = input:sub(i, i)
+				if ch == "\\" then
+					-- keep the backslash and the escaped character together
+					local nextc = input:sub(i + 1, i + 1)
+					table.insert(buf, "\\")
+					if i + 1 <= n then
+						table.insert(buf, nextc)
+						i = i + 2
+					else
+						-- trailing backslash at end of input
+						i = i + 1
+					end
+				elseif ch == '"' then
+					-- closing quote (unescaped)
+					i = i + 1
+					break
+				else
+					table.insert(buf, ch)
+					i = i + 1
+				end
+			end
+
+			counter = counter + 1
+			local key = "___STR_REPLACEMENT_" .. counter .. "___"
+			placeholders[counter] = table.concat(buf)    -- content without outer quotes, escapes preserved
+			table.insert(parts, key)
+		else
+			table.insert(parts, c)
+			i = i + 1
+		end
+	end
+
+	local without_strings = table.concat(parts)
+
+	-- Apply
+	local processed = middleApply(without_strings)
+
+	-- Restore placeholders
+	local restored = processed:gsub("___STR_REPLACEMENT_(%d+)___", function(idx)
+		local k = tonumber(idx)
+		return '"' .. (placeholders[k] or "") .. '"'
+	end)
+
+	return restored
+end
+
+local function cleanEntries(tbl)
+	for key, value in pairs(tbl) do
+		local t = type(value)
+		if t == "table" then
+			cleanEntries(value)
+		elseif t == "string" then
+			if t:find("^\".*\"$") then
+				t = t:sub(-2,2)
+			end
+		end
+	end
+end
 
 ---@param name string
 local function parseName(identities,name)
 	local json = name:gsub("\n","")
-	
 	--[[ Turned off because this is already done by Minecraft's json parser, kept just in case
 	-- convert text to double quoted strings
 	json = json:gsub("[^,:%[%]%(%)%{%}]+",function (str)
@@ -198,20 +295,22 @@ local function parseName(identities,name)
 	end)
 	--]]
 	
-	for i = 1, 2, 1 do -- needs to be ran twice because of overlapping match sequence
-		-- convert lone string entry to a key with an empty array
-		json = (","..json..","):gsub("(,[^:,]+),",function (str)
+	for i = 1, 1, 1 do -- needs to be ran twice because of overlapping match sequence
+		json = processWIthPreservedStrings(json,function (s)
+		return (","..s..","):gsub("(,[^:%[%]\"_,]+),",function (str)
 			return str..":[],"
 		end):sub(2,-2)
+	end)
 	end
-	json = "{"..json.."}"
 	
+	json = "{"..json.."}"
 	local ok,result = pcall(parseJson,json)
 	if ok then
 		for id, params in pairs(result) do
+			--cleanEntries(params)
 			table.insert(identities, {
 				id = id,
-				params = params,
+				params = type(params) == "table" and params or {},
 				hash = id
 			})
 		end
@@ -229,7 +328,7 @@ local function readItem(item)
 	
 	local identities = {}
 	
-	parseTexture(identities,item.tag,item:toStackString())
+	parseTexture(identities,item.tag,sourceString)
 	parseName(identities,item:getName())
 	
 	if #identities == 0 then
@@ -472,6 +571,15 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 		local identities = {}
 		parseTexture(identities,block:getEntityData(),block:toStateString())
 		
+		if #identities == 0 then
+			identities = {
+				{
+					id="default",
+					hash="default"
+				}
+			}
+		end
+		
 		for i, identity in ipairs(identities) do
 			local fullHash = id..","..identity.hash
 			instance = blockInstances[fullHash] ---@cast instance SkullInstanceBlock
@@ -484,6 +592,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				instance.dir = dir
 				instance.matrix = matrix
 				instance.params = identity.params
+				instance.hash = fullHash
 				instance.support = world.getBlockState(pos - (isWall and dir or UP))
 				blockInstances[fullHash] = instance
 				instance.identity.processBlock.ON_ENTER(instance,instance.model)
@@ -501,6 +610,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 			instance = hatInstances[identify] ---@cast instance SkullInstanceEntity
 			if not instance then -- new instance
 				instance = SkullAPI.getIdentity(identity.id):newHatInstance()
+				instance.matrix = instance.model:partToWorldMatrix()
 				instance.entity = entity
 				instance.vars = playerVars[uuid] or {}
 				instance.item = item
@@ -585,10 +695,13 @@ SKULL_PROCESS.preRender = function (delta, context, part)
 	if next(blockInstances) then
 		---@param instance SkullInstanceBlock
 		for key, instance in pairs(blockInstances) do
+			local ok, err = pcall(instance.identity.processBlock.ON_PROCESS, instance,instance.model,delta)
+			if not ok then warn(err) end
 			instance.identity.processBlock.ON_PROCESS(instance,instance.model,delta)
 			if (not world.getBlockState(instance.pos).id:find("head$")) then
 				instance.queueFree = true
-				instance.identity.processBlock.ON_EXIT(instance,instance.model)
+				local ok, err = pcall(instance.identity.processBlock.ON_EXIT, instance,instance.model)
+				if not ok then warn(err) end
 				instance.model:remove()
 				instance.model = nil
 				blockInstances[key] = nil
@@ -601,10 +714,12 @@ SKULL_PROCESS.preRender = function (delta, context, part)
 		for key, instance in pairs(hatInstances) do
 			instance.matrix = instance.model and instance.model:partToWorldMatrix() or matrices.mat4()
 			instance.vars = playerVars[instance.uuid] or {}
-			instance.identity.processHat.ON_PROCESS(instance,instance.model,delta)
+			local ok, err = pcall(instance.identity.processHat.ON_PROCESS, instance,instance.model,delta)
+			if not ok then warn(err) end
 			if time - instance.lastSeen > SKULL_DECAY_TIME then
 				instance.queueFree = true
-				instance.identity.processHat.ON_EXIT(instance,instance.model)
+				local ok, err = pcall(instance.identity.processHat.ON_EXIT, instance,instance.model)
+				if not ok then warn(err) end
 				instance.model:remove()
 				instance.model = nil
 				hatInstances[key] = nil
@@ -617,9 +732,12 @@ SKULL_PROCESS.preRender = function (delta, context, part)
 			if instance.model then
 				instance.matrix = instance.model:partToWorldMatrix()
 				instance.vars = playerVars[instance.uuid] or {}
-				instance.identity.processEntity.ON_PROCESS(instance,instance.model,delta)
+				local ok, err = pcall(instance.identity.processEntity.ON_PROCESS, instance,instance.model,delta)
+				if not ok then warn(err) end
 				if time - instance.lastSeen > 100 then
 					instance.queueFree = true
+					local ok, err = pcall(instance.identity.processEntity.ON_EXIT, instance,instance.model)
+					if not ok then warn(err) end
 					instance.identity.processEntity.ON_EXIT(instance,instance.model)
 					instance.model:remove()
 					instance.model = nil
@@ -635,7 +753,8 @@ SKULL_PROCESS.preRender = function (delta, context, part)
 	if next(hudInstances) then
 		---@param instance SkullInstanceHud
 		for key, instance in pairs(hudInstances) do
-			instance.identity.processHud.ON_PROCESS(instance,instance.model,delta)
+			local ok, err = pcall(instance.identity.processHud.ON_PROCESS, instance,instance.model,delta)
+			if not ok then warn(err) end
 			if time - instance.lastSeen > SKULL_DECAY_TIME then
 				instance.queueFree = true
 				instance.identity.processHud.ON_EXIT(instance,instance.model)

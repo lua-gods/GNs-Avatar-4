@@ -3,7 +3,7 @@ local Skull = require("lib.skull")
 local process = {
 		ON_ENTER = function (skull, model)
 			local itemString = ([[minecraft:player_head{"SkullOwner":"%s","display":{"Name":%s}}]])
-			:format(skull.params[1] or "", toJson(toJson(skull.params[2] or "")))
+			:format(skull.params.player or "", toJson(toJson(skull.params.name or "")))
 			local ok, result = pcall(world.newItem, itemString)
 			if not ok then
 				result = "minecraft:barrier"
