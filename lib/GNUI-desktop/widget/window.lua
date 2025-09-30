@@ -192,6 +192,7 @@ function WindowAPI.new(screen,variant)
 	:setAnchor(0,0,1,1)
 	:setDimensions(0,TITLEBAR_HEIGHT,0,0)
 	self.Content = content
+	content:setSprite(Theme.getStyle(self,"content",variant))
 	
 	return self
 end

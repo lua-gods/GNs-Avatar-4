@@ -92,6 +92,8 @@ theme.Window = {
 		:setTextMargin(2,2,2,2)
 		:setDefaultTextColor("#0c2e44"),
 		titlebar_height = 12,
+		content = GNUI.newSprite(atlas,0,0,0,0)
+		:setPadding(1,1,1,1),
 	}
 }
 return theme

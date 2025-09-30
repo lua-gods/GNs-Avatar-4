@@ -1,11 +1,11 @@
-local NAME = "GNanimates"
+local NAME = "GNSA"
 
 if math.random() < 0.05 then
-	NAME = "GNaminates"
+	NAME = "GMSA"
 end
 
-local from = vectors.hexToRGB("#d3fc7e")
-local to = vectors.hexToRGB("#33984b")
+local from = vectors.hexToRGB("#edab50")
+local to = vectors.hexToRGB("#8e251d")
 
 local output = {}
 
@@ -21,7 +21,7 @@ end
 table.insert(output,1,{"${badges}:@gn:"})
 nameplate.ALL:setText(toJson(output))
 
-output[1] = {"${badges}:@gn: "}
+output[1] = {"${badges}:@scarlet: "}
 
 nameplate.ENTITY:setOutline(true):setBackgroundColor(0,0,0,0)
 nameplate.LIST:setText(toJson(output))

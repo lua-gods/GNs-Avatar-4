@@ -1,5 +1,4 @@
 local Skull = require("lib.skull")
-local Color = require("lib.color")
 
 
 models.skull.hat:scale(1.1,1.1,1.1)

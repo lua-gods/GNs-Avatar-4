@@ -1,3 +1,4 @@
+---@diagnostic disable: assign-type-mismatch
 --[[______   __
   / ____/ | / /  by: GNanimates / https://gnon.top / Discord: @gn68s
  / / __/  |/ / name: SKULL SYSTEM SERVICE
@@ -10,6 +11,8 @@ local modelUtils = require("lib.modelUtils")
 local ZERO = vec(0,0,0)
 local UP = vec(0,1,0)
 local SKULL_DECAY_TIME = 100
+
+local IS_MAX = avatar:getMaxWorldRenderCount() > 200000 -- 200k
 
 local zlib = require("lib.zlib")
 
@@ -92,7 +95,9 @@ end
 ---@field matrix Matrix4
 ---@field [any] any
 local SkullInstance = {}
-SkullInstance.__index = SkullInstance
+SkullInstance.__index = function (t,i)
+	return rawget(t,i) or rawget(t,"identity")[i] or SkullInstance[i]
+end
 
 
 --[────────────────────────────────────────-< Skull Identity >-────────────────────────────────────────]--
@@ -119,8 +124,9 @@ SkullInstance.__index = SkullInstance
 ---@field processEntity SkullProcessEntity
 ---@field [any] any
 local SkullIdentity = {}
-SkullIdentity.__index = SkullIdentity
-
+SkullIdentity.__index = function (t,i)
+	return rawget(t,i) or SkullIdentity[i]
+end
 
 local placeholderID = 0
 local function modelIdentityPeprocess(model)
@@ -403,26 +409,23 @@ end
 function SkullAPI.registerIdentity(cfg)
 	local root = models:newPart(cfg.name.."root")
 
-	local identity = {
-		name = cfg.name,
-		support = cfg.support,
-		id = cfg.id,
+	local identity = cfg
 
-		modelBlock = modelIdentityPeprocess(cfg.modelBlock),
-		modelHat   = modelIdentityPeprocess(cfg.modelHat),
-		modelHud   = modelIdentityPeprocess(cfg.modelHud),
-		modelItem  = modelIdentityPeprocess(cfg.modelItem),
+		identity.modelBlock = modelIdentityPeprocess(cfg.modelBlock)
+		identity.modelHat   = modelIdentityPeprocess(cfg.modelHat)
+		identity.modelHud   = modelIdentityPeprocess(cfg.modelHud)
+		identity.modelItem  = modelIdentityPeprocess(cfg.modelItem)
 
-		noModelBlockDeepCopy = (cfg.modelBlock and cfg.modelBlock[1]) and true or false,
-		noModelHatDeepCopy =   (cfg.modelHat and cfg.modelHat[1]) and true or false,
-		noModelHudDeepCopy =   (cfg.modelHud and cfg.modelHud[1]) and true or false,
-		noModelItemDeepCopy =  (cfg.modelItem and cfg.modelItem[1]) and true or false,
+		identity.noModelBlockDeepCopy = (cfg.modelBlock and cfg.modelBlock[1]) and true or false
+		identity.noModelHatDeepCopy =   (cfg.modelHat and cfg.modelHat[1]) and true or false
+		identity.noModelHudDeepCopy =   (cfg.modelHud and cfg.modelHud[1]) and true or false
+		identity.noModelItemDeepCopy =  (cfg.modelItem and cfg.modelItem[1]) and true or false
 
-		processBlock =   applyPlaceholders(cfg.processBlock),
-		processHat   =   applyPlaceholders(cfg.processHat),
-		processHud   =   applyPlaceholders(cfg.processHud),
-		processEntity  = applyPlaceholders(cfg.processEntity),
-	}
+		identity.processBlock =   applyPlaceholders(cfg.processBlock)
+		identity.processHat   =   applyPlaceholders(cfg.processHat)
+		identity.processHud   =   applyPlaceholders(cfg.processHud)
+		identity.processEntity  = applyPlaceholders(cfg.processEntity)
+	
 	--root:addChild(identity.modelBlock)
 	--root:addChild(identity.modelHat)
 	--root:addChild(identity.modelHud)
@@ -446,7 +449,7 @@ end
 
 ---@class SkullProcessEntity
 ---@field ON_ENTER fun(skull: SkullInstanceEntity, model: ModelPart)?
----@field ON_PROCESS fun(skull: SkullInstanceEntity, model: ModelPart, delta: number)?
+---@field ON_PROCESS fun(skull: SkullInstanceEntity, model: ModelPart, deltaFrame: number, deltaTick: number)?
 ---@field ON_EXIT fun(skull: SkullInstanceEntity, model: ModelPart)?
 
 ---@return SkullInstanceEntity
@@ -474,7 +477,7 @@ end
 
 ---@class SkullProcessBlock
 ---@field ON_ENTER fun(skull: SkullInstanceBlock, model: ModelPart)?
----@field ON_PROCESS fun(skull: SkullInstanceBlock, model: ModelPart, delta: number)?
+---@field ON_PROCESS fun(skull: SkullInstanceBlock, model: ModelPart, deltaFrame:number, deltaTick: number)?
 ---@field ON_EXIT fun(skull: SkullInstanceBlock, model: ModelPart)?
 
 --- Creates an instance with the only data being nessesary to a block.
@@ -499,7 +502,7 @@ end
 
 ---@class SkullProcessHat
 ---@field ON_ENTER fun(skull: SkullInstanceHat, model: ModelPart)?
----@field ON_PROCESS fun(skull: SkullInstanceHat, model: ModelPart, delta: number)?
+---@field ON_PROCESS fun(skull: SkullInstanceHat, model: ModelPart, deltaFrame:number, deltaTick: number)?
 ---@field ON_EXIT fun(skull: SkullInstanceHat, model: ModelPart)?
 
 function SkullIdentity:newHatInstance()
@@ -519,7 +522,7 @@ end
 
 ---@class SkullProcessHud
 ---@field ON_ENTER fun(skull: SkullInstanceHud, model: ModelPart)?
----@field ON_PROCESS fun(skull: SkullInstanceHud, model: ModelPart, delta: number)?
+---@field ON_PROCESS fun(skull: SkullInstanceHud, model: ModelPart, deltaFrame:number, deltaTick: number)?
 ---@field ON_EXIT fun(skull: SkullInstanceHud, model: ModelPart)?
 
 function SkullIdentity:newHudInstance()
@@ -542,9 +545,6 @@ local entityInstances = {}
 
 local playerVars = {}
 
-events.WORLD_RENDER:register(function ()
-	SKULL_PROCESS:setVisible(true)
-end)
 
 local lastDrawInstances = {}
 
@@ -560,8 +560,6 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 
 		local pos = block:getPos()
 		local id = pos.x.. "," ..pos.y .. "," .. pos.z
-
-		instance = blockInstances[id] ---@cast instance SkullInstanceBlock
 
 		local isWall = block.id:find("wall_head$") and true or false
 		local rot = isWall and (({north=180,south=0,east=90,west=270})[block.properties.facing]) or ((tonumber(block.properties.rotation) * -22.5 + 180) % 360)
@@ -582,7 +580,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 		
 		for i, identity in ipairs(identities) do
 			local fullHash = id..","..identity.hash
-			instance = blockInstances[fullHash] ---@cast instance SkullInstanceBlock
+			instance = blockInstances[id] ---@cast instance SkullInstanceBlock
 			if not instance then -- new instance
 				instance = SkullAPI.getIdentity(identity.id):newBlockInstance() ---@type SkullInstanceBlock
 				instance.block = block
@@ -593,8 +591,9 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				instance.matrix = matrix
 				instance.params = identity.params
 				instance.hash = fullHash
+				instance.supportPos = pos - (isWall and dir or UP)
 				instance.support = world.getBlockState(pos - (isWall and dir or UP))
-				blockInstances[fullHash] = instance
+				blockInstances[id] = instance
 				instance.identity.processBlock.ON_ENTER(instance,instance.model)
 			else
 				instance.lastSeen = time
@@ -683,21 +682,20 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 end)
 
 
-SKULL_PROCESS.preRender = function (delta, context, part)
-	--if client:getViewer():getUUID() == "dc912a38-2f0f-40f8-9d6d-57c400185362" then
-	--	print("hello")
-	--end
-	playerVars = world.avatarVars()
+local lastTime = client:getSystemTime()
+local process = function (deltaTick)
 	SKULL_PROCESS:setVisible(false)
+	playerVars = world.avatarVars()
 	time = client:getSystemTime()
-	delta = client:getFrameTime()
+	local deltaFrame = (time - lastTime)/1000
+	lastTime = time
+	deltaTick = client:getFrameTime()
 
 	if next(blockInstances) then
 		---@param instance SkullInstanceBlock
 		for key, instance in pairs(blockInstances) do
-			local ok, err = pcall(instance.identity.processBlock.ON_PROCESS, instance,instance.model,delta)
+			local ok, err = pcall(instance.identity.processBlock.ON_PROCESS, instance,instance.model,deltaFrame,deltaTick)
 			if not ok then warn(err) end
-			instance.identity.processBlock.ON_PROCESS(instance,instance.model,delta)
 			if (not world.getBlockState(instance.pos).id:find("head$")) then
 				instance.queueFree = true
 				local ok, err = pcall(instance.identity.processBlock.ON_EXIT, instance,instance.model)
@@ -714,7 +712,7 @@ SKULL_PROCESS.preRender = function (delta, context, part)
 		for key, instance in pairs(hatInstances) do
 			instance.matrix = instance.model and instance.model:partToWorldMatrix() or matrices.mat4()
 			instance.vars = playerVars[instance.uuid] or {}
-			local ok, err = pcall(instance.identity.processHat.ON_PROCESS, instance,instance.model,delta)
+			local ok, err = pcall(instance.identity.processHat.ON_PROCESS, instance,instance.model,deltaFrame,deltaTick)
 			if not ok then warn(err) end
 			if time - instance.lastSeen > SKULL_DECAY_TIME then
 				instance.queueFree = true
@@ -732,7 +730,7 @@ SKULL_PROCESS.preRender = function (delta, context, part)
 			if instance.model then
 				instance.matrix = instance.model:partToWorldMatrix()
 				instance.vars = playerVars[instance.uuid] or {}
-				local ok, err = pcall(instance.identity.processEntity.ON_PROCESS, instance,instance.model,delta)
+				local ok, err = pcall(instance.identity.processEntity.ON_PROCESS, instance,instance.model,deltaFrame,deltaTick)
 				if not ok then warn(err) end
 				if time - instance.lastSeen > 100 then
 					instance.queueFree = true
@@ -753,7 +751,7 @@ SKULL_PROCESS.preRender = function (delta, context, part)
 	if next(hudInstances) then
 		---@param instance SkullInstanceHud
 		for key, instance in pairs(hudInstances) do
-			local ok, err = pcall(instance.identity.processHud.ON_PROCESS, instance,instance.model,delta)
+			local ok, err = pcall(instance.identity.processHud.ON_PROCESS, instance,instance.model,deltaTick)
 			if not ok then warn(err) end
 			if time - instance.lastSeen > SKULL_DECAY_TIME then
 				instance.queueFree = true
@@ -764,6 +762,19 @@ SKULL_PROCESS.preRender = function (delta, context, part)
 			end
 		end
 	end
+end
+
+
+if IS_MAX then
+	events.WORLD_RENDER:register(function (delta)
+		process(delta)
+		SKULL_PROCESS:setVisible(true)
+	end)
+else
+	SKULL_PROCESS.preRender = process
+	events.WORLD_RENDER:register(function ()
+		SKULL_PROCESS:setVisible(true)
+	end)
 end
 
 

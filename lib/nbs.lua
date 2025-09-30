@@ -132,7 +132,12 @@ local function process()
 				
 				if mp.tick >= mp.track.songLength+1 then
 					mp.tick=mp.tick-mp.track.songLength-1+mp.track.loopStartTick
-					if mp.loopCount >= mp.track.maxLoopCount then mp:stop() end
+					if mp.loopCount >= mp.track.maxLoopCount then 
+						mp:stop()
+						if mp.TRACK_FINISHED then
+							mp.TRACK_FINISHED:invoke()
+						end
+					end
 					mp.currentNote=1
 					mp.loopCount=mp.loopCount+1
 				end
@@ -140,8 +145,20 @@ local function process()
 				if mp.tick < mp.track.loopStartTick then
 					mp.tick=mp.track.songLength+1
 					mp.currentNote=#mp.track.notes
-					if mp.loopCount >= mp.track.maxLoopCount then mp:stop() end
+					if mp.loopCount >= mp.track.maxLoopCount then
+						mp:stop()
+						if mp.TRACK_FINISHED then
+							mp.TRACK_FINISHED:invoke()
+						end
+					end
 					mp.loopCount=mp.loopCount+1
+				end
+			end
+		else
+			if mp.tick >= mp.track.songLength+1 then
+				mp:stop()
+				if mp.TRACK_FINISHED then
+					mp.TRACK_FINISHED:invoke()
 				end
 			end
 		end
@@ -171,6 +188,7 @@ end
 ---@field transposition number
 ---@field attenuation number
 ---@field NOTE_PLAYED Event
+---@field TRACK_FINISHED Event
 ---@field track NBS.Track
 ---@field tick integer
 ---@field currentNoteTick integer
@@ -198,15 +216,18 @@ function Nbs.newMusicPlayer(track)
 		loopCount=0,
 		isPlaying=false,
 		currentNote=1,
-		NOTE_PLAYED = hasEvents and (Events.new()) or nil
+		NOTE_PLAYED = hasEvents and (Events.new()) or nil,
+		TRACK_FINISHED = hasEvents and (Events.new()) or nil
 	}
 	return setmetatable(new,MusicPlayer)
 end
 
 
 ---Plays the song / Continues where it stops.
+---@param reset boolean?
 ---@return NBS.MusicPlayer
-function MusicPlayer:play()
+function MusicPlayer:play(reset)
+	if reset then self:stop() end
 	activeMusicPlayers[self]=self
 	self.isPlaying=true
 	return self
