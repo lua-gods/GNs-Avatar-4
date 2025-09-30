@@ -10,7 +10,7 @@ local hasEvents,Events = pcall(require,"./event")
 local MAX_NOTES_PER_TICK=64
 -- the maximum amount of notes that can play at the same time
 
-local PROCESS_MODE=2
+local PROCESS_MODE=1
 -- 0: MODEL RENDER, plays when the player is loaded, runs on RENDER, works on lower permission levels
 -- 1: WORLD RENDER, plays when the avatar is loaded, run on WORLD_RENDER, requires higher permission levels
 ---2: SKULL RENDER, plays when the player head is loaded, runs on RENDER, works on lower permission levels
