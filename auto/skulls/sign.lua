@@ -13,7 +13,7 @@ local identity = {
 	id = "sign",
 	
 	processHud = {
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			local sign = model:newItem("icon"):item("minecraft:oak_sign"):pos(0,4,0)
 			local ok,err = pcall(sign.item,sign,"minecraft:"..(skull.params.type ).."_sign")
 			if not ok then
@@ -23,7 +23,7 @@ local identity = {
 	},
 	
 	processHat = {
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			local sign = model:newBlock("sign"):pos(-8,6,-8)
 			local ok,err = pcall(sign.block,sign,"minecraft:"..(skull.params.type ).."_sign")
 			if not ok then

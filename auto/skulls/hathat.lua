@@ -54,7 +54,7 @@ local sitOffset = vec(0, -8, -2) -- where should plushie move when its placed on
 local VEC2HALF = vec(0.5, 0.5)
 
 identity.processEntity = {
-	ON_ENTER = function(skull, model, delta)
+	ON_READY = function(skull, model, delta)
 		local color = default
 		model.cylinder:setScale(1, 1, 1)
 		for i = 1, 4, 1 do

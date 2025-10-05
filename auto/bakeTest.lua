@@ -1,0 +1,2 @@
+--print(getScripts("auto/bakeTest"))
+

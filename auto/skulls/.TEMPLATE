@@ -10,7 +10,7 @@ local identity = Skull.registerIdentity{
 	processBlock = {
 		---@param skull SkullInstanceBlock
 		---@param model ModelPart
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			
 		end,
 	

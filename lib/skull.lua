@@ -87,12 +87,13 @@ end
 
 
 ---@class SkullInstance
----@field params {} # Note: does not exist for blocks
+---@field params {}
 ---@field identity SkullIdentity
 ---@field queueFree boolean
 ---@field model ModelPart
 ---@field lastSeen integer
 ---@field matrix Matrix4
+---@field isReady boolean
 ---@field [any] any
 local SkullInstance = {}
 SkullInstance.__index = function (t,i)
@@ -391,14 +392,16 @@ end
 
 
 local PROCESS_PLACEHOLDER = {
-	ON_ENTER = function ()end,
+	ON_INIT = function ()end,
+	ON_READY = function ()end,
 	ON_PROCESS = function ()end,
 	ON_EXIT = function ()end
 }
 
 local function applyPlaceholders(tbl)
 	tbl = tbl or {}
-	tbl.ON_ENTER = tbl.ON_ENTER or PROCESS_PLACEHOLDER.ON_ENTER
+	tbl.ON_INIT = tbl.ON_INIT or PROCESS_PLACEHOLDER.ON_INIT
+	tbl.ON_READY = tbl.ON_READY or PROCESS_PLACEHOLDER.ON_READY
 	tbl.ON_PROCESS = tbl.ON_PROCESS or PROCESS_PLACEHOLDER.ON_PROCESS
 	tbl.ON_EXIT = tbl.ON_EXIT or PROCESS_PLACEHOLDER.ON_EXIT
 	return tbl
@@ -448,7 +451,8 @@ end
 ---@field isHand boolean
 
 ---@class SkullProcessEntity
----@field ON_ENTER fun(skull: SkullInstanceEntity, model: ModelPart)?
+---@field ON_INIT fun(skull: SkullInstanceEntity, model: ModelPart)?
+---@field ON_READY fun(skull: SkullInstanceEntity, model: ModelPart)?
 ---@field ON_PROCESS fun(skull: SkullInstanceEntity, model: ModelPart, deltaFrame: number, deltaTick: number)?
 ---@field ON_EXIT fun(skull: SkullInstanceEntity, model: ModelPart)?
 
@@ -476,7 +480,8 @@ end
 ---@field support BlockState
 
 ---@class SkullProcessBlock
----@field ON_ENTER fun(skull: SkullInstanceBlock, model: ModelPart)?
+---@field ON_INIT fun(skull: SkullInstanceBlock, model: ModelPart)?
+---@field ON_READY fun(skull: SkullInstanceBlock, model: ModelPart)?
 ---@field ON_PROCESS fun(skull: SkullInstanceBlock, model: ModelPart, deltaFrame:number, deltaTick: number)?
 ---@field ON_EXIT fun(skull: SkullInstanceBlock, model: ModelPart)?
 
@@ -501,7 +506,8 @@ end
 ---@field vars table
 
 ---@class SkullProcessHat
----@field ON_ENTER fun(skull: SkullInstanceHat, model: ModelPart)?
+---@field ON_INIT fun(skull: SkullInstanceHat, model: ModelPart)?
+---@field ON_READY fun(skull: SkullInstanceHat, model: ModelPart)?
 ---@field ON_PROCESS fun(skull: SkullInstanceHat, model: ModelPart, deltaFrame:number, deltaTick: number)?
 ---@field ON_EXIT fun(skull: SkullInstanceHat, model: ModelPart)?
 
@@ -521,7 +527,8 @@ end
 ---@field params {}
 
 ---@class SkullProcessHud
----@field ON_ENTER fun(skull: SkullInstanceHud, model: ModelPart)?
+---@field ON_INIT fun(skull: SkullInstanceHud, model: ModelPart)?
+---@field ON_READY fun(skull: SkullInstanceHud, model: ModelPart)?
 ---@field ON_PROCESS fun(skull: SkullInstanceHud, model: ModelPart, deltaFrame:number, deltaTick: number)?
 ---@field ON_EXIT fun(skull: SkullInstanceHud, model: ModelPart)?
 
@@ -594,7 +601,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				instance.supportPos = pos - (isWall and dir or UP)
 				instance.support = world.getBlockState(pos - (isWall and dir or UP))
 				blockInstances[id] = instance
-				instance.identity.processBlock.ON_ENTER(instance,instance.model)
+				instance.identity.processBlock.ON_READY(instance,instance.model)
 			else
 				instance.lastSeen = time
 			end
@@ -616,7 +623,8 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				instance.uuid = uuid
 				instance.params = identity.params
 				instance.hash = identity.hash
-				instance.identity.processHat.ON_ENTER(instance,instance.model)
+				local ok, err = pcall(instance.identity.processHat.ON_INIT,instance,instance.model)
+				if not ok then warn(err) end
 				hatInstances[identify] = instance
 			else
 				instance.lastSeen = time
@@ -638,7 +646,8 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				instance.uuid = uuid
 				instance.params = identity.params
 				instance.hash = identify
-				instance.identity.processEntity.ON_ENTER(instance,instance.model)
+				local ok, err = pcall(instance.identity.processEntity.ON_INIT,instance,instance.model)
+				if not ok then warn(err) end
 				entityInstances[identify] = instance
 			else
 				instance.lastSeen = time
@@ -653,7 +662,8 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				instance.item = item
 				instance.params = identity.params
 				instance.hash = identity.hash
-				instance.identity.processHud.ON_ENTER(instance,instance.model)
+				local ok, err = pcall(instance.identity.processHud.ON_INIT,instance,instance.model)
+				if not ok then warn(err) end
 				hudInstances[identity.hash] = instance
 			else
 				instance.lastSeen = time
@@ -708,37 +718,49 @@ local process = function (deltaTick)
 	end
 
 	if next(hatInstances) then
-		---@param instance SkullInstanceHat
-		for key, instance in pairs(hatInstances) do
-			instance.matrix = instance.model and instance.model:partToWorldMatrix() or matrices.mat4()
-			instance.vars = playerVars[instance.uuid] or {}
-			local ok, err = pcall(instance.identity.processHat.ON_PROCESS, instance,instance.model,deltaFrame,deltaTick)
-			if not ok then warn(err) end
-			if time - instance.lastSeen > SKULL_DECAY_TIME then
-				instance.queueFree = true
-				local ok, err = pcall(instance.identity.processHat.ON_EXIT, instance,instance.model)
+		---@param ins SkullInstanceHat
+		for key, ins in pairs(hatInstances) do
+			ins.matrix = ins.model and ins.model:partToWorldMatrix() or matrices.mat4()
+			ins.vars = playerVars[ins.uuid] or {}
+			if ins.isReady then
+				local ok, err = pcall(ins.identity.processHat.ON_PROCESS, ins,ins.model,deltaFrame,deltaTick)
 				if not ok then warn(err) end
-				instance.model:remove()
-				instance.model = nil
+			else
+				ins.isReady = true
+				local ok, err = pcall(ins.identity.processHat.ON_READY, ins,ins.model,deltaFrame,deltaTick)
+				if not ok then warn(err) end
+			end
+			if time - ins.lastSeen > SKULL_DECAY_TIME then
+				ins.queueFree = true
+				local ok, err = pcall(ins.identity.processHat.ON_EXIT, ins,ins.model)
+				if not ok then warn(err) end
+				ins.model:remove()
+				ins.model = nil
 				hatInstances[key] = nil
 			end
 		end
 	end
 	if next(entityInstances) then
-		---@param instance SkullInstanceEntity
-		for key, instance in pairs(entityInstances) do
-			if instance.model then
-				instance.matrix = instance.model:partToWorldMatrix()
-				instance.vars = playerVars[instance.uuid] or {}
-				local ok, err = pcall(instance.identity.processEntity.ON_PROCESS, instance,instance.model,deltaFrame,deltaTick)
-				if not ok then warn(err) end
-				if time - instance.lastSeen > 100 then
-					instance.queueFree = true
-					local ok, err = pcall(instance.identity.processEntity.ON_EXIT, instance,instance.model)
+		---@param ins SkullInstanceEntity
+		for key, ins in pairs(entityInstances) do
+			if ins.model then
+				ins.matrix = ins.model:partToWorldMatrix()
+				ins.vars = playerVars[ins.uuid] or {}
+				if ins.isReady then
+					local ok, err = pcall(ins.identity.processEntity.ON_PROCESS, ins,ins.model,deltaFrame,deltaTick)
 					if not ok then warn(err) end
-					instance.identity.processEntity.ON_EXIT(instance,instance.model)
-					instance.model:remove()
-					instance.model = nil
+				else
+					ins.isReady = true
+					local ok, err = pcall(ins.identity.processEntity.ON_READY, ins,ins.model,deltaFrame,deltaTick)
+					if not ok then warn(err) end
+				end
+				if time - ins.lastSeen > 100 then
+					ins.queueFree = true
+					local ok, err = pcall(ins.identity.processEntity.ON_EXIT, ins,ins.model)
+					if not ok then warn(err) end
+					ins.identity.processEntity.ON_EXIT(ins,ins.model)
+					ins.model:remove()
+					ins.model = nil
 					entityInstances[key] = nil
 					--print("MANAGEMENT SKULL FREE", instance.identity)
 				end
@@ -749,15 +771,21 @@ local process = function (deltaTick)
 	end
 
 	if next(hudInstances) then
-		---@param instance SkullInstanceHud
-		for key, instance in pairs(hudInstances) do
-			local ok, err = pcall(instance.identity.processHud.ON_PROCESS, instance,instance.model,deltaTick)
-			if not ok then warn(err) end
-			if time - instance.lastSeen > SKULL_DECAY_TIME then
-				instance.queueFree = true
-				instance.identity.processHud.ON_EXIT(instance,instance.model)
-				instance.model:remove()
-				instance.model = nil
+		---@param ins SkullInstanceHud
+		for key, ins in pairs(hudInstances) do
+			if ins.isReady then
+				local ok, err = pcall(ins.identity.processHud.ON_PROCESS, ins,ins.model,deltaTick)
+				if not ok then warn(err) end
+			else
+				ins.isReady = true
+				local ok, err = pcall(ins.identity.processHud.ON_READY, ins,ins.model,deltaTick)
+				if not ok then warn(err) end
+			end
+			if time - ins.lastSeen > SKULL_DECAY_TIME then
+				ins.queueFree = true
+				ins.identity.processHud.ON_EXIT(ins,ins.model)
+				ins.model:remove()
+				ins.model = nil
 				hudInstances[key] = nil
 			end
 		end

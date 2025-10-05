@@ -21,5 +21,14 @@
          "---@return self",
          "---@cast self ${1}",
       ]
+   },
+	"pcall_setup": {
+      "prefix": "pcall",
+      "body": [
+         "local ok, result = pcall(${1})",
+         "if ok then",
+         "\t${2}",
+         "end",
+      ]
    }
 }

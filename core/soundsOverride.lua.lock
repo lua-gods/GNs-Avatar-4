@@ -1,0 +1,11 @@
+local ogPlay = figuraMetatables.Sound.__index.play
+function figuraMetatables.Sound.__index:play()
+	local cpos = client:getCameraPos()
+	local pos = self:getPos()
+	local block,hit = raycast:block(pos+(cpos-pos):normalize()*1.2, cpos)
+	if (hit-cpos):lengthSquared() > 0.01 then
+		self:volume(self:getVolume()*0.1)
+	end
+	return ogPlay(self)
+end
+

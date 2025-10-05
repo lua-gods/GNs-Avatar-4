@@ -75,7 +75,7 @@ identity.processHat = {
 }
 
 identity.processBlock = {
-	ON_ENTER = function(skull, model)
+	ON_INIT = function(skull, model)
 		local floor = skull.support
 		if not skull.isWall then
 			if floor.id:find("stairs$") and floor.properties and floor.properties.half == "bottom" then

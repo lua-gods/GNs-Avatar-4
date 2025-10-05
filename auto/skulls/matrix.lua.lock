@@ -31,7 +31,7 @@ local identity = {
 	modelItem = models.skull.hat,
 	
 	processBlock = {
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			local ogPos = {}
 			
 			local vertices = model.Model:getAllVertices()["textures.plushie"]

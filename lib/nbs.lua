@@ -91,6 +91,19 @@ for i, v in pairs(instruments) do
 	end
 end
 
+---@param instrument Minecraft.soundID
+---@param pos Vector3
+---@param pitch integer
+---@param volume integer
+---@param attenuation integer
+local function defaultPlay(instrument,pos,pitch,volume,attenuation)
+	sounds[instrument]
+	:pos(pos)
+	:pitch(pitch)
+	:attenuation(attenuation)
+	:volume(volume)
+	:play()
+end
 
 ---@type table<NBS.MusicPlayer, NBS.MusicPlayer>
 local activeMusicPlayers={} -- holds the active playing one to loop ver them
@@ -108,17 +121,19 @@ local function process()
 		
 		mp.tick=mp.tick+delta * (mp.songTempo or mp.track.songTempo) * mp.speed
 		for i=1, MAX_NOTES_PER_TICK, 1 do
-			local currentNote=mp.track.notes[mp.currentNote]
-			if currentNote then
-				if math.sign(mp.tick-currentNote.tick) - math.sign(mp.speed) == 0 then
-					mp.currentNoteTick=currentNote.tick
-					mp.currentNote=mp.currentNote+math.sign(mp.tick-currentNote.tick)
-					if mp.loopCount == 0 or mp.track.loopStartTick <= currentNote.tick then
-						local pitch=2^(((currentNote.key-9)/12+mp.transposition)-3)
-						if instruments[currentNote.instrument] then
-							sounds[instruments[currentNote.instrument]]:pos(mp.pos):pitch(pitch):attenuation(mp.attenuation):volume(currentNote.volume*mp.volume):play()
+			local cnote=mp.track.notes[mp.currentNote]
+			if cnote then
+				if math.sign(mp.tick-cnote.tick) - math.sign(mp.speed) == 0 then
+					mp.currentNoteTick=cnote.tick
+					mp.currentNote=mp.currentNote+math.sign(mp.tick-cnote.tick)
+					if mp.loopCount == 0 or mp.track.loopStartTick <= cnote.tick then
+						local pitch=2^(((cnote.key-9)/12+mp.transposition)-3)
+						if instruments[cnote.instrument] then
+							if cnote.volume > 0.01 then
+							mp.playNote(instruments[cnote.instrument],mp.pos,pitch,cnote.volume*mp.volume,mp.attenuation)
+							end
 							if hasEvents then
-								mp.NOTE_PLAYED:invoke(currentNote)
+								mp.NOTE_PLAYED:invoke(cnote)
 							end
 						end
 					end
@@ -217,7 +232,8 @@ function Nbs.newMusicPlayer(track)
 		isPlaying=false,
 		currentNote=1,
 		NOTE_PLAYED = hasEvents and (Events.new()) or nil,
-		TRACK_FINISHED = hasEvents and (Events.new()) or nil
+		TRACK_FINISHED = hasEvents and (Events.new()) or nil,
+		playNote = defaultPlay
 	}
 	return setmetatable(new,MusicPlayer)
 end
@@ -243,6 +259,12 @@ function MusicPlayer:stop()
 	self.currentNote=1
 	self.tick=-2
 	return self
+end
+
+---Sets the function that is called when a note is to be played.
+---@param callback fun(instrument: Minecraft.soundID, pos: Vector3, pitch: number, volume: number, attenuation: number)
+function MusicPlayer:setPlayCallback(callback)
+	self.playNote = callback or defaultPlay
 end
 
 

@@ -137,14 +137,14 @@ end
 extractNamesAndParams("test;test2,4;test3,513")
 
 local PROCESS_PLACEHOLDER = {
-	ON_ENTER = function ()end,
+	ON_READY = function ()end,
 	ON_PROCESS = function ()end,
 	ON_EXIT = function ()end
 }
 
 local function applyPlaceholders(tbl)
 	tbl = tbl or {}
-	tbl.ON_ENTER = tbl.ON_ENTER or PROCESS_PLACEHOLDER.ON_ENTER
+	tbl.ON_READY = tbl.ON_READY or PROCESS_PLACEHOLDER.ON_READY
 	tbl.ON_PROCESS = tbl.ON_PROCESS or PROCESS_PLACEHOLDER.ON_PROCESS
 	tbl.ON_EXIT = tbl.ON_EXIT or PROCESS_PLACEHOLDER.ON_EXIT
 	return tbl
@@ -195,7 +195,7 @@ end
 ---@field isHand boolean
 
 ---@class SkullProcessEntity
----@field ON_ENTER fun(skull: SkullInstanceEntity, model: ModelPart)?
+---@field ON_READY fun(skull: SkullInstanceEntity, model: ModelPart)?
 ---@field ON_PROCESS fun(skull: SkullInstanceEntity, model: ModelPart, delta: number)?
 ---@field ON_EXIT fun(skull: SkullInstanceEntity, model: ModelPart)?
 
@@ -222,7 +222,7 @@ end
 ---@field support BlockState
 
 ---@class SkullProcessBlock
----@field ON_ENTER fun(skull: SkullInstanceBlock, model: ModelPart)?
+---@field ON_READY fun(skull: SkullInstanceBlock, model: ModelPart)?
 ---@field ON_PROCESS fun(skull: SkullInstanceBlock, model: ModelPart, delta: number)?
 ---@field ON_EXIT fun(skull: SkullInstanceBlock, model: ModelPart)?
 
@@ -247,7 +247,7 @@ end
 ---@field vars table
 
 ---@class SkullProcessHat
----@field ON_ENTER fun(skull: SkullInstanceHat, model: ModelPart)?
+---@field ON_READY fun(skull: SkullInstanceHat, model: ModelPart)?
 ---@field ON_PROCESS fun(skull: SkullInstanceHat, model: ModelPart, delta: number)?
 ---@field ON_EXIT fun(skull: SkullInstanceHat, model: ModelPart)?
 
@@ -267,7 +267,7 @@ end
 ---@field params any[]
 
 ---@class SkullProcessHud
----@field ON_ENTER fun(skull: SkullInstanceHud, model: ModelPart)?
+---@field ON_READY fun(skull: SkullInstanceHud, model: ModelPart)?
 ---@field ON_PROCESS fun(skull: SkullInstanceHud, model: ModelPart, delta: number)?
 ---@field ON_EXIT fun(skull: SkullInstanceHud, model: ModelPart)?
 
@@ -368,7 +368,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 			blockInstances[id] = instance
 
 			instance.identifier = id
-			instance.identity.processBlock.ON_ENTER(instance,instance.model)
+			instance.identity.processBlock.ON_READY(instance,instance.model)
 		else
 			instance.lastSeen = time
 		end
@@ -391,7 +391,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				instance.uuid = uuid
 				instance.params = identityString.params
 				instance.identifier = identityString.identifier
-				instance.identity.processHat.ON_ENTER(instance,instance.model)
+				instance.identity.processHat.ON_READY(instance,instance.model)
 				hatInstances[identify] = instance
 			else
 				instance.lastSeen = time
@@ -414,7 +414,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				instance.uuid = uuid
 				instance.params = identityString.params
 				instance.identifier = identify
-				instance.identity.processEntity.ON_ENTER(instance,instance.model)
+				instance.identity.processEntity.ON_READY(instance,instance.model)
 				entityInstances[identify] = instance
 			else
 				instance.lastSeen = time
@@ -432,7 +432,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				instance.item = item
 				instance.params = identityString.params
 				instance.identifier = identityString.identifier
-				instance.identity.processHud.ON_ENTER(instance,instance.model)
+				instance.identity.processHud.ON_READY(instance,instance.model)
 				hudInstances[identityString.identifier] = instance
 			else
 				instance.lastSeen = time

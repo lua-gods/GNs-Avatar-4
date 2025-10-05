@@ -23,7 +23,7 @@ local identity = {
 	modelItem = {models.sunflower.blocko},
 	
 	processBlock = {
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			skull.music = NBS.newMusicPlayer():setTrack(track):play()
 			--skull.music:setPos(skull.pos + vec(0.5,0.5,0.5))
 			---@param note NBS.Noteblock
@@ -53,12 +53,12 @@ local identity = {
 	},
 	
 	processHud = {
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			model:rot(50,-45,0):pos(0,-4,0)
 		end
 	},
 	processEntity = {
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			
 			if skull.isHand then
 				model:setPos(0,0,0):scale(0.5,0.5,0.5)

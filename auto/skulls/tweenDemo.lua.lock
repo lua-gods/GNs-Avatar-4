@@ -14,7 +14,7 @@ local identity = {
 	modelBlock = models:newPart("place"),
 	
 	processBlock = {
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			skull.toggle = false
 			skull.start = true
 		end,

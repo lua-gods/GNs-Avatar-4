@@ -1,7 +1,6 @@
---[ [
+--[[
 
 local blist = {
-	["aa92bf40-5065-4a4c-a955-c201eacfb4ef"] = true,
 }
 
 if blist[client:getViewer():getUUID()] then

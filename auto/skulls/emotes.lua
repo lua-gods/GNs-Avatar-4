@@ -51,7 +51,7 @@ local identity = {
 	modelItem = source,
 	
 	processBlock = {
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			apply(model, function (modelPart)
 				modelPart:setParentType("None")
 			end)
@@ -69,7 +69,7 @@ local processETC = {
 	---comment
 	---@param skull SkullInstance
 	---@param model ModelPart
-	ON_ENTER = function (skull, model)
+	ON_READY = function (skull, model)
 		apply(model, function (modelPart)
 			modelPart:setParentType("None")
 		end)

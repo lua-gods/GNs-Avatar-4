@@ -18,7 +18,7 @@ local identity = {
 	modelItem = models.info.Item,
 
 	processEntity = {
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			local i = 0
 			for key, value in pairs(Skull.getSkullIdentities()) do
 				if value.modelHud then

@@ -18,7 +18,7 @@ local identity = {
 	modelItem = models.sunglasses.hat,
 	
 	processHat = {
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			model:setPos(0,tonumber(skull.params[1] or skull.vars.eye_height) or 2)
 		end
 	}

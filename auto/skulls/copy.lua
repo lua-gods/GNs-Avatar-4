@@ -1,7 +1,7 @@
 local Skull = require("lib.skull")
 
 local process = {
-		ON_ENTER = function (skull, model)
+		ON_INIT = function (skull, model)
 			local itemString = ([[minecraft:player_head{"SkullOwner":"%s","display":{"Name":%s}}]])
 			:format(skull.params.player or "", toJson(toJson(skull.params.name or "")))
 			local ok, result = pcall(world.newItem, itemString)

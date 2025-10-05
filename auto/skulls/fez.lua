@@ -17,7 +17,7 @@ local identity = {
 	modelItem = models.fez.hat,
 	
 	processHat = {
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 		end
 	}
 }

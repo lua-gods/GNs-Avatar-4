@@ -32,7 +32,7 @@ local identity = {
 identity.processBlock = {
 ---@param skull SkullInstanceBlock
 ---@param model ModelPart
-ON_ENTER = function (skull, model)
+ON_READY = function (skull, model)
 	model:setColor(1,0.5,0)
 	skull.sounds = {}
 	events.ON_PLAY_SOUND:register(function (id, pos, volume, pitch, loop, category, path)

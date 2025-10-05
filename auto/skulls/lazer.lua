@@ -27,7 +27,7 @@ local identity = {
 	modelItem = models.lazer.hat,
 	
 	processHat = {
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			skull.Lines = {}
 			for i = 1, MAX_BOUNCE, 1 do
 				local group = {

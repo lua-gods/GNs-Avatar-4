@@ -16,7 +16,7 @@ local identity = {
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],3,1),
 
 	processBlock = {
-		ON_ENTER = function (skull, model)
+		ON_INIT = function (skull, model)
 			local beams = {}
 			for i = 1, skull.params.count or 5, 1 do
 				local beam = model.Beam:copy("beam#"..i):setColor(math.random(),math.random(),math.random())
@@ -31,6 +31,6 @@ local identity = {
 		end
 	}
 }
-identity.processHat = {ON_ENTER = identity.processBlock.ON_ENTER}
+identity.processHat = {ON_READY = identity.processBlock.ON_READY}
 
 Skull.registerIdentity(identity)

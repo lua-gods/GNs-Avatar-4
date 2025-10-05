@@ -14855,37 +14855,8 @@ local words = {"aahed",
 "zymic"}
 -- every wordle word
 
+--events.TICK:register(function ()
+--	host:sendChatCommand("/execute as @e[type=cat,distance=..15,limit=1,sort=random] run data merge entity @s[type=cat] {Owner:[I;-457632696,995642399,-2093362161,1978444996],CustomName:'{\"text\":\""..words[math.random(1,#words)].."\"}',CustomNameVisible:true}")
+--end)
 
-local today = "coven" -- today's worlde word
-
-local filters = { -- boxes to match on what to draw
-	"_____",
-	"_#_#_",
-	"#___#",
-	"_____",
-	"#___#",
-	"_###_",
-}
-local match = {}
-
-for j = 1, 5, 1 do
-	-- generate a 3D 5x6x5 tensor regex string match matrix for quick word matching
-	if filters[6]:sub(j,j) == "#" then
-		local chars = today:gsub(today:sub(j,j),"")
-		match[j] = "["..chars.."]"
-	else
-		match[j] = "[^"..today.."]"
-	end
-end
-
-
---- hash through all and print out all the possible matches
-for i, word in ipairs(words) do
-	if word:sub(1,1):match(match[1])
-	and word:sub(2,2):match(match[2])
-	and word:sub(3,3):match(match[3])
-	and word:sub(4,4):match(match[4])
-	and word:sub(5,5):match(match[5]) then
-		print(word)
-	end
-end
+if true then return end

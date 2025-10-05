@@ -15,11 +15,6 @@ local identity = {
 	modelHat = models.cappie.hat,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],0,0),
 	modelItem = models.cappie.hat,
-	
-	processHat = {
-		ON_ENTER = function (skull, model)
-		end
-	}
 }
 
 Skull.registerIdentity(identity)

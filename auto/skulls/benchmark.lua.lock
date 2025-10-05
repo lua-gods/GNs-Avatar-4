@@ -13,7 +13,7 @@ local identity = Skull.registerIdentity{
 	processBlock = {
 		---@param skull SkullInstanceBlock
 		---@param model ModelPart
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			model:setColor(1,0,0)
 			skull.billBoard = skull.blockModel:newPart("billBoard"):scale(0.25,0.25,0.25):pos(0,16,0)
 		end,
@@ -44,21 +44,21 @@ local identity = Skull.registerIdentity{
 	},
 
 	processEntity = {
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			model:setColor(1,0,0)
 		end,
 	},
 	processHat = {
 		---@param skull SkullInstanceHat
 		---@param model ModelPart
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			model:setColor(1,0,0)
 		end,
 	},
 	processHud = {
 		---@param skull SkullInstanceHud
 		---@param model ModelPart
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			model:getTask("Icon"):setColor(1,0,0)
 		end,
 	},

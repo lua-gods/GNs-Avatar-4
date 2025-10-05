@@ -14,17 +14,48 @@ local identity = {
 	modelItem = Skull.makeExtrudedIcon(textures["textures.item_icons"],3,0),
 }
 
+---@param pos Vector3
+---@param planeDir Vector3
+---@param planePos Vector3
+---@return Vector3
+local function ray2Plane(pos,planePos,planeDir)
+   local pdn = planeDir:normalized()
+   local dtp = pdn:dot(planePos - pos)
+   return pos + pdn * dtp
+end
+
+---@param instrument Minecraft.soundID
+---@param pos Vector3
+---@param pitch integer
+---@param volume integer
+---@param attenuation integer
+local function customPlay(instrument,pos,pitch,volume,attenuation)
+	local cpos = client:getCameraPos()
+	
+	local block,hit = raycast:block(pos+(cpos-pos):normalize()*1.2, cpos)
+	if (hit-cpos):lengthSquared() > 0.01 then
+		volume = (volume*0.1)
+	end
+	
+	sounds[instrument]
+	:pos(pos)
+	:pitch(pitch)
+	:volume(volume)
+	:attenuation(attenuation)
+	:play()
+end
+
 
 local HALF = vec(0.5,0.5,0.5)
 
 identity.processBlock = {
 	---@param skull SkullInstanceBlock
 	---@param model ModelPart
-	ON_ENTER = function (skull, model)
+	ON_READY = function (skull, model)
 		if not (#skull.params[1] > 0) then return end
 		skull.model:scale(1.01)
 		local musicPlayer = NBS.newMusicPlayer():setPos(skull.matrix:apply() + vec(0.5,0.5,0.5)):setAttenuation(2)
-		
+		musicPlayer:setPlayCallback(customPlay)
 		if skull.isWall then
 			model:setRot(90,0,0):setPos(0,4,3)
 		end
@@ -45,7 +76,7 @@ identity.processBlock = {
 		--skull.squish = 1
 		---@param note NBS.Noteblock
 		musicPlayer.NOTE_PLAYED:register(function (note)
-			if note.volume > 0.001 then
+			if note.volume > 0.01 then
 				particles:newParticle("minecraft:note",skull.matrix:apply() + HALF ,vec((note.instrument)/24,0,0))
 				:setVelocity(skull.matrix:applyDir(note.key/24-2,0,(note.instrument)/24-0.5)*0.4)
 				:scale(note.volume*scale*0.5)

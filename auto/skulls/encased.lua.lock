@@ -19,7 +19,7 @@ local identity = Skull.registerIdentity{
 	processBlock = {
 		---@param skull SkullInstanceBlock
 		---@param model ModelPart
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			skull.blockModel:newBlock("encasing"):block("minecraft:white_stained_glass")
 			skull.blockModel:newBlock("encasing2"):block("minecraft:black_concrete"):scale(-0.99,0.99,0.99):pos(15.99,0.01,0.01)
 		end,

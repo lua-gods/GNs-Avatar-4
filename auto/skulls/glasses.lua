@@ -18,7 +18,7 @@ local identity = {
 	modelItem = models.glasses.hat,
 	
 	processHat = {
-		ON_ENTER = function (skull, model)
+		ON_READY = function (skull, model)
 			local ok,value = pcall(tonumber,skull.params[1] or skull.vars.eye_height)
 			model:setPos(0,ok and value or 2)
 			
