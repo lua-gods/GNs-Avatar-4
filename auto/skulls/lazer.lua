@@ -3,6 +3,7 @@ local Color = require("lib.color")
 
 local Line = require("lib.line")
 
+local REACH_DISTANCE = 64
 local MAX_BOUNCE = 100
 
 local face2dir = {
@@ -43,7 +44,7 @@ local identity = {
 			local points = {pos}
 			
 			for i = 1, MAX_BOUNCE, 1 do
-				local to = pos + dir * 16
+				local to = pos + dir * REACH_DISTANCE
 				local block,hit,side = raycast:block(pos,to)
 				if (to-hit):length() > 0.1 then
 					points[i+1] = hit

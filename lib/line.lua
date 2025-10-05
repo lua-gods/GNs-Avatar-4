@@ -230,7 +230,7 @@ end
 local lk
 MODEL:setPreRender(function()
 	local c = client:getCameraPos()
-	if (c - cpos):lengthSquared() > 0.5 then
+	if (c - cpos):lengthSquared() > 0.1 then
 		cpos = c
 		for _, l in pairs(lines) do
 			l:update()

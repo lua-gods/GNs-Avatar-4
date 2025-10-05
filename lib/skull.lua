@@ -381,6 +381,15 @@ function SkullAPI.writeSkull(identityArray,customName)
 	return item
 end
 
+avatar:store("makeSkull",function (identityArray,customName)
+	local ok, result = pcall(SkullAPI.writeSkull,identityArray,customName)
+	if ok then
+		return result
+	else
+		warn(ok)
+	end
+end)
+
 
 ---Returns the skull identity to use with the given name  
 ---This exist to allow fallback manipulation
@@ -601,7 +610,8 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				instance.supportPos = pos - (isWall and dir or UP)
 				instance.support = world.getBlockState(pos - (isWall and dir or UP))
 				blockInstances[id] = instance
-				instance.identity.processBlock.ON_READY(instance,instance.model)
+				local ok, err = pcall(instance.identity.processBlock.ON_INIT, instance,instance.model)
+				if not ok then warn(err) end
 			else
 				instance.lastSeen = time
 			end

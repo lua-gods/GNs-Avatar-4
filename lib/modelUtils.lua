@@ -22,6 +22,22 @@ function utils.shallowCopy(part)
 end
 
 
+---@param modelPart ModelPart
+---@param func fun(modelPart:ModelPart)
+local function apply(modelPart,func)
+	func(modelPart)
+	for _, child in ipairs(modelPart:getChildren()) do
+		apply(child,func)
+	end
+end
+
+---@param modelPart ModelPart
+---@param func fun(modelPart:ModelPart)
+---@return ModelPart
+function utils.apply(modelPart,func)
+	return apply(modelPart,func)
+end
+
 
 ---comment
 ---@param model ModelPart

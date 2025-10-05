@@ -1,4 +1,6 @@
+
 local NAME = "GNanimates"
+
 
 local icanhasnewemojis = false
 

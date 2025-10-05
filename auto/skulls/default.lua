@@ -1,17 +1,13 @@
+---@diagnostic disable: param-type-mismatch
 local Skull = require("lib.skull")
 local Color = require("lib.color")
 
 models.skull.hat:scale(1.1, 1.1, 1.1)
 
 
-local dark = Color.parseColor("#00396d").rgb
+local ambient = Color.parseColor("#00396d").rgb
 local default = Color.parseColor("#5ac54f").rgb
-
----@return Vector3
-local function shade(clr, w)
-	---@diagnostic disable-next-line: return-type-mismatch
-	return math.lerp(dark, clr, w)
-end
+local specular = Color.parseColor("#ffeb78").rgb
 
 
 --[[@@@
@@ -56,18 +52,22 @@ local VEC2HALF = vec(0.5, 0.5)
 identity.processHat = {
 	ON_PROCESS = function(skull, model, delta)
 		local vars = skull.vars
-		local height = vars.hatHeight or 0.6
-		local color
+		local height = vars.hatHeight or 8
+		local albedo
+		
 		if vars.color then
 			local ok, value = pcall(Color.parseColor,vars.color)
-			color = ok and value.xyz or default
+			albedo = ok and value.xyz or default
 		else
-			color = default
+			albedo = default
 		end
 		model.cylinder:setScale(1, height, 1)
-		for i = 1, 4, 1 do
-			model.ribbon["shade" .. i]:setColor(shade(color, i / 4))
-		end
+		model.top:setPos(0, height, 0)
+		model.ribbon.shade1:setColor(math.lerp(albedo, ambient,0.5))
+		model.ribbon.shade2:setColor(math.lerp(albedo, ambient,0.25))
+		model.ribbon.shade3:setColor(albedo)
+		model.ribbon.shade4:setColor(math.lerp(albedo, specular,0.25))
+		model.ribbon.shade5:setColor(math.lerp(albedo, specular,0.5))
 	end,
 	
 	ON_EXIT = function(skull, model)

@@ -1,14 +1,5 @@
 
-
---[[ <- separate to enable
-
---]]
-
-IS_FIGURA = true
-
-
---[ [
-
+--[ [ <- separate to enable
 
 for _, path in ipairs(listFiles("core")) do
 	require(path)

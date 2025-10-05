@@ -1,9 +1,7 @@
 local Skull = require("lib.skull")
 
-local source = models.player:copy("playerClone")
+local source = require("auto.statue")
 
-source.Base.Torso.Head.Face.Leye.LPupil:setUVPixels(-0.6,0)
-source.Base.Torso.Head.Face.Reye.RPupil:setUVPixels(0.6,0)
 
 local function hash(str)
 	local hash = 0
@@ -16,14 +14,6 @@ end
 
 
 
----@param modelPart ModelPart
----@param func fun(modelPart:ModelPart)
-local function apply(modelPart,func)
-	func(modelPart)
-	for _, child in ipairs(modelPart:getChildren()) do
-		apply(child,func)
-	end
-end
 
 require("lib.animation")
 
@@ -52,9 +42,6 @@ local identity = {
 	
 	processBlock = {
 		ON_READY = function (skull, model)
-			apply(model, function (modelPart)
-				modelPart:setParentType("None")
-			end)
 			model:setParentType("SKULL")
 			model:play("player."..danceByID[math.floor(hash(skull.pos:toString()) * 100) % #danceByID + 1])
 			model:setSpeed(speed)
@@ -70,10 +57,6 @@ local processETC = {
 	---@param skull SkullInstance
 	---@param model ModelPart
 	ON_READY = function (skull, model)
-		apply(model, function (modelPart)
-			modelPart:setParentType("None")
-		end)
-		
 		local name = skull.params[1]
 		model:setParentType("SKULL")
 		if danceByName[name] then
