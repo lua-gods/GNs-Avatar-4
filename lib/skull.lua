@@ -386,12 +386,13 @@ function SkullAPI.makeSkull(identityArray,customName)
 	
 	---@type Minecraft.RawJSONText.Component[]
 	local lore = {
-		{text="hello world",italic=false,color="gray"}
+		{text="-- Modes -- ",italic=false,color="gray"}
 	}
 	for name, data in pairs(identityArray) do
 		lore[#lore+1] = {text=name,italic=false,color="gray"}
 	end
 	
+	table.insert(lore, {text="---------- ",italic=false,color="gray"})
 	
 	for index, value in ipairs(lore) do
 		lore[index] = toJson(value)
@@ -496,12 +497,14 @@ local function prepareInstance(identity,modelType)
 	elseif modelType == 2 then
 		model = identity.modelBlock
 	elseif modelType == 3 then
-		model = identity.modelhat
+		model = identity.modelHat
 	else
 		model = identity.modelHud
 	end
-	model = model or models:newPart("emptyPlcaeholder"..emptyPlcaeholderID)
-	emptyPlcaeholderID = emptyPlcaeholderID + 1 % 2^32
+	if not model then
+		model = model or models:newPart("emptyPlcaeholder"..emptyPlcaeholderID)
+		emptyPlcaeholderID = emptyPlcaeholderID + 1 % 2^32
+	end
 	local instance = {
 		lastSeen = time,
 		identity = identity,

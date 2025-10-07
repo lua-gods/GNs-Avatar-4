@@ -48,7 +48,7 @@ identity.processBlock = {
 		skull.model.base.face1:setVisible(f == 0)
 		skull.model.base.face2:setVisible(f == 1)
 		skull.model.base.face3:setVisible(f == 2)
-		skull.music:setPos(skull.matrix:apply())
+		skull.music:setPos(skull.matrix:apply() + HALF)
 		local power = world.getRedstonePower(skull.supportPos)
 		if skull.lastPower ~= power then
 			skull.lastPower = power

@@ -46,7 +46,7 @@ identity.processBlock = {
 	ON_READY = function (skull, model)
 		if not (#skull.params[1] > 0) then return end
 		skull.model:scale(1.01)
-		local musicPlayer = NBS.newMusicPlayer():setPos(skull.matrix:apply() + vec(0.5,0.5,0.5)):setAttenuation(2)
+		local musicPlayer = NBS.newMusicPlayer():setPos(skull.matrix:apply() + HALF):setAttenuation(2)
 		musicPlayer:setPlayCallback(customPlay)
 		if skull.isWall then
 			model:setRot(90,0,0):setPos(0,4,3)
