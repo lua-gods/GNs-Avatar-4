@@ -14,7 +14,7 @@ local identity = {
 	support = "minecraft:gray_wool",
 	modelBlock = models.skull.block,
 	modelHat = models.skull.hat,
-	modelItem = models.skull.entity
+	modelEntity = models.skull.entity
 }
 
 identity.processBlock = {

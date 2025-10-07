@@ -21,8 +21,8 @@ end
 
 ---@type GNUI.App
 return {
-	name = "NBS Head",
-	icon = "minecraft:note_block",
+	name = "Ogg Vorbis Head",
+	icon = "minecraft:jukebox",
 	start = function ()
 		FileDialog.new().ITEM_CONFIRMED:register(function (path,name)
 			local buffer = data:createBuffer()
@@ -30,7 +30,7 @@ return {
 			buffer:setPosition(0)
 			
 			local data = buffer:readBase64(buffer:available())
-			local item = Skull.makeSkull({nbs={data}},name)
+			local item = Skull.makeSkull({ogg={data}},name)
 			buffer:close()
 			
 			if #item < 65536*999 then

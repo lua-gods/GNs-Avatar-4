@@ -13,6 +13,8 @@ local UP = vec(0,1,0)
 local SKULL_DECAY_TIME = 100
 
 local IS_MAX = avatar:getMaxWorldRenderCount() > 200000 -- 200k
+local COMPRESS = true
+local CHUNK_SIZE = 2^15
 
 local zlib = require("lib.zlib")
 
@@ -112,7 +114,7 @@ end
 ---@field modelBlock ModelPart|{[1]:ModelPart}
 ---@field modelHat ModelPart|{[1]:ModelPart}
 ---@field modelHud ModelPart|{[1]:ModelPart}
----@field modelItem ModelPart|{[1]:ModelPart}
+---@field modelEntity ModelPart|{[1]:ModelPart}
 ---
 ---@field noModelBlockDeepCopy boolean
 ---@field noModelHatDeepCopy boolean
@@ -129,15 +131,18 @@ SkullIdentity.__index = function (t,i)
 	return rawget(t,i) or SkullIdentity[i]
 end
 
-local placeholderID = 0
+local modelUtils = require("lib.modelUtils")
+
 local function modelIdentityPeprocess(model)
+	if type(model) == "table" then
+		model = model[1]
+	end
 	if model then
-		if model[1] then
-			return modelIdentityPeprocess(model[1])
-		end
-		return model:setParentType("SKULL"):setVisible(false)
-	else
-		return models:newPart("Placeholder"..placeholderID,"SKULL"):setVisible(false)
+		model:setVisible(false)
+		local baseModel = models:newPart("base"):remove()
+		local copy = modelUtils.deepCopy(model)
+		copy:setParentType("SKULL")
+		return copy
 	end
 end
 local texDataCache = {}
@@ -165,6 +170,8 @@ local function parseTexture(identities,nbt,hash)
 		end
 		return
 	end
+	
+	
 	local texStr = ""
 	
 	local c = 0
@@ -190,7 +197,7 @@ local function parseTexture(identities,nbt,hash)
 			buffer:writeBase64(texStr)
 			buffer:setPosition(0)
 			local str = buffer:readByteArray(buffer:available())
-			if true then
+			if COMPRESS then
 				str = zlib.Deflate.Decompress(str)
 			end
 			local ok, result = pcall(parseJson,str) --parseJson(str)
@@ -355,10 +362,10 @@ end
 
 local u1,u2,u3,u4 = client.uuidToIntArray("e4b91448-3b58-4c1f-8339-d40f75ecacc4")
 ---@param identityArray table
-function SkullAPI.writeSkull(identityArray,customName)
+function SkullAPI.makeSkull(identityArray,customName)
 	
 	local str = toJson(identityArray)
-	if true then
+	if COMPRESS then
 		str = zlib.Deflate.Compress(str,{level=1})
 	end
 	local buffer = data:createBuffer(#str)
@@ -371,18 +378,48 @@ function SkullAPI.writeSkull(identityArray,customName)
 		{Signature="jO6gPIP5+XJhM7XpLCaDQgBkLfdczmWROb90w1h2PlhxMOf2Xc9LpC1LnidJkwusKnVY33wCT7tNwJrVLocDRnafFQ/NSQwZJs4cbDGp7o9sZ4gV8eoMY1bX2xiF9o+KwwCOXbL5ufxYWHSLxzj88goiYD0yrYu7W8rplWviPrpkQThWJEo9f0KmMDVJR3ubZ2YQhZIqvRgNsjubX/rejLXxaP5w2EwPWoB+kmH7sbXUZQCPU1ZCEkCfRSg5l0aIz4Ie2fQr3Er8/gHHoiILV/vpv0Le2de2Cn4hcF/XqTQJIhYELkMhL8Jlt5RR463Av7yD4+sSkEJDk2ByFhNOL2I9aNW+AJD4zRbtbT85+kTVd5fWzaOOnzz7Dq32T0k5zLEGnELz16gc/OYqjvPHmQHKva5lLad37r4HLiGxrUR9PfTLownsKtl9S0toMXkyMzH7psqqhtwNHXGrKdhqfEBwJ7KsBC1Bsds8dK70KC23mQxziTgD5rXKjcaxFm+B2yLicNzm5mwJZ2wYCfE07kEf0D/KeSdxT4i9zeNz6/PWO8vA9otIB4maywnhuWHS8Xco7V1TCEQEa/xuwT2HFImLXISiLeBfTaByWk9qeT72oFjcIWmxNnU9ZtYdwW2UpDLMEv0U9pkrbFW03rJQdvXIzUO2Zp8S8OdjooxsAAo=",Value="ewogICJ0aW1lc3RhbXAiIDogMTc1ODk3NDEzMDAwNSwKICAicHJvZmlsZUlkIiA6ICJlNGI5MTQ0ODNiNTg0YzFmODMzOWQ0MGY3NWVjYWNjNCIsCiAgInByb2ZpbGVOYW1lIiA6ICJHTlVJIiwKICAic2lnbmF0dXJlUmVxdWlyZWQiIDogdHJ1ZSwKICAidGV4dHVyZXMiIDogewogICAgIlNLSU4iIDogewogICAgICAidXJsIiA6ICJodHRwOi8vdGV4dHVyZXMubWluZWNyYWZ0Lm5ldC90ZXh0dXJlLzhmMzIzYmM5ODc5NjBhMTY0MWJmNzBiMzQyMTQ2NjRkZTlhMjNjYzRiMTQ0YzMzYWVmMWY5ZmM2MjA4NjUwNTciCiAgICB9CiAgfQp9"}
 	}
 	-- split the string to 32kb chunks
-	for i=1, #data, 32768 do
-		table.insert(textures, {Value = string.sub(data, i, i+32767)})
+	for i=1, #data, CHUNK_SIZE+1 do
+		table.insert(textures, {Value = string.sub(data, i, i+CHUNK_SIZE)})
 	end
 	
-	local name = customName or "GN's Head"
+	local name = toJson({text=customName or "GN's Head",italic=false,color="yellow"})
 	
-	local item = ([=[minecraft:player_head{display:{Name:%s},SkullOwner:{Id:[I;%s,%s,%s,%s],Properties:{textures:%s}}}]=]):format(toJson(toJson({text=name})),u1,u2,u3,u4,toJson(textures))
+	---@type Minecraft.RawJSONText.Component[]
+	local lore = {
+		{text="hello world",italic=false,color="gray"}
+	}
+	for name, data in pairs(identityArray) do
+		lore[#lore+1] = {text=name,italic=false,color="gray"}
+	end
+	
+	
+	for index, value in ipairs(lore) do
+		lore[index] = toJson(value)
+	end
+	
+	local item = ([=[minecraft:player_head{display:{Name:%s,Lore:%s},SkullOwner:{Id:[I;%s,%s,%s,%s],Properties:{textures:%s}}}]=]):format(toJson(name),toJson(lore),u1,u2,u3,u4,toJson(textures))
 	return item
 end
 
+local function give(item)
+	if player:isLoaded() then
+		local id = player:getNbt().SelectedItemSlot
+		sounds:playSound("minecraft:entity.item.pickup",client:getCameraPos():add(client:getCameraDir()),1,1)
+		host:setSlot("hotbar."..id,item)
+	end
+end
+
+writeSkull = function (identityArray,customName)
+	local ok, result = pcall(SkullAPI.makeSkull,identityArray,customName)
+	if ok then
+		give(result)
+	else
+		warn(ok)
+	end
+end
+
 avatar:store("makeSkull",function (identityArray,customName)
-	local ok, result = pcall(SkullAPI.writeSkull,identityArray,customName)
+	local ok, result = pcall(SkullAPI.makeSkull,identityArray,customName)
 	if ok then
 		return result
 	else
@@ -426,12 +463,12 @@ function SkullAPI.registerIdentity(cfg)
 		identity.modelBlock = modelIdentityPeprocess(cfg.modelBlock)
 		identity.modelHat   = modelIdentityPeprocess(cfg.modelHat)
 		identity.modelHud   = modelIdentityPeprocess(cfg.modelHud)
-		identity.modelItem  = modelIdentityPeprocess(cfg.modelItem)
+		identity.modelEntity  = modelIdentityPeprocess(cfg.modelEntity)
 
 		identity.noModelBlockDeepCopy = (cfg.modelBlock and cfg.modelBlock[1]) and true or false
 		identity.noModelHatDeepCopy =   (cfg.modelHat and cfg.modelHat[1]) and true or false
 		identity.noModelHudDeepCopy =   (cfg.modelHud and cfg.modelHud[1]) and true or false
-		identity.noModelItemDeepCopy =  (cfg.modelItem and cfg.modelItem[1]) and true or false
+		identity.noModelItemDeepCopy =  (cfg.modelEntity and cfg.modelEntity[1]) and true or false
 
 		identity.processBlock =   applyPlaceholders(cfg.processBlock)
 		identity.processHat   =   applyPlaceholders(cfg.processHat)
@@ -451,6 +488,27 @@ function SkullAPI.registerIdentity(cfg)
 	return identity
 end
 
+local emptyPlcaeholderID = 0
+local function prepareInstance(identity,modelType)
+	local model
+	if modelType == 1 then
+		model = identity.modelEntity
+	elseif modelType == 2 then
+		model = identity.modelBlock
+	elseif modelType == 3 then
+		model = identity.modelhat
+	else
+		model = identity.modelHud
+	end
+	model = model or models:newPart("emptyPlcaeholder"..emptyPlcaeholderID)
+	emptyPlcaeholderID = emptyPlcaeholderID + 1 % 2^32
+	local instance = {
+		lastSeen = time,
+		identity = identity,
+		model = modelUtils.deepCopy(model):setVisible(true):moveTo(models),
+	}
+	return instance
+end
 
 --[────────-< Entity Instance >-────────]--
 ---@class SkullInstanceEntity : SkullInstance
@@ -467,11 +525,7 @@ end
 
 ---@return SkullInstanceEntity
 function SkullIdentity:newEntityInstance()
-	local instance = {
-		identity = self,
-		lastSeen = time,
-		model = (self.noModelItemDeepCopy and modelUtils.shallowCopy(self.modelItem) or modelUtils.deepCopy(self.modelItem)):setVisible(true):moveTo(models),
-	}
+	local instance = prepareInstance(self, 1)
 	setmetatable(instance,SkullInstance)
 	return instance
 end
@@ -497,11 +551,7 @@ end
 --- Creates an instance with the only data being nessesary to a block.
 ---@return SkullInstanceBlock
 function SkullIdentity:newBlockInstance()
-	local instance = {
-		identity = self,
-		lastSeen = time,
-		model = (self.noModelBlockDeepCopy and modelUtils.shallowCopy(self.modelBlock) or modelUtils.deepCopy(self.modelBlock)):setVisible(true):moveTo(models),
-	}
+	local instance = prepareInstance(self, 2)
 	setmetatable(instance,SkullInstance)
 	return instance
 end
@@ -520,12 +570,9 @@ end
 ---@field ON_PROCESS fun(skull: SkullInstanceHat, model: ModelPart, deltaFrame:number, deltaTick: number)?
 ---@field ON_EXIT fun(skull: SkullInstanceHat, model: ModelPart)?
 
+
 function SkullIdentity:newHatInstance()
-	local instance = {
-		identity = self,
-		lastSeen = time,
-		model = (self.noModelHatDeepCopy and modelUtils.shallowCopy(self.modelHat) or modelUtils.deepCopy(self.modelHat)):setVisible(true):moveTo(models),
-	}
+	local instance = prepareInstance(self, 3)
 	setmetatable(instance,SkullInstance)
 	return instance
 end
@@ -542,11 +589,7 @@ end
 ---@field ON_EXIT fun(skull: SkullInstanceHud, model: ModelPart)?
 
 function SkullIdentity:newHudInstance()
-	local instance = {
-		identity = self,
-		lastSeen = time,
-		model = (self.noModelHudDeepCopy and modelUtils.shallowCopy(self.modelHud) or modelUtils.deepCopy(self.modelHud)):setVisible(true):moveTo(models),
-	}
+	local instance = prepareInstance(self, 4)
 	setmetatable(instance,SkullInstance)
 	return instance
 end
@@ -712,16 +755,22 @@ local process = function (deltaTick)
 	deltaTick = client:getFrameTime()
 
 	if next(blockInstances) then
-		---@param instance SkullInstanceBlock
-		for key, instance in pairs(blockInstances) do
-			local ok, err = pcall(instance.identity.processBlock.ON_PROCESS, instance,instance.model,deltaFrame,deltaTick)
-			if not ok then warn(err) end
-			if (not world.getBlockState(instance.pos).id:find("head$")) then
-				instance.queueFree = true
-				local ok, err = pcall(instance.identity.processBlock.ON_EXIT, instance,instance.model)
+		---@param ins SkullInstanceBlock
+		for key, ins in pairs(blockInstances) do
+			if ins.isReady then
+				local ok, err = pcall(ins.identity.processBlock.ON_PROCESS, ins,ins.model,deltaFrame,deltaTick)
 				if not ok then warn(err) end
-				instance.model:remove()
-				instance.model = nil
+			else
+				ins.isReady = true
+				local ok, err = pcall(ins.identity.processBlock.ON_READY, ins,ins.model,deltaFrame,deltaTick)
+				if not ok then warn(err) end
+			end
+			if (not world.getBlockState(ins.pos).id:find("head$")) then
+				ins.queueFree = true
+				local ok, err = pcall(ins.identity.processBlock.ON_EXIT, ins,ins.model)
+				if not ok then warn(err) end
+				ins.model:remove()
+				ins.model = nil
 				blockInstances[key] = nil
 			end
 		end

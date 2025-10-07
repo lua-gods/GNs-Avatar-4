@@ -20,7 +20,7 @@ local identity = {
 	modelBlock = {models.sunflower.blocko:scale(SCALE,SCALE,SCALE):setPos(0,-10,0)},
 	modelHat = {models.sunflower.blocko},
 	modelHud = {models.sunflower.blocko},
-	modelItem = {models.sunflower.blocko},
+	modelEntity = {models.sunflower.blocko},
 	
 	processBlock = {
 		ON_READY = function (skull, model)

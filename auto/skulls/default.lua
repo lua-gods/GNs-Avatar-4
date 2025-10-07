@@ -43,7 +43,7 @@ local identity = {
 	modelBlock = models.skull.block,
 	modelHat = models.skull.hat,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],1,1),
-	modelItem = models.skull.entity,
+	modelEntity = models.skull.entity,
 }
 
 local sitOffset = vec(0, -8, -2) -- where should plushie move when its placed on stairs

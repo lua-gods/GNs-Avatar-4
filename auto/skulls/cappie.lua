@@ -14,7 +14,7 @@ local identity = {
 	modelBlock = models.cappie.hat,
 	modelHat = models.cappie.hat,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],0,0),
-	modelItem = models.cappie.hat,
+	modelEntity = models.cappie.hat,
 }
 
 Skull.registerIdentity(identity)

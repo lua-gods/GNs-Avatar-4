@@ -11,18 +11,10 @@ local identity = {
 	modelBlock = models.disc,
 	modelHat = models.skull.block,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],3,0),
-	modelItem = Skull.makeExtrudedIcon(textures["textures.item_icons"],3,0),
+	modelEntity = Skull.makeExtrudedIcon(textures["textures.item_icons"],3,0),
 }
 
----@param pos Vector3
----@param planeDir Vector3
----@param planePos Vector3
----@return Vector3
-local function ray2Plane(pos,planePos,planeDir)
-   local pdn = planeDir:normalized()
-   local dtp = pdn:dot(planePos - pos)
-   return pos + pdn * dtp
-end
+
 
 ---@param instrument Minecraft.soundID
 ---@param pos Vector3

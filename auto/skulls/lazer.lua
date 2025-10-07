@@ -25,7 +25,7 @@ local identity = {
 	modelBlock = models.lazer.hat,
 	modelHat = models.lazer.hat,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],1,0),
-	modelItem = models.lazer.hat,
+	modelEntity = models.lazer.hat,
 	
 	processHat = {
 		ON_READY = function (skull, model)

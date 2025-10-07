@@ -10,7 +10,7 @@ local identity = {
 	modelBlock = statue,
 	modelHat = statue,
 	modelHud = statue,
-	modelItem = statue,
+	modelEntity = statue,
 }
 
 Skull.registerIdentity(identity)

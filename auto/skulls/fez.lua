@@ -14,7 +14,7 @@ local identity = {
 	modelBlock = models.fez.hat,
 	modelHat = models.fez.hat,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],1,0),
-	modelItem = models.fez.hat,
+	modelEntity = models.fez.hat,
 	
 	processHat = {
 		ON_READY = function (skull, model)

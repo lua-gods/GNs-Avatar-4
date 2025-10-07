@@ -15,7 +15,7 @@ local identity = {
 	modelBlock = models.info.Item,
 	modelHat = models.info.Item,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],0,1),
-	modelItem = models.info.Item,
+	modelEntity = models.info.Item,
 
 	processEntity = {
 		ON_READY = function (skull, model)

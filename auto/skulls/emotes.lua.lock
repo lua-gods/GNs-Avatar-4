@@ -38,7 +38,7 @@ local identity = {
 	modelBlock = source,
 	modelHat = source,
 	modelHud = source,
-	modelEntity = source,
+	modelItem = source,
 	
 	processBlock = {
 		ON_READY = function (skull, model)

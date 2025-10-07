@@ -15,7 +15,7 @@ local identity = {
 	modelBlock = models.sunglasses.hat,
 	modelHat = models.sunglasses.hat,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],2,0),
-	modelItem = models.sunglasses.hat,
+	modelEntity = models.sunglasses.hat,
 	
 	processHat = {
 		ON_READY = function (skull, model)
