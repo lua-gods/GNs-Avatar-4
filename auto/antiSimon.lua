@@ -1,3 +1,0 @@
---events.TICK:register(function ()
---	host:setVelocity(vec(table.unpack(player:getNbt().Motion)).x_z:add(0,math.random(-3,3),0))
---end)

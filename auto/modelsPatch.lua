@@ -6,7 +6,8 @@ local hides = {
 	models.sunglasses,
 	models.lazer,
 	models.info,
-	models.fez
+	models.fez,
+	models.boat,
 }
 
 for key, value in pairs(hides) do

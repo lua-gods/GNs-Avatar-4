@@ -1,1 +1,240 @@
-{"meta":{"format_version":"4.10","model_format":"free","box_uv":false},"name":"info","model_identifier":"","visible_box":[1,1,0],"variable_placeholders":"","variable_placeholder_buttons":[],"timeline_setups":[],"unhandled_root_fields":{},"resolution":{"width":64,"height":64},"elements":[{"name":"icon","box_uv":false,"rescale":false,"locked":false,"light_emission":0,"render_order":"default","allow_mirror_modeling":true,"from":[-8,-1,8],"to":[8,15,8],"autouv":1,"color":1,"visibility":false,"origin":[-8,-1,8],"faces":{"north":{"uv":[0,0,16,16],"texture":0},"east":{"uv":[0,0,0,0],"texture":null},"south":{"uv":[0,0,0,0],"texture":null},"west":{"uv":[0,0,0,0],"texture":null},"up":{"uv":[0,0,0,0],"texture":null},"down":{"uv":[0,0,0,0],"texture":null}},"type":"cube","uuid":"5971e733-43cd-a8e2-0be0-7da75280377e"},{"name":"cube","box_uv":false,"rescale":false,"locked":false,"light_emission":0,"render_order":"default","allow_mirror_modeling":true,"from":[-8,-2,-5],"to":[8,5,2],"autouv":0,"color":6,"inflate":0.001,"rotation":[67.5,0,0],"origin":[0,-2,-5],"faces":{"north":{"uv":[16,0,32,7],"texture":1},"east":{"uv":[16,28,23,35],"texture":1},"south":{"uv":[16,7,32,14],"texture":1},"west":{"uv":[23,28,30,35],"texture":1},"up":{"uv":[32,21,16,14],"texture":1},"down":{"uv":[32,21,16,28],"texture":1}},"type":"cube","uuid":"211fa3af-9250-3fae-fffa-c6f4a5ae261f"},{"name":"cube","box_uv":false,"rescale":false,"locked":false,"light_emission":0,"render_order":"default","allow_mirror_modeling":true,"from":[-8,-18,-5],"to":[8,-2,-3],"autouv":0,"color":6,"origin":[0,4,-4],"faces":{"north":{"uv":[0,0,16,16],"texture":1},"east":{"uv":[34,0,32,16],"texture":1},"south":{"uv":[0,0,16,16],"texture":1},"west":{"uv":[32,0,34,16],"texture":1},"up":{"uv":[0,0,16,16],"texture":1},"down":{"uv":[34,16,32,0],"rotation":90,"texture":1}},"type":"cube","uuid":"2da2dedb-6aa2-643f-11b8-3749c27f91a7"}],"outliner":["5971e733-43cd-a8e2-0be0-7da75280377e",{"name":"Item","origin":[0,3,1],"color":0,"uuid":"4f2c9b5d-ed7b-fe55-10c6-98236da329f8","export":true,"mirror_uv":false,"isOpen":true,"locked":false,"visibility":true,"autouv":0,"selected":false,"children":[{"name":"Bottom","origin":[0,0,-2],"color":0,"uuid":"f8a81887-1387-ff6a-2782-f0a259ec2e77","export":true,"mirror_uv":false,"isOpen":true,"locked":false,"visibility":true,"autouv":0,"selected":false,"children":["211fa3af-9250-3fae-fffa-c6f4a5ae261f"]},{"name":"Top","origin":[0,18,1],"color":0,"uuid":"0f805bc4-f891-b8ee-782f-e03a3a747cb4","export":true,"mirror_uv":false,"isOpen":true,"locked":false,"visibility":true,"autouv":0,"selected":false,"children":[]},{"name":"Middle","origin":[0,-2,-5],"color":0,"uuid":"806a2058-c02f-b60d-23a3-8df31cfa4a70","export":true,"mirror_uv":false,"isOpen":true,"locked":false,"visibility":true,"autouv":0,"selected":false,"children":["2da2dedb-6aa2-643f-11b8-3749c27f91a7"]}]}],"textures":[{"path":"Z:\\Games\\ETC\\Minecraft\\Figura\\avatars\\A Favorites\\GN's Avatar - Static\\textures\\toilerpaper_item.png","name":"toilerpaper_item.png","folder":"","namespace":"","id":"1","group":"","width":16,"height":16,"uv_width":16,"uv_height":16,"particle":false,"use_as_default":false,"layers_enabled":false,"sync_to_project":"","render_mode":"default","render_sides":"auto","pbr_channel":"color","frame_time":1,"frame_order_type":"loop","frame_order":"","frame_interpolate":false,"visible":true,"internal":true,"saved":true,"uuid":"3865dbbf-bc61-15db-77c5-ee8215606a59","relative_path":"textures/toilerpaper_item.png","source":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAANNJREFUOE9jZKAQMFKonwHDAClJo//YDH32/BxWy1AEQZqfPjuL1VHSUsYo4jAD4Qbg0wzTeeLCPTDz9KU7DB0VlQwgQ8AGwDSDFFgYKGG4IK1kMoaYrp462BC4AWu3rcZQBDIMm2aYwq3LFiAMqOhoZzDVU8EwZN6SrTgjimQD7t68w6CsjrCEZAPQnUK0Aeg2gwwCaUaJBZAgtnAAhQFIsXdUAtwBMM0gAYyEBDIEBkCBCjMA2fnIqRJvUgYZdvnSTbhzsUUH3syEnC+Iygvk5EwAdM51BbQgIfoAAAAASUVORK5CYII="},{"path":"Z:\\Games\\ETC\\Minecraft\\Figura\\avatars\\A Favorites\\GN's Avatar - Static\\textures\\toiletpaper.png","name":"toiletpaper.png","folder":"block","namespace":"","id":"2","group":"","width":64,"height":64,"uv_width":64,"uv_height":64,"particle":false,"use_as_default":false,"layers_enabled":false,"sync_to_project":"","render_mode":"default","render_sides":"auto","pbr_channel":"color","frame_time":1,"frame_order_type":"loop","frame_order":"","frame_interpolate":false,"visible":true,"internal":true,"saved":true,"uuid":"b22cf23a-5b5b-2d24-918a-5032bfc58670","relative_path":"textures/toiletpaper.png","source":"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAqhJREFUeF7tmktOwzAQhh1RXi1vbgAXgB1ciB07jsGOHSdiyQk4AKjQ9xsFjdU/mlouqpyKmYaxVEWp49jzzT/jSdosz/PczdtgNHHbtS3/oUbn9b0ddPvjdPZd9C90lDzJsiwreYuk4RkH0OkN3dHBfnGjvwLw8vrmbq8v5QF8tvvusLHnPUye7vZHxXlMJTE1pChEBQAYfHbc8MZTG44mbn8eAggLUkmttuVDI2ZsqJpVgIgC6A/HOYx7b3a8xykMyBBq6IMCCMqqAACS3yMGRA2A5lfPnZ8eFCFAi4WnkQD7g7Fr1HcXkiXPPlwBq+YQUQCT6cwrgBY7m30XkidPIyESCHhzNJ46hEmoDlyHnWOjAVACJEPheTq2OgPv/WXxn7QPOefUKIDHPHYAblQMSqiCFAjiAMICh4z6+Oy6k6P6gj08LMKiKcVwjFEHIAYEu8Jv8Z0KQRwAEhxim0sdMMJrYOzGh0C7O8hpX6cG78ZKYuwQqBIrA6DZ6uVU/KBAwZYIGPA8agK+K8QKpZQwEA2BGADAoCMqPy51fMdVk2K4iiSIEIjF8rI6nkPZ+BzAH4fLeDF1rNR7AKx34X1AqhFlxhkAoTdBpoA5AQsBS4LsrXCZZJY61pKgJUGZ3wNsF1jXLkAPMmWa1A8ipoB1KSDV+9LZf60KiIXBzdWFn2NZX+UAwGAYzQHE+ioJ4O7hyT0/3nuvhwDCPjUAUmMY46iUhsHhkash7KscAAAhz8cUwHMBXVMpAKGKYgDCayoDoGwISY8X+VuKtNF8fgOgyRsSazEFSFDXNKcpQJM3JNZiCpCgrmlOU4Amb0isxRQgQV3TnKYATd6QWIspQIK6pjlNAZq8IbEWU4AEdU1zmgI0eUNiLaYACeqa5jQFaPKGxFr+vQJ+APe9CV+zeeZrAAAAAElFTkSuQmCC"}]}
+{
+	"meta": {
+		"format_version": "4.10",
+		"model_format": "free",
+		"box_uv": false
+	},
+	"name": "info",
+	"model_identifier": "",
+	"visible_box": [1, 1, 0],
+	"variable_placeholders": "",
+	"variable_placeholder_buttons": [],
+	"timeline_setups": [],
+	"unhandled_root_fields": {},
+	"resolution": {
+		"width": 64,
+		"height": 64
+	},
+	"elements": [
+		{
+			"name": "icon",
+			"box_uv": false,
+			"rescale": false,
+			"locked": false,
+			"light_emission": 0,
+			"render_order": "default",
+			"allow_mirror_modeling": true,
+			"from": [-8, -1, 8],
+			"to": [8, 15, 8],
+			"autouv": 1,
+			"color": 1,
+			"visibility": false,
+			"origin": [-8, -1, 8],
+			"faces": {
+				"north": {
+					"uv": [0, 0, 16, 16]
+				},
+				"east": {
+					"uv": [0, 0, 0, 0],
+					"texture": null
+				},
+				"south": {
+					"uv": [0, 0, 0, 0],
+					"texture": null
+				},
+				"west": {
+					"uv": [0, 0, 0, 0],
+					"texture": null
+				},
+				"up": {
+					"uv": [0, 0, 0, 0],
+					"texture": null
+				},
+				"down": {
+					"uv": [0, 0, 0, 0],
+					"texture": null
+				}
+			},
+			"type": "cube",
+			"uuid": "5971e733-43cd-a8e2-0be0-7da75280377e"
+		},
+		{
+			"name": "cube",
+			"box_uv": false,
+			"rescale": false,
+			"locked": false,
+			"light_emission": 0,
+			"render_order": "default",
+			"allow_mirror_modeling": true,
+			"from": [-8, -2, -5],
+			"to": [8, 5, 2],
+			"autouv": 0,
+			"color": 6,
+			"inflate": 0.001,
+			"rotation": [67.5, 0, 0],
+			"origin": [0, -2, -5],
+			"faces": {
+				"north": {
+					"uv": [16, 0, 32, 7],
+					"texture": 0
+				},
+				"east": {
+					"uv": [16, 28, 23, 35],
+					"texture": 0
+				},
+				"south": {
+					"uv": [16, 7, 32, 14],
+					"texture": 0
+				},
+				"west": {
+					"uv": [23, 28, 30, 35],
+					"texture": 0
+				},
+				"up": {
+					"uv": [32, 21, 16, 14],
+					"texture": 0
+				},
+				"down": {
+					"uv": [32, 21, 16, 28],
+					"texture": 0
+				}
+			},
+			"type": "cube",
+			"uuid": "211fa3af-9250-3fae-fffa-c6f4a5ae261f"
+		},
+		{
+			"name": "cube",
+			"box_uv": false,
+			"rescale": false,
+			"locked": false,
+			"light_emission": 0,
+			"render_order": "default",
+			"allow_mirror_modeling": true,
+			"from": [-8, -18, -5],
+			"to": [8, -2, -3],
+			"autouv": 0,
+			"color": 6,
+			"origin": [0, 4, -4],
+			"faces": {
+				"north": {
+					"uv": [0, 0, 16, 16],
+					"texture": 0
+				},
+				"east": {
+					"uv": [34, 0, 32, 16],
+					"texture": 0
+				},
+				"south": {
+					"uv": [0, 0, 16, 16],
+					"texture": 0
+				},
+				"west": {
+					"uv": [32, 0, 34, 16],
+					"texture": 0
+				},
+				"up": {
+					"uv": [0, 0, 16, 16],
+					"texture": 0
+				},
+				"down": {
+					"uv": [34, 16, 32, 0],
+					"rotation": 90,
+					"texture": 0
+				}
+			},
+			"type": "cube",
+			"uuid": "2da2dedb-6aa2-643f-11b8-3749c27f91a7"
+		}
+	],
+	"outliner": [
+		"5971e733-43cd-a8e2-0be0-7da75280377e",
+		{
+			"name": "Item",
+			"origin": [0, 3, 1],
+			"color": 0,
+			"uuid": "4f2c9b5d-ed7b-fe55-10c6-98236da329f8",
+			"export": true,
+			"mirror_uv": false,
+			"isOpen": true,
+			"locked": false,
+			"visibility": true,
+			"autouv": 0,
+			"selected": false,
+			"children": [
+				{
+					"name": "Bottom",
+					"origin": [0, 0, -2],
+					"color": 0,
+					"uuid": "f8a81887-1387-ff6a-2782-f0a259ec2e77",
+					"export": true,
+					"mirror_uv": false,
+					"isOpen": true,
+					"locked": false,
+					"visibility": true,
+					"autouv": 0,
+					"selected": false,
+					"children": ["211fa3af-9250-3fae-fffa-c6f4a5ae261f"]
+				},
+				{
+					"name": "Top",
+					"origin": [0, 18, 1],
+					"color": 0,
+					"uuid": "0f805bc4-f891-b8ee-782f-e03a3a747cb4",
+					"export": true,
+					"mirror_uv": false,
+					"isOpen": true,
+					"locked": false,
+					"visibility": true,
+					"autouv": 0,
+					"selected": false,
+					"children": []
+				},
+				{
+					"name": "Middle",
+					"origin": [0, -2, -5],
+					"color": 0,
+					"uuid": "806a2058-c02f-b60d-23a3-8df31cfa4a70",
+					"export": true,
+					"mirror_uv": false,
+					"isOpen": true,
+					"locked": false,
+					"visibility": true,
+					"autouv": 0,
+					"selected": false,
+					"children": ["2da2dedb-6aa2-643f-11b8-3749c27f91a7"]
+				}
+			]
+		}
+	],
+	"textures": [
+		{
+			"path": "/home/gn/games/Figura/avatars/A Favorites/GNs-Avatar-4/textures/toiletpaper.png",
+			"name": "toiletpaper.png",
+			"folder": "block",
+			"namespace": "",
+			"id": "2",
+			"group": "",
+			"width": 64,
+			"height": 64,
+			"uv_width": 64,
+			"uv_height": 64,
+			"particle": false,
+			"use_as_default": false,
+			"layers_enabled": false,
+			"sync_to_project": "",
+			"render_mode": "default",
+			"render_sides": "auto",
+			"pbr_channel": "color",
+			"frame_time": 1,
+			"frame_order_type": "loop",
+			"frame_order": "",
+			"frame_interpolate": false,
+			"visible": true,
+			"internal": true,
+			"saved": true,
+			"uuid": "b22cf23a-5b5b-2d24-918a-5032bfc58670",
+			"relative_path": "textures/toiletpaper.png",
+			"source": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAEAAAABACAYAAACqaXHeAAAAAXNSR0IArs4c6QAAAtdJREFUeF7tms9u00AQxjd/nbY8ADcOPAlnnqDqgdfg0ko9VOojgECqOCCeAImqqvokPXDjTJsmduwYzZLPTFYbKawjZmLGl4293uzOb76ZHTvp3X26rN3qKBe56w+Grt8f+Ct0Phxl6Pbtclk1/WsdLU9evXnba/kVScN7HEAxf3LjyWHzRf8KwI/v9+747IM8gHw2daNs4j1Mnl7k8+Y8ppKYGlIUogIADM4OjrzxPgSK3A3Hv0MAYUEq6Q8GPjRixoaq2QaIKICbj+c1xT0ds4efbpRlPgzIEG/4qq9RQEF5YjsAAAl4m3KIGgDz6aObHD1rQmBZlY2n/eKr0i2Kwo3G47VkybMPV8C2OUQUwO3VRU0eosUuq6qRPMkfCZE8ScbTUZWlQ5hwz8K7gPY3u4hKAJQAyVAYRm0+e/Le3xT/SfuQc04NAB7z2AG4UTEooQpSIIgDQHwj4ZFRs+mDyw7+1ATYFRAWYdGUYjjGqAMQA4JdAZVhLMGlQhAHgASH2OZS58mNPuMeGLv3IXD9/qymfR3GURsribFDoErsDIBv705rKn9JBXgQ4vJGMcO3N1zzSXP14JQqfxonGgIxAChfqaV6gBTCK0Jc46rZWwAIgbDkDRPhWrXHoOy9AvjjcBsvpo6Veg+A9a69D0g1os04AyD0JsgUsCJgIWBJkL0VbpPMUsdaErQkKPN7gO0Cu9oF6EGmzSH1g4gpYFcKSPW+dPbfqQJiYfD8xUs/x6a+zgGAwTCaA4j1dRLA1y+f3evjE+/1EEDYpwZAagxjHJXSMDhsuRrCvs4BABDyfEwBPBfQPZ0CEKooBiC8pzMA2oaQ9HiRv6VIG83nNwCavCGxFlOABHVNc5oCNHlDYi2mAAnqmuY0BWjyhsRaTAES1DXNaQrQ5A2JtZgCJKhrmtMUoMkbEmsxBUhQ1zSnKUCTNyTWYgqQoK5pTlOAJm9IrOW/V8Av1AcJXwXiDrQAAAAASUVORK5CYII="
+		}
+	]
+}
