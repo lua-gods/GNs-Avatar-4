@@ -1,3 +1,11 @@
+--[[
+____  ___ __   __
+| __|/ _ \\ \ / /
+| _|| (_) |> w <
+|_|  \___//_/ \_\
+FOX's Texture Extruder v?.?.?
+]]
+
 ---@param tex Texture
 ---@return {x: number, y: number, wid: number, hei: number}[]
 local function getTextureAreas(tex)
@@ -128,33 +136,4 @@ local function extrudeTexture(tex)
 	return model
 end
 
-local tex = textures:fromVanilla("sign", "textures/item/oak_sign.png")
-local model = extrudeTexture(tex)
-
-local skulls = require("Scripts.SkullAPI.SkullAPI")
-function skulls.item_init(skull)
-	local res = 16
-	res = 1 / (res / 16)
-
-	-- Left hand third person
-
-	local mat = matrices.mat4()
-		:translate(tex:getDimensions():mul(0.5, 1).xy_)
-		:translate(0, -3, -7.5)
-		:scale(1.1)
-		:scale(res, res, 1)
-		:rotate(45, 45, 0)
-
-	-- Right hand third person
-
-	-- local mat = matrices.mat4()
-	-- 	:translate(textures["Textures.Miku"]:getDimensions():mul(0.5, 1).xy_)
-	-- 	:translate(0, 0, -8)
-	-- 	:scale(res, res, 1)
-	-- 	:rotate(45, -45, 0)
-
-	skull:setModel(model)
-	skull:getModel():matrix(mat)
-end
-
-model:visible(false)
+return extrudeTexture
