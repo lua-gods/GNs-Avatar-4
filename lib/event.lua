@@ -17,7 +17,7 @@ Events.newEvent = Events.new
 
 ---Registers a function as a listener to the event when it triggers.
 ---@param func function
----@param name any
+---@param name string
 function Events:register(func, name) self[#self + 1] = {name or func, func} end
 
 ---Clears all the registered listeners.
@@ -43,7 +43,7 @@ function Events:__call(...)
 	return flush
 end
 
----@type fun(self: Event, ...: any): any[]
+---@type fun(self: Event, ...: string): string[]
 Events.invoke = Events.__call
 
 function Events.__index(t, i) return rawget(t, i) or rawget(t, i:upper()) or Events[i] end

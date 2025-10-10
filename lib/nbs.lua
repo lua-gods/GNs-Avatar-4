@@ -91,12 +91,14 @@ for i, v in pairs(instruments) do
 	end
 end
 
+---@param musicPlayer NBS.MusicPlayer
 ---@param instrument Minecraft.soundID
 ---@param pos Vector3
----@param pitch integer
+---@param key integer
 ---@param volume integer
 ---@param attenuation integer
-local function defaultPlay(instrument,pos,pitch,volume,attenuation)
+local function defaultPlay(musicPlayer,instrument,pos,key,volume,attenuation)
+	local pitch=2^(((key-9)/12+musicPlayer.transposition)-3)
 	sounds[instrument]
 	:pos(pos)
 	:pitch(pitch)
@@ -127,10 +129,9 @@ local function process()
 					mp.currentNoteTick=cnote.tick
 					mp.currentNote=mp.currentNote+math.sign(mp.tick-cnote.tick)
 					if mp.loopCount == 0 or mp.track.loopStartTick <= cnote.tick then
-						local pitch=2^(((cnote.key-9)/12+mp.transposition)-3)
 						if instruments[cnote.instrument] then
 							if cnote.volume > 0.01 then
-							mp.playNote(instruments[cnote.instrument],mp.pos,pitch,cnote.volume*mp.volume,mp.attenuation)
+							mp.playNote(mp,instruments[cnote.instrument],mp.pos,cnote.key,cnote.volume*mp.volume,mp.attenuation)
 							end
 							if hasEvents then
 								mp.NOTE_PLAYED:invoke(cnote)

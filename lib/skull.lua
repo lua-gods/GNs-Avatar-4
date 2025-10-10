@@ -96,7 +96,7 @@ end
 ---@field lastSeen integer
 ---@field matrix Matrix4
 ---@field isReady boolean
----@field [any] any
+---@field [string] string
 local SkullInstance = {}
 SkullInstance.__index = function (t,i)
 	return rawget(t,i) or rawget(t,"identity")[i] or SkullInstance[i]
@@ -125,7 +125,7 @@ end
 ---@field processHat SkullProcessHat
 ---@field processHud SkullProcessHud
 ---@field processEntity SkullProcessEntity
----@field [any] any
+---@field [string] string
 local SkullIdentity = {}
 SkullIdentity.__index = function (t,i)
 	return rawget(t,i) or SkullIdentity[i]

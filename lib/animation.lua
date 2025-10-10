@@ -271,7 +271,7 @@ ModelPart.__index=ModelPart
 
 
 ---@param self ModelPart
----@param callback fun(self:ModelPart,...:any)
+---@param callback fun(self:ModelPart,...:string)
 local function applyNested(self,callback,...)
 	callback(self,...)
 	for _, child in ipairs(self:getChildren()) do

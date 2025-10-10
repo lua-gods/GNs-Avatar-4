@@ -2,11 +2,11 @@
 ---@class ChloePianoAPI
 local ChloePianoAPI = {}
 
---- Piano UUID "943218fd-5bbc-4015-bf7f-9da4f37bac59"
-
+--- Piano UUID  "943218fd-5bbc-4015-bf7f-9da4f37bac59"
+--- Chloe's Alt "b0e11a12-eada-4f28-bb70-eb8903219fe5"
 ---@class ConcatinatedVector3 : string
 
----@alias keyID string
+---@alias ChloePianoAPI.keyID string
 ---| "A0"
 ---| "A\x230"
 ---| "B0"
@@ -96,20 +96,24 @@ local ChloePianoAPI = {}
 ---`doesPlaySound` is a boolean which determines if a sound will play when the note is pressed. This exists to make the implementation for holding notes simple. Just keep this as true.  
 ---`notePos` is a vec3 containing the world coordinates the note should play at. If left empty, it will just play at. You can simply ignore this and it will play at the player head coordinates. This is rarely useful, but if you want you can use the piano as a piano sample library (assuming you have it loaded), and play piano sounds anywhere in the world.  
 ---@param pianoID ConcatinatedVector3
----@param keyId keyID
+---@param keyId ChloePianoAPI.keyID
 ---@param doesPlaySound boolean
 ---@param notePos Vector3?
 function ChloePianoAPI.playNote(pianoID, keyId, doesPlaySound, notePos)
 end
 
+
 ---@param pianoID ConcatinatedVector3
 ---@return boolean
 function ChloePianoAPI.validPos(pianoID) return false end
 
----@param keyID keyID
+
+---Plays a sound at a given position.
+---@param keyID ChloePianoAPI.keyID
 ---@param notePos Vector3
 ---@param noteVolume number?
 function ChloePianoAPI.playSound(keyID, notePos, noteVolume) end
 
----@return table<keyID,integer>
+
+---@return table<ChloePianoAPI.keyID,integer>
 function ChloePianoAPI.getPlayingKeys() return {} end

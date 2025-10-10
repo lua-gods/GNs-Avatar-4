@@ -3,7 +3,7 @@ local utilsTable = {}
 
 ---@generic tbl
 ---@param tbl tbl
----@param func fun(key: any, value: any): any
+---@param func fun(key: string, value: string): string
 ---@return tbl
 function utilsTable.forEach(tbl,func)
 	local out = {}

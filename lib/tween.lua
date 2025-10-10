@@ -402,7 +402,7 @@ end
 
 
 ---@class TweenInstanceCreation
----@field id any?
+---@field id string?
 ---
 ---@field from number|Vector.any
 ---@field to number|Vector.any
@@ -420,7 +420,7 @@ end
 
 ---An instance of a tween query
 ---@class TweenInstance
----@field id any
+---@field id string
 ---
 ---@field from number|Vector.any
 ---@field to number|Vector.any
@@ -457,7 +457,7 @@ local function placeholder() end
 --- | `tick`      | `?`        | a callback function that gets called everytime the tween ticks                                                                                  |
 --- | `onFinish`  | `?`        | a callback function that gets called when the tween finishes                                                                                    |
 ---@param cfg {
----	id: any?,
+---	id: string?,
 ---	from: number|Vector.any,
 ---	to: number|Vector.any,
 ---	duration: number,
@@ -504,7 +504,7 @@ end
 
 
 ---Stops the tween with the given ID. if `cancel` is true, it NOT will call the `onFinish` function
----@param id any
+---@param id string
 ---@param cancel boolean?
 function Tween.stop(id, cancel)
 	queries[id] = nil

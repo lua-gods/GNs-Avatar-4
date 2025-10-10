@@ -17,7 +17,7 @@ local expressionEnv = setmetatable(
 
 local listeners = {}
 
----@type table<string,fun(model:ModelPart,...:any)>
+---@type table<string,fun(model:ModelPart,...:string)>
 local driverFunctions = {
 	scale = function (model, x, y, z) model:scale(x,y,z) end,
 	scaleX = function (model, x) model:scale(model:getScale()._yz + vec(x,0,0)) end,

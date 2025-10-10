@@ -11,7 +11,7 @@ local tween = require("lib.tween")
 ---@field current_animation Animation?
 ---@field last_animation Animation?
 ---@field blend_time number
----@field queue_next table<any,Animation>
+---@field queue_next table<string,Animation>
 local animationStateMachine = {}
 animationStateMachine.__index = animationStateMachine
 

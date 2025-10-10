@@ -63,7 +63,7 @@ local myUuid = avatar:getUUID()
 playerEvents.player = playerEvents -- backwards compatibility
 playerEvents.head = headEvents
 
----@overload fun(value: any): string
+---@overload fun(value: string): string
 local function rawtype(value)
 	local success, err = pcall(rawget, value, "")
 	return success and "table" or err:match("table expected, got (%w*)")

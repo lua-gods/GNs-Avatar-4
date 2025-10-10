@@ -15,15 +15,15 @@ local identity = {
 }
 
 
-
+---@param musicPlayer NBS.MusicPlayer
 ---@param instrument Minecraft.soundID
 ---@param pos Vector3
----@param pitch integer
+---@param key integer
 ---@param volume integer
 ---@param attenuation integer
-local function customPlay(instrument,pos,pitch,volume,attenuation)
+local function customPlay(musicPlayer,instrument,pos,key,volume,attenuation)
 	local cpos = client:getCameraPos()
-	
+	local pitch=2^(((key-9)/12+musicPlayer.transposition)-3)
 	local block,hit = raycast:block(pos+(cpos-pos):normalize()*1.2, cpos)
 	if (hit-cpos):lengthSquared() > 0.01 then
 		volume = (volume*0.1)
@@ -37,6 +37,79 @@ local function customPlay(instrument,pos,pitch,volume,attenuation)
 	:play()
 end
 
+---@type ChloePianoAPI
+local ChloePianoAPI = world.avatarVars()["b0e11a12-eada-4f28-bb70-eb8903219fe5"] or {}
+
+-- thankyou 4P5 for the snippet bellow (I stole this)
+local NOTES = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" }
+
+---@param pitch number
+---@return string?
+local function getNoteName(pitch)
+	local note = NOTES[pitch % 12 + 1]
+	local octave = math.floor((pitch / 12) - 1)
+	if pitch >= 21 and pitch <= 95 then -- A0 to B7
+		return note .. octave
+	else
+		return getNoteName(pitch + (pitch < 21 and 12 or -12))
+	end
+end
+
+---@type Minecraft.soundID
+local PIANO_VALID_INSTRUMENTS = {
+	["minecraft:block.note_block.harp"] = -12,
+	["minecraft:block.note_block.flute"] = 0,
+	["minecraft:block.note_block.bass"] = -24,
+	["minecraft:block.note_block.banjo"] = -24,
+	["minecraft:block.note_block.xylophone"] = 0,
+	["minecraft:block.note_block.pling"] = 0,
+	["minecraft:block.note_block.bell"] = 0,
+}
+
+---@param pos Vector3
+---@return function
+local function makePianoCustomPlay(pos)
+	return function (musicPlayer,instrument,_,key,volume,attenuation)
+		local spos = tostring(pos)
+		if PIANO_VALID_INSTRUMENTS[instrument] then
+			key = key + PIANO_VALID_INSTRUMENTS[instrument]
+			ChloePianoAPI.playSound(getNoteName(key+21),pos,volume*0.1)
+		end
+	end
+end
+
+
+---@type DrumAPI
+local DrumAPI = world.avatarVars()["3dfb6d3b-74e3-4628-9747-1ab586e2fd65"]
+
+
+---@param pos Vector3
+---@return function
+local function makeDrumCustomPlay(pos)
+---@param instrument Minecraft.soundID
+return function (musicPlayer,instrument,_,key,volume,attenuation)
+		local spos = tostring(pos)
+		if instrument == "minecraft:block.note_block.basedrum" then
+			DrumAPI.playNote(spos,"B1",true,pos,volume)
+		elseif instrument == "minecraft:block.note_block.snare" then
+			if key > 50 then
+				DrumAPI.playNote(spos,"F#2",true,pos,volume)
+			elseif key > 40 then
+				DrumAPI.playNote(spos,"C#3",true,pos,volume*0.2)
+			else
+				DrumAPI.playNote(spos,"F#2",true,pos,volume)
+			end
+		elseif instrument == "minecraft:block.note_block.hat" then
+			DrumAPI.playNote(spos,"C#2",true,pos,volume)
+		else
+			customPlay(musicPlayer,instrument,pos,key,volume,attenuation)
+		end
+	end
+end
+
+
+
+
 
 local HALF = vec(0.5,0.5,0.5)
 
@@ -47,7 +120,21 @@ identity.processBlock = {
 		if not (#skull.params[1] > 0) then return end
 		skull.model:scale(1.01)
 		local musicPlayer = NBS.newMusicPlayer():setPos(skull.matrix:apply() + HALF):setAttenuation(2)
+		local supportEntityData = skull.support:getEntityData()
 		musicPlayer:setPlayCallback(customPlay)
+		
+		if supportEntityData 
+		and supportEntityData.SkullOwner 
+		and supportEntityData.SkullOwner.Id then
+			local id = supportEntityData.SkullOwner.Id
+			local uuid = client.intUUIDToString(id[1],id[2],id[3],id[4])
+			if uuid == "b0e11a12-eada-4f28-bb70-eb8903219fe5"then -- pianos
+				musicPlayer:setPlayCallback(makePianoCustomPlay(skull.support:getPos()))
+			end
+			if uuid == "3dfb6d3b-74e3-4628-9747-1ab586e2fd65" then -- drums
+				musicPlayer:setPlayCallback(makeDrumCustomPlay(skull.support:getPos()))
+			end
+		end
 		if skull.isWall then
 			model:setRot(90,0,0):setPos(0,4,3)
 		end

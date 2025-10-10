@@ -1,10 +1,10 @@
 ---@class diffTable
----@field __ON_ADD fun(key:any,value: any,...:any)
----@field __ON_MODIFY fun(key:any,value: any,...:any)
----@field __ON_REMOVE fun(key:any,value: any,...:any)
+---@field __ON_ADD fun(key:string,value: string,...:string)
+---@field __ON_MODIFY fun(key:string,value: string,...:string)
+---@field __ON_REMOVE fun(key:string,value: string,...:string)
 ---@field data table
 ---@field lastData table
----@field [any] string
+---@field [string] string
 local diffTable = {}
 diffTable.__index = function (t,k)
 	return rawget(t,k) or t.data[k] or diffTable[k]
@@ -15,9 +15,9 @@ end
 
 local function placeholder() end
 
----@param onAdd (fun(key:any,value: any,...:any):any)?
----@param onRemove (fun(key:any,value: any,...:any):any)?
----@param onModify (fun(key:any,value: any,...:any):any)?
+---@param onAdd (fun(key:string,value: string,...:string):string)?
+---@param onRemove (fun(key:string,value: string,...:string):string)?
+---@param onModify (fun(key:string,value: string,...:string):string)?
 ---@return diffTable
 function diffTable.new(onAdd, onRemove, onModify)
 	local self = {
@@ -32,9 +32,9 @@ function diffTable.new(onAdd, onRemove, onModify)
 end
 
 ---Does the same as setting an entry into the table, but with additional parameters to pass onto the diff callbacks.
----@param key any
----@param value any
----@param ... any
+---@param key string
+---@param value string
+---@param ... string
 function diffTable:set(key, value, ...)
 	local lastData = self.data[key]
 	local ret = {}
