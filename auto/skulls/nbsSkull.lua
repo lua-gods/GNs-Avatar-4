@@ -38,7 +38,7 @@ local function customPlay(musicPlayer,instrument,pos,key,volume,attenuation)
 end
 
 ---@type ChloePianoAPI
-local ChloePianoAPI = world.avatarVars()["b0e11a12-eada-4f28-bb70-eb8903219fe5"] or {}
+local ChloePianoAPI = world.avatarVars()["b0e11a12-eada-4f28-bb70-eb8903219fe5"] or {playSound=function ()end}
 
 -- thankyou 4P5 for the snippet bellow (I stole this)
 local NOTES = { "C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B" }
@@ -80,7 +80,7 @@ end
 
 
 ---@type DrumAPI
-local DrumAPI = world.avatarVars()["3dfb6d3b-74e3-4628-9747-1ab586e2fd65"]
+local DrumAPI = world.avatarVars()["3dfb6d3b-74e3-4628-9747-1ab586e2fd65"] or {playNote = function () end}
 
 
 ---@param pos Vector3
@@ -118,6 +118,8 @@ identity.processBlock = {
 	---@param model ModelPart
 	ON_READY = function (skull, model)
 		if not (#skull.params[1] > 0) then return end
+		ChloePianoAPI = world.avatarVars()["b0e11a12-eada-4f28-bb70-eb8903219fe5"] or {}
+		DrumAPI = world.avatarVars()["3dfb6d3b-74e3-4628-9747-1ab586e2fd65"]
 		skull.model:scale(1.01)
 		local musicPlayer = NBS.newMusicPlayer():setPos(skull.matrix:apply() + HALF):setAttenuation(2)
 		local supportEntityData = skull.support:getEntityData()
