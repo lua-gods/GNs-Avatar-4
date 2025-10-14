@@ -7,8 +7,8 @@ local identity = {
 	name = "OGG Vorbis Player",
 	id = "ogg",
 	support="minecraft:jukebox",
-	modelBlock = models.disc,
-	modelHat = models.skull.block,
+	modelBlock = models.skull.disc,
+	modelHat = models.skull.disc.block,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],3,0),
 	modelEntity = Skull.makeExtrudedIcon(textures["textures.item_icons"],3,0),
 }

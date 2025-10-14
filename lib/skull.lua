@@ -1,4 +1,4 @@
----@diagnostic disable: assign-type-mismatch
+---@diagnostic disable: assign-type-mismatch, param-type-mismatch
 --[[______   __
   / ____/ | / /  by: GNanimates / https://gnon.top / Discord: @gn68s
  / / __/  |/ / name: SKULL SYSTEM SERVICE
@@ -24,9 +24,10 @@ SKULL_PROCESS:newBlock("forceRenderer"):block("minecraft:emerald_block"):scale(0
 models:newPart("SkullHider","SKULL"):newBlock("forceHide"):block("minecraft:redstone_block"):scale(0,0,0)
 
 
-local skullIdentities = {}        ---@type table<string,SkullIdentity>
+local SKULL_IDENTITIES = {}        ---@type table<string,SkullIdentity>
 local skullSupportIdentities = {} ---@type table<string,SkullIdentity>
 
+local tick = 0
 local time = client:getSystemTime()
 local STARTUP_STALL = 20
 
@@ -52,8 +53,20 @@ function SkullAPI.makeIcon(texture,iconX,iconY)
 	model:newSprite("Icon")
 	:texture(texture,16,16)
 	:setRenderType("CUTOUT_EMISSIVE_SOLID")
-	:setDimensions(64,64)
+	:setDimensions(128,128)
 	:setUVPixels(iconX*16,iconY*16)
+	return model
+end
+
+---@param model ModelPart
+---@return any
+function SkullAPI.toIcon(model)
+	model:setParentType("SKULL")
+	:rot(30,-45,0)
+	:pos(0,-4.6,0)
+	:setPivot(0,0,0)
+	:setLight(15,15)
+	:setPrimaryRenderType("CUTOUT_EMISSIVE_SOLID")
 	return model
 end
 
@@ -108,7 +121,7 @@ end
 
 ---@class SkullIdentity
 ---@field name string
----@field id string
+---@field id string|string[]
 ---@field support Minecraft.blockID
 ---
 ---@field modelBlock ModelPart|{[1]:ModelPart}
@@ -133,7 +146,7 @@ end
 
 local modelUtils = require("lib.modelUtils")
 
-local function modelIdentityPeprocess(model)
+local function modelPreprocess(model)
 	if type(model) == "table" then
 		model = model[1]
 	end
@@ -153,7 +166,7 @@ local texDataCache = {}
 ---@return boolean
 local function areIdentitiesValid(identities)
 	for key, value in pairs(identities) do
-		if not skullIdentities[key] then
+		if not SKULL_IDENTITIES[key] then
 			return false
 		end
 	end
@@ -216,7 +229,7 @@ local function parseTexture(identities,nbt,hash)
 			local entry = {
 				id = id,
 				params = type(params) == "table" and params or {},
-				hash = id
+				hash = tostring(params)
 			}
 			table.insert(identities, entry)
 			table.insert(added, entry)
@@ -318,6 +331,7 @@ local function parseName(identities,name)
 	end
 	
 	json = "{"..json.."}"
+	
 	local ok,result = pcall(parseJson,json)
 	if ok then
 		for id, params in pairs(result) do
@@ -434,7 +448,7 @@ end)
 ---@param id string
 ---@return SkullIdentity
 function SkullAPI.getIdentity(id)
-	return skullIdentities[id] or skullIdentities.default
+	return SKULL_IDENTITIES[id] or SKULL_IDENTITIES.default
 end
 
 
@@ -457,27 +471,34 @@ end
 
 ---@param cfg SkullIdentity|{}
 function SkullAPI.registerIdentity(cfg)
-	local root = models:newPart(cfg.name.."root")
-
 	local identity = cfg
 
-		identity.modelBlock = modelIdentityPeprocess(cfg.modelBlock)
-		identity.modelHat   = modelIdentityPeprocess(cfg.modelHat)
-		identity.modelHud   = modelIdentityPeprocess(cfg.modelHud)
-		identity.modelEntity  = modelIdentityPeprocess(cfg.modelEntity)
+		identity.modelBlock  = modelPreprocess(cfg.modelBlock)
+		identity.modelHat    = modelPreprocess(cfg.modelHat)
+		identity.modelHud    = modelPreprocess(cfg.modelHud)
+		identity.modelEntity = modelPreprocess(cfg.modelEntity)
+
+		identity.noModelBlockDeepCopy = cfg.modelBlock
+		identity.noModelHatDeepCopy   = cfg.modelHat
+		identity.noModelHudDeepCopy   = cfg.modelHud
+		identity.noModelItemDeepCopy  = cfg.modelEntity
 
 		identity.processBlock =   applyPlaceholders(cfg.processBlock)
 		identity.processHat   =   applyPlaceholders(cfg.processHat)
 		identity.processHud   =   applyPlaceholders(cfg.processHud)
-		identity.processEntity  = applyPlaceholders(cfg.processEntity)
-	
-	--root:addChild(identity.modelBlock)
-	--root:addChild(identity.modelHat)
-	--root:addChild(identity.modelHud)
-	--root:addChild(identity.modelItem)
+		identity.processEntity=   applyPlaceholders(cfg.processEntity)
 
 	setmetatable(identity,SkullIdentity)
-	skullIdentities[cfg.id] = identity
+	local ids
+	if not (type(cfg.id) == "table" and next(cfg.id)) then
+		ids = {cfg.id}
+	else
+		ids = cfg.id
+	end
+	
+	for _, id in ipairs(ids) do
+		SKULL_IDENTITIES[id] = identity
+	end
 	if identity.support then
 		skullSupportIdentities[identity.support] = identity
 	end
@@ -493,7 +514,7 @@ local function prepareInstance(identity,modelType)
 		model = identity.modelBlock
 	elseif modelType == 3 then
 		model = identity.modelHat
-	else
+	elseif modelType == 4 then
 		model = identity.modelHud
 	end
 	if not model then
@@ -501,7 +522,7 @@ local function prepareInstance(identity,modelType)
 		emptyPlcaeholderID = emptyPlcaeholderID + 1 % 2^32
 	end
 	local instance = {
-		lastSeen = time,
+		lastSeen = tick,
 		identity = identity,
 		model = modelUtils.deepCopy(model):setVisible(true):moveTo(models),
 	}
@@ -654,7 +675,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				local ok, err = pcall(instance.identity.processBlock.ON_INIT, instance,instance.model)
 				if not ok then warn(err) end
 			else
-				instance.lastSeen = time
+				instance.lastSeen = tick
 			end
 			drawInstances[#drawInstances+1] = instance
 		end
@@ -678,7 +699,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				if not ok then warn(err) end
 				hatInstances[identify] = instance
 			else
-				instance.lastSeen = time
+				instance.lastSeen = tick
 			end
 			drawInstances[#drawInstances+1] = instance
 		end
@@ -701,7 +722,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				if not ok then warn(err) end
 				entityInstances[identify] = instance
 			else
-				instance.lastSeen = time
+				instance.lastSeen = tick
 			end
 			drawInstances[#drawInstances+1] = instance
 		end
@@ -717,7 +738,7 @@ events.SKULL_RENDER:register(function (delta, block, item, entity, ctx)
 				if not ok then warn(err) end
 				hudInstances[identity.hash] = instance
 			else
-				instance.lastSeen = time
+				instance.lastSeen = tick
 			end
 			drawInstances[#drawInstances+1] = instance
 		end
@@ -747,10 +768,10 @@ local lastTime = client:getSystemTime()
 local process = function (deltaTick)
 	SKULL_PROCESS:setVisible(false)
 	playerVars = world.avatarVars()
+	tick = tick + 1
 	time = client:getSystemTime()
 	local deltaFrame = (time - lastTime)/1000
 	lastTime = time
-	deltaTick = client:getFrameTime()
 
 	if next(blockInstances) then
 		---@param ins SkullInstanceBlock
@@ -787,7 +808,7 @@ local process = function (deltaTick)
 				local ok, err = pcall(ins.identity.processHat.ON_READY, ins,ins.model,deltaFrame,deltaTick)
 				if not ok then warn(err) end
 			end
-			if time - ins.lastSeen > SKULL_DECAY_TIME then
+			if tick - ins.lastSeen > SKULL_DECAY_TIME then
 				ins.queueFree = true
 				local ok, err = pcall(ins.identity.processHat.ON_EXIT, ins,ins.model)
 				if not ok then warn(err) end
@@ -811,7 +832,7 @@ local process = function (deltaTick)
 					local ok, err = pcall(ins.identity.processEntity.ON_READY, ins,ins.model,deltaFrame,deltaTick)
 					if not ok then warn(err) end
 				end
-				if time - ins.lastSeen > 100 then
+				if tick - ins.lastSeen > 100 then
 					ins.queueFree = true
 					local ok, err = pcall(ins.identity.processEntity.ON_EXIT, ins,ins.model)
 					if not ok then warn(err) end
@@ -837,7 +858,7 @@ local process = function (deltaTick)
 				local ok, err = pcall(ins.identity.processHud.ON_READY, ins,ins.model,deltaTick)
 				if not ok then warn(err) end
 			end
-			if time - ins.lastSeen > SKULL_DECAY_TIME then
+			if tick - ins.lastSeen > 1 then
 				ins.queueFree = true
 				ins.identity.processHud.ON_EXIT(ins,ins.model)
 				ins.model:remove()
@@ -884,7 +905,7 @@ end
 
 ---@return table<string, SkullIdentity>
 function SkullAPI.getSkullIdentities()
-	return skullIdentities
+	return SKULL_IDENTITIES
 end
 
 

