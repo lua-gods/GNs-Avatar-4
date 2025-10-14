@@ -212,4 +212,4 @@ events.ENTITY_INIT:register(function ()
 	if player:getUUID() ~= tar then
 		avatar:store("eval",eval)
 	end
-end)	
+end)

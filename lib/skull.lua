@@ -466,11 +466,6 @@ function SkullAPI.registerIdentity(cfg)
 		identity.modelHud   = modelIdentityPeprocess(cfg.modelHud)
 		identity.modelEntity  = modelIdentityPeprocess(cfg.modelEntity)
 
-		identity.noModelBlockDeepCopy = (cfg.modelBlock and cfg.modelBlock[1]) and true or false
-		identity.noModelHatDeepCopy =   (cfg.modelHat and cfg.modelHat[1]) and true or false
-		identity.noModelHudDeepCopy =   (cfg.modelHud and cfg.modelHud[1]) and true or false
-		identity.noModelItemDeepCopy =  (cfg.modelEntity and cfg.modelEntity[1]) and true or false
-
 		identity.processBlock =   applyPlaceholders(cfg.processBlock)
 		identity.processHat   =   applyPlaceholders(cfg.processHat)
 		identity.processHud   =   applyPlaceholders(cfg.processHud)
@@ -824,7 +819,6 @@ local process = function (deltaTick)
 					ins.model:remove()
 					ins.model = nil
 					entityInstances[key] = nil
-					--print("MANAGEMENT SKULL FREE", instance.identity)
 				end
 			else
 				entityInstances[key] = nil
