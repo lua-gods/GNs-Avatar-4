@@ -4,7 +4,7 @@ local Color = require("lib.color")
 
 
 local SCALE = 0.85
-models.glasses.hat:scale(SCALE,SCALE,SCALE)
+models.skull.glasses.hat:scale(SCALE,SCALE,SCALE)
 
 
 local DEFAULT_TINT = vectors.hexToRGB("#c7cfdd")
@@ -13,9 +13,9 @@ local DEFAULT_TINT = vectors.hexToRGB("#c7cfdd")
 local identity = {
 	name = "Glasses",
 	id = "glasses",
-	modelHat = models.glasses.hat,
+	modelHat = models.skull.glasses,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],2,1),
-	modelEntity = models.glasses.hat,
+	modelEntity = models.skull.glasses,
 	
 	processHat = {
 		ON_READY = function (skull, model)
