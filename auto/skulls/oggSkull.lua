@@ -8,7 +8,7 @@ local identity = {
 	id = "ogg",
 	support="minecraft:jukebox",
 	modelBlock = models.skull.disc,
-	modelHat = models.skull.disc.block,
+	modelHat = models.skull.disc,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],3,0),
 	modelEntity = Skull.makeExtrudedIcon(textures["textures.item_icons"],3,0),
 }

@@ -425,7 +425,7 @@ local function give(item)
 	end
 end
 
-writeSkull = function (identityArray,customName)
+SkullAPI.giveSkull = function (identityArray,customName)
 	local ok, result = pcall(SkullAPI.makeSkull,identityArray,customName)
 	if ok then
 		give(result)
@@ -793,9 +793,9 @@ local process = function (deltaTick)
 			for key, ins in pairs(type.instances) do
 				if ins.isReady then
 					local ok, err = pcall(ins.identity[type.process].ON_PROCESS, ins,ins.model,deltaFrame,deltaTick)
-					if not ok then warn(err) end
+					--if not ok then warn(err) end
 					local ok, err = pcall(SKULL_IDENTITIES.all[type.process].ON_PROCESS, ins,ins.model,deltaFrame,deltaTick)
-					if not ok then warn(err) end
+					--if not ok then warn(err) end
 				else
 					ins.isReady = true
 					local ok, err = pcall(ins.identity[type.process].ON_READY, ins,ins.model,deltaFrame,deltaTick)

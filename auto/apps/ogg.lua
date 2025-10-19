@@ -30,13 +30,8 @@ return {
 			buffer:setPosition(0)
 			
 			local data = buffer:readBase64(buffer:available())
-			local item = Skull.makeSkull({ogg={data}},name)
+			Skull.giveSkull({ogg={data}},name)
 			buffer:close()
-			
-			if #item < 65536*999 then
-				give(item)
-				print("Generated ("..#item..")")
-			end
 		end)
 	end
 }

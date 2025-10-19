@@ -8,8 +8,8 @@ local identity = {
 	name = "Note Block Studio Player",
 	id = "nbs",
 	support="minecraft:jukebox",
-	modelBlock = models.disc,
-	modelHat = models.skull.block,
+	modelBlock = models.skull.disc,
+	modelHat = models.skull.disc,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],3,0),
 	modelEntity = Skull.makeExtrudedIcon(textures["textures.item_icons"],3,0),
 }
@@ -179,11 +179,11 @@ identity.processBlock = {
 		if not (#skull.params[1] > 0) then return end
 		if skull.isActive then
 			skull.t = skull.t + deltaFrame * 200 * skull.speed
-			skull.model.base:setRot(0,math.floor(skull.t/50)*90,0)
+			model.base:setRot(0,math.floor(skull.t/50)*90,0)
 			local f = math.floor((skull.t/50 % 1) * 3)
-			skull.model.base.face1:setVisible(f == 0)
-			skull.model.base.face2:setVisible(f == 1)
-			skull.model.base.face3:setVisible(f == 2)
+			model.base.face1:setVisible(f == 0)
+			model.base.face2:setVisible(f == 1)
+			model.base.face3:setVisible(f == 2)
 			skull.musicPlayer:setPos(skull.matrix:apply())
 			local power = world.getRedstonePower(skull.supportPos)
 			if skull.lastPower ~= power then
