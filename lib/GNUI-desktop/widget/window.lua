@@ -1,3 +1,4 @@
+# flags: host_only
 ---@diagnostic disable: assign-type-mismatch
 local GNUI = require("../../GNUI/main") ---@type GNUIAPI
 local Theme = require("../../GNUI/theme") ---@type GNUI.ThemeAPI

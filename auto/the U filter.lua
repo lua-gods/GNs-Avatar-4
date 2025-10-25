@@ -1,3 +1,4 @@
+# flags: host_only
 
 local replace = {
 	gnui = "gnuі",

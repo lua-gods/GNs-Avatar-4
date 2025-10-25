@@ -7,7 +7,7 @@ local recoilSpring = Spring.new(
 	0
 )
 
-local model = models.boat
+local model = models.boat.boat
 model:setPos(0,8,0):setVisible(false)
 
 local function pitch(speed)
@@ -71,11 +71,11 @@ local Motorcycle = Macros.new(function (events, vehicle)
 			mat:rotateY(-vehicle:getRot(delta).y)
 			mat:translate(vehicle:getPos(delta))
 			
-			models.boat.Hed:setRot(22.5,tilt*2,0)
-			models.boat.Hed.ShockAbsorber.Wheel:setRot(t * -128, 0, 0)
-			models.boat.SwingArm.Wheel2:setRot(t * -128 * 1.2, 0, 0)
-			models.boat.SwingArm:setRot(recoil*-15,0,0)
-			models.boat.Hed.ShockAbsorber:setPos(0,math.max(recoil*-10,0.1),0)
+			models.boat.boat.Hed:setRot(22.5,tilt*2,0)
+			models.boat.boat.Hed.ShockAbsorber.Wheel:setRot(t * -128, 0, 0)
+			models.boat.boat.SwingArm.Wheel2:setRot(t * -128 * 1.2, 0, 0)
+			models.boat.boat.SwingArm:setRot(recoil*-15,0,0)
+			models.boat.boat.Hed.ShockAbsorber:setPos(0,math.max(recoil*-10,0.1),0)
 			
 			
 			local accel = vel.xz:length()-lvel.xz:length()
@@ -96,16 +96,16 @@ local Motorcycle = Macros.new(function (events, vehicle)
 				engine:pitch(engineRPM):pos(ppos)
 			end
 			models.player:setRot(-math.abs(tilt)*0.5 + recoil*15,-tilt,tilt)
-			models.boat:setRot(-math.abs(tilt)*0.5 + recoil*15,-tilt,tilt)
+			models.boat.boat:setRot(-math.abs(tilt)*0.5 + recoil*15,-tilt,tilt)
 			
 			if host:isHost() and player:isLoaded() then
 				if renderer:isFirstPerson() then
-					models.boat:setParentType("WORLD")
-					models.boat:setPos(player:getPos(delta) * 16 + vec(0,8,0)):setRot(-math.abs(tilt)*0.5 + recoil*15,-tilt-vehicle:getRot(delta).y+180,tilt)
+					models.boat.boat:setParentType("WORLD")
+					models.boat.boat:setPos(player:getPos(delta) * 16 + vec(0,8,0)):setRot(-math.abs(tilt)*0.5 + recoil*15,-tilt-vehicle:getRot(delta).y+180,tilt)
 					
 				else
-					models.boat:setPos(0,8,0)
-					models.boat:setParentType("Model")
+					models.boat.boat:setPos(0,8,0)
+					models.boat.boat:setParentType("Model")
 				end
 			end
 		end
@@ -134,7 +134,7 @@ local Motorcycle = Macros.new(function (events, vehicle)
 		engine:stop()
 	end)
 	events.ON_ENTITY_LOAD:register(function ()
-		engine = sounds["engine"]:loop(true):play()
+		engine = sounds["sounds.engine"]:loop(true):play()
 	end)
 end)
 local lastVehicle

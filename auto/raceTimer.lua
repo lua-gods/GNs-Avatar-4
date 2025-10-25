@@ -1,3 +1,5 @@
+# flags: host_only
+
 local startTime = client.getSystemTime()
 local isInRace = false
 local lastPos

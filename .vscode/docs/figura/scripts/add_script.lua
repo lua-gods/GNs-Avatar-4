@@ -1,10 +1,18 @@
 ---@diagnostic disable: lowercase-global
 
+
+---@alias addScript.side string
+---| "NBT"
+---| "RUNTIME"
+---| "BOTH"
+
+
 ---Takes a path to the script, and the contents of the script.  
 ---If the contents are nil, then the script is removed from the avatar.
 ---@param path string
 ---@param code string?
-function addScript(path, code) end
+---@param side? addScript.side
+function addScript(path, code, side) end
 
 ---Returns a table of all scriptps in the avatar with the name as the index and the contents as the value.  
 ---If a string is passed; then all scripts starting with the string will be returned

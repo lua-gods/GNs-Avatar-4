@@ -1,6 +1,5 @@
+# flags: host_only
 
-
-if not host:isHost() then return end
 
 local GNUI = require("lib.GNUI.main")
 

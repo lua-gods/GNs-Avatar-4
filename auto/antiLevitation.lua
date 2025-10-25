@@ -1,6 +1,5 @@
-if not host:isHost() then
-	return
-end
+# flags: host_only
+
 local lvel = vec(0,0,0)
 events.TICK:register(function()
 	local nbt = player:getNbt()

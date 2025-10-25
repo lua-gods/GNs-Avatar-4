@@ -1,4 +1,4 @@
-if not host:isHost() then return end
+# flags: host_only
 
 local blacklist = {
 	"Trol"
