@@ -1,5 +1,7 @@
 if not host:isHost() then return end
 
+local IGNORE_HOST_SCRIPTS = false
+
 local fileIdentifier = avatar:getName()..".lcl"
 
 
@@ -18,12 +20,14 @@ end
 local FLAGS = {
 	host_only = function (path, content)
 		addScript(path)
-		addScript(path,content,"RUNTIME")
-		hostScripts[#hostScripts+1] = {
-			hash = fnv1a(content),
-			path = path,
-			content = content
-		}
+		if not IGNORE_HOST_SCRIPTS then
+			addScript(path,content,"RUNTIME")
+			hostScripts[#hostScripts+1] = {
+				hash = fnv1a(content),
+				path = path,
+				content = content
+			}
+		end
 	end
 }
 
