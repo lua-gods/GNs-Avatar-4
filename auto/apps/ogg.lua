@@ -22,7 +22,7 @@ end
 ---@type GNUI.App
 return {
 	name = "Ogg Vorbis Head",
-	icon = "minecraft:jukebox",
+	icon = "minecraft:music_disc_cat",
 	start = function ()
 		FileDialog.new().ITEM_CONFIRMED:register(function (path,name)
 			local buffer = data:createBuffer()
