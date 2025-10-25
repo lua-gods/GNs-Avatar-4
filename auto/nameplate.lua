@@ -1,6 +1,3 @@
-# flags: host_only
-
-
 local NAME = "GNanimates"
 
 
