@@ -93,6 +93,7 @@ local appLauncherBtn = Button.new(screen,"none")
 :setGrowDirection(0.5,0.5)
 :setText(":mag_right:")
 :setAnchor(0.5,0.5)
+:setVisible(false)
 
 
 local function listApps(ap)

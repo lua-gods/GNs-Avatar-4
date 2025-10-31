@@ -1,5 +1,7 @@
 
-if not events.ERROR then return end
+
+local betterErrorAPI = {}
+
 
 ---@diagnostic disable: undefined-field
 local str = require("lib.utils.string")
@@ -117,12 +119,12 @@ local annotation = {
 	},
 	{
 		color = "#ffbb28",
-		match = {"%\"[^\"]+\""},
+		match = {"%\"[^\"]*\""},
 	},
-	{
-		color = "#5d95ff",
-		match = {"%(","%)",","},
-	},
+	--{
+	--	color = "#5d95ff",
+	--	match = {"%(","%)",","},
+	--},
 }
 
 ---@param path string
@@ -133,7 +135,7 @@ local function previewLine(path, line, preview_size)
 	local output = {}
 	output[#output+1] = {text="",color="white"}
 	output[#output+1] = stylePath(path)
-	output[#output+1] = {text=" "..("-"):rep(math.max(1,(150-client.getTextWidth(path..line..":"))/5)+1).."\n"}
+	output[#output+1] = {text=" "..("-"):rep(math.max(1,(150-client.getTextWidth((path or "")..(line or "")..":"))/5)+1).."\n"}
 	
 	line = math.clamp(line, preview_size, #lines - preview_size)
 	for i = math.max(line - preview_size, 1), math.min(line + preview_size, #lines), 1 do
@@ -146,7 +148,7 @@ local function previewLine(path, line, preview_size)
 		end
 		
 		output[#output+1] = {text=">",color=line == i and "red" or "black"}
-		output[#output+1] = {text="",extra={{text=i.." ", color="aqua"},json}}
+		output[#output+1] = {text="",extra={{text=i.." ",color=line == i and "aqua" or "gray"},json}}
 		output[#output+1] = {text="\n"}
 	end
 	return output
@@ -156,7 +158,7 @@ end
 
 
 
-events.ERROR:register(function(err)
+function betterErrorAPI.parseError(err)
 	local lines = str.split(err, "\n")
 	---@type Minecraft.RawJSONText.Component[]
 	local final = {}
@@ -176,21 +178,26 @@ events.ERROR:register(function(err)
 	}
 	final[3] = previewLine(mPath, tonumber(mLine))
 	final[4] = {text=("-"):rep(150/5-2).."\n"}
-	final[5] = {text=mMsg.."\n",color="red"}
+	final[5] = {text=mLine.. " ",color="aqua"}
+	final[6] = {text=mMsg.."\n",color="red"}
 	
 	for i = 4, #lines - 1, 1 do
 		local line = lines[i]:sub(2, -1)
 		local splits = str.split(line, ":")
 
-		local path = splits[1]
-		local line = splits[2]
-		local msg = splits[3]
+		local path = splits[1] or "???"
+		local line = splits[2] or 0
+		local msg = splits[3] or "???"
 
 		local pathLength = client.getTextWidth(path..line.."↓:")
-		
-		local method = msg:match("'([^']+)'$")
-		if method then
-			method = method .. "()"
+		local method
+		if msg then
+			method = msg:match("'([^']+)'$")
+			if method then
+				method = method .. "()"
+			else
+				method = ""
+			end
 		else
 			method = ""
 		end
@@ -243,13 +250,11 @@ events.ERROR:register(function(err)
 		
 		table.insert(final, 1,json)
 	end
+	table.insert(final, 1,{text="",extra={
+		{text="[ERROR]",color="red"},
+		{text="-------------------------------\n"}
+	}})
+	return final
+end
 
-
-	--print("\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n\n")
-	printJson(toJson(final))
-
-	
-	
-	goofy:stopAvatar()
-	return true
-end)
+return betterErrorAPI

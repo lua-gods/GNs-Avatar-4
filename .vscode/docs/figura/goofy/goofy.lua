@@ -24,3 +24,7 @@ goofy = {}
 ---@param disableRender boolean
 function goofy:setDisableGUIElement(element,disableRender)
 end
+
+---Stops an avatar, as if an error occured
+function goofy:stopAvatar()
+end

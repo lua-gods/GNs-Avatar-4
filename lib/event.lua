@@ -43,7 +43,7 @@ function Events:__call(...)
 	return flush
 end
 
----@type fun(self: Event, ...: string): string[]
+---@type fun(self: Event, ...: any): string[]
 Events.invoke = Events.__call
 
 function Events.__index(t, i) return rawget(t, i) or rawget(t, i:upper()) or Events[i] end

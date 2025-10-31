@@ -8,12 +8,18 @@ local Stack = require("lib.GNUI.widget.panes.stack")
 local Window = require("lib.GNUI-desktop.widget.window")
 local FileDialog = require("lib.GNUI-desktop.widget.fileDialog")
 
+local macros = {}
+
+for index, value in ipairs(listFiles("auto.macros")) do
+	macros[index] = require(value)
+end
 
 ---@type GNUI.App
 return {
-	name = "Nameplate",
-	icon = "minecraft:name_tag",
+	name = "Assets Explorer",
+	icon = "minecraft:flower_banner_pattern",
 	start = function ()
-		
+		Window.new():setTitle("Assets Explorer")
+			:setSize(100,100)
 	end
 }
