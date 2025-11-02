@@ -363,7 +363,7 @@ local function readString(buffer)
 end
 
 ---Loads a given .NBS file into a Music track object.  
----`NBS.loadTrack(<path>)` -> `<path>.nbs`
+---`NBS.loadFromPath(<path>)` -> `<path>.nbs`
 ---@param path string
 ---@return NBS.Track
 function Nbs.loadFromPath(path)
