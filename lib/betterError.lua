@@ -3,6 +3,15 @@
 local betterErrorAPI = {}
 
 
+-- fallback if specific functions dont exist
+if not getScript then
+	betterErrorAPI = {
+		parseError = function (error)
+			return {text=error:gsub("\t","    "),color="red"}
+		end}
+	return betterErrorAPI
+end
+
 ---@diagnostic disable: undefined-field
 local str = require("lib.utils.string")
 

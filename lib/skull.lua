@@ -639,19 +639,18 @@ local function skullPcall(skull,fun,...)
 		if not skull.hasErrored then
 			skull.hasErrored = true
 			local error = toJson(BetterError.parseError(result))
-			local lineCount = 0
-			error:gsub("\\n",function () lineCount = lineCount + 1 end)
+			local height = client.getTextHeight(error)
 			local width = client.getTextWidth(error)
 			skull.baseModel:newText("error")
 			:setText(error)
 			:scale(ERROR_SCALE,ERROR_SCALE,ERROR_SCALE)
-			:setPos(width*0.5*ERROR_SCALE,lineCount*24*ERROR_SCALE/16,0)
+			:setPos(width*0.5*ERROR_SCALE,height*ERROR_SCALE,0)
 			:setBackgroundColor(0, 0, 0.1,0.6)
 			
 			skull.baseModel:newText("errorBack")
 			:setText(error)
 			:scale(ERROR_SCALE,ERROR_SCALE,ERROR_SCALE)
-			:setPos(-width*0.5*ERROR_SCALE,lineCount*24*ERROR_SCALE/16,0)
+			:setPos(-width*0.5*ERROR_SCALE,height*ERROR_SCALE,0)
 			:setBackgroundColor(0, 0, 0.1,0.6)
 			:setRot(0,180,0)
 		end
