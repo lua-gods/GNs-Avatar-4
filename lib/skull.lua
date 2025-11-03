@@ -531,7 +531,7 @@ local function prepareInstance(identity,modelType)
 	local instance = {
 		lastSeen = tick,
 		identity = identity,
-		model = modelUtils.deepCopy(model):setVisible(true):moveTo(baseModel):setParentType("NONE"),
+		model = modelUtils.deepCopy(model):setVisible(true):setParentType("NONE"):moveTo(baseModel),
 		baseModel = baseModel:setParentType("SKULL"):setVisible(false),
 	}
 	return instance

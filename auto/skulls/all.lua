@@ -54,7 +54,7 @@ identity.processBlock = {
 			skull.roty and skull.roty() or 0,
 			skull.rotz and skull.rotz() or 0
 			)
-		model:setRot(rot)
+		skull.baseModel:setRot(rot)
 	end
 }
 

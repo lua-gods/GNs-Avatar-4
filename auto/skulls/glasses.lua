@@ -14,6 +14,7 @@ local identity = {
 	name = "Glasses",
 	id = "glasses",
 	modelHat = models.skull.glasses.hat,
+	modelBlock = models.skull.glasses.hat,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],2,1),
 	modelEntity = models.skull.glasses.hat,
 	
@@ -36,6 +37,11 @@ local identity = {
 			local crot = client:getCameraRot()
 			local shift = -(crot.y / 360)*10 - crot.x / 30
 			model.Lens:setUV(0,shift)
+		end
+	},
+	processBlock = {
+		ON_READY=function (skull, model)
+			model:setPos(0,2,0):rot(0,0,90)
 		end
 	}
 }
