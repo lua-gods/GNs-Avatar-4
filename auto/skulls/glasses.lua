@@ -13,9 +13,9 @@ local DEFAULT_TINT = vectors.hexToRGB("#c7cfdd")
 local identity = {
 	name = "Glasses",
 	id = "glasses",
-	modelHat = models.skull.glasses,
+	modelHat = models.skull.glasses.hat,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],2,1),
-	modelEntity = models.skull.glasses,
+	modelEntity = models.skull.glasses.hat,
 	
 	processHat = {
 		ON_READY = function (skull, model)
