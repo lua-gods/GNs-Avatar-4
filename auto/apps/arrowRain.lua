@@ -1,4 +1,4 @@
-
+# flags: host_only
 local Box = require("lib.GNUI.widget.box")
 local Button = require("lib.GNUI.widget.button")
 local TextField = require("lib.GNUI.widget.textField")

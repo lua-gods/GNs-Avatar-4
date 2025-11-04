@@ -139,28 +139,30 @@ local annotation = {
 ---@param path string
 ---@param line integer
 local function previewLine(path, line, preview_size)
-	preview_size = 2
-	local lines = str.separateLines(getScript(path))
 	local output = {}
-	output[#output+1] = {text="",color="white"}
-	output[#output+1] = stylePath(path)
-	output[#output+1] = {text=" "..("-"):rep(math.max(1,(150-client.getTextWidth((path or "")..(line or "")..":"))/5)+1).."\n"}
-	
-	line = math.clamp(line, preview_size, #lines - preview_size)
-	for i = math.max(line - preview_size, 1), math.min(line + preview_size, #lines), 1 do
-		local json = {text=lines[i].." "}
-		for _, data in pairs(annotation) do
-			json = jsonSplit(json,data.match,
-			function(component)
-				component.color = data.color
-			end)
-		end
+	if require(path) then
+		preview_size = 2
+		local lines = str.separateLines(getScript(path))
+		output[#output+1] = {text="",color="white"}
+		output[#output+1] = stylePath(path)
+		output[#output+1] = {text=" "..("-"):rep(math.max(1,(150-client.getTextWidth((path or "")..(line or "")..":"))/5)+1).."\n"}
 		
-		output[#output+1] = {text=">",color=line == i and "red" or "black"}
-		output[#output+1] = {text="",extra={{text=i.." ",color=line == i and "aqua" or "gray"},json}}
-		output[#output+1] = {text="\n"}
+		line = math.clamp(line, preview_size, #lines - preview_size)
+		for i = math.max(line - preview_size, 1), math.min(line + preview_size, #lines), 1 do
+			local json = {text=lines[i].." "}
+			for _, data in pairs(annotation) do
+				json = jsonSplit(json,data.match,
+				function(component)
+					component.color = data.color
+				end)
+			end
+			
+			output[#output+1] = {text=">",color=line == i and "red" or "black"}
+			output[#output+1] = {text="",extra={{text=i.." ",color=line == i and "aqua" or "gray"},json}}
+			output[#output+1] = {text="\n"}
+		end
 	end
-	return output
+		return output
 end
 
 

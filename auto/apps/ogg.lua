@@ -1,3 +1,4 @@
+# flags: host_only
 local FileDialog = require("lib.GNUI-desktop.widget.fileDialog")
 
 local zlib = require("lib.zlib")

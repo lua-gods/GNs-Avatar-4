@@ -41,7 +41,7 @@ local identity = {
 	},
 	processBlock = {
 		ON_READY=function (skull, model)
-			model:setPos(0,2,0):rot(0,0,90)
+			model:setPos(0,1.35,0):rot(20,0,0)
 		end
 	}
 }

@@ -30,13 +30,15 @@ events.WORLD_RENDER:register(function ()
 	local count = 0
 	local minDist = math.huge
 	
+	local vel = player:getVelocity()
+	
 	for index, dir in ipairs(casts) do
 		local block, hitpos, side = raycast:block(pos,pos + dir*LENGTH)
 		local dist = (pos - hitpos):length()
 		if dist < LENGTH-0.1 then
 			count = count + 1
 			minDist = math.min(minDist,dist)
-			average = average + dir
+			average = average + dir 
 		end
 	end
 	
