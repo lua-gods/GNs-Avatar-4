@@ -1,27 +1,21 @@
+local GNanim = require("lib.GNanimClassic")
 
-local Dust = require("lib.dust")
+local animState = GNanim.new():setBlendTime(0.0)
+
 
 local ANIM_IDLE = animations.player.sword
 local ANIM_ATTACK = animations.player.swordAttack1
-ANIM_ATTACK:speed(0.6)
 
 models.player.Roll.Sword.glow:setPrimaryRenderType("EMISSIVE_SOLID")
-models.player.VFX:setSecondaryRenderType("EYES")
-models.player.VFX:setSecondaryTexture("PRIMARY")
-
-
-
-local MODEL_GLARE = models.player.VFX.Glare
-MODEL_GLARE.cube:setParentType("CAMERA"):setPrimaryRenderType("EMISSIVE")
-
-Dust.registerIdentity("glare",MODEL_GLARE)
+models.player.VFX.Smear1.Smear1Spin:setPrimaryRenderType("EYES"):setColor(0.8,0.8,0.8)
+animState:setAnimation(ANIM_IDLE)
 
 
 events.TICK:register(function ()
-	Dust.spawn("glare",player:getPos(),vec(math.random(),math.random(),math.random()))
 	local heldItem = player:getHeldItem()
 	local isHoldingSword = heldItem.id:find("_sword$")
 	if isHoldingSword and player:getSwingArm() and player:getSwingTime() == 0 then
-		ANIM_ATTACK:stop():play()
+		animState:setAnimation(ANIM_ATTACK,true)
+		sounds["sounds.swing"]:pitch(math.lerp(0.9,1.1,math.random())):pos(player:getPos()):play()
 	end
 end)
