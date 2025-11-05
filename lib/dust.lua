@@ -1,20 +1,37 @@
+--[[______   __
+  / ____/ | / /  by: GNanimates / https://gnon.top / Discord: @gn68s
+ / / __/  |/ / name: DUST LIBRARY
+/ /_/ / /|  /  desc: GN's Particle Library
+\____/_/ |_/ source: link ]]
 
+--[────────────────────────-< CONFIG >-────────────────────────]--
+
+--- ! BIG PERFORMANCE IMPACT !
+local DEEP_COPY_PARTICLES = false
+
+
+
+--[────────────────────────-< Dust >-────────────────────────]--
 ---@type table<Dust.Identity,Dust.Instance[]>
 local instances = {}
 
 ---@type table<string,Dust.Identity>
-local identities = {}
+local IDENTITIES = {}
 
 local function deepCopy(part)
-	local copy = part:copy(part:getName())
-	for key, value in pairs(part:getTask()) do
-		copy:addTask(value)
+	if DEEP_COPY_PARTICLES then
+		local copy = part:copy(part:getName())
+		--for key, value in pairs(part:getTask()) do
+		--	copy:addTask(value)
+		--end
+		for _, child in ipairs(part:getChildren()) do
+			copy:removeChild(child)
+			deepCopy(child):moveTo(copy)
+		end
+		return copy
+	else
+		return part:copy(math.random(10000000))
 	end
-	for _, child in ipairs(part:getChildren()) do
-		copy:removeChild(child)
-		deepCopy(child):moveTo(copy)
-	end
-	return copy
 end
 
 
@@ -23,12 +40,6 @@ end
 local DustAPI = {
 	identities = {}
 }
-
---[[______   __
-  / ____/ | / /  by: GNanimates / https://gnon.top / Discord: @gn68s
- / / __/  |/ / name: DUST LIBRARY
-/ /_/ / /|  /  desc: GN's Particle Library
-\____/_/ |_/ source: link ]]
 
 ---an identity a particle can be when spawned
 ---@class Dust.Identity
@@ -69,7 +80,7 @@ local DEFAULT_PROCESS = DustAPI.newProcessMaterial(0.95, vec(0,-1,0))
 ---@param duration number? # (in seconds) how long the particle should last, this defaults to 1
 ---@param process fun(Sandstorm.ParticleInstance)?
 function DustAPI.registerIdentity(id, model, duration, process)
-	assert(identities[id] == nil, "Particle identity already exists: " .. id)
+	assert(IDENTITIES[id] == nil, "Particle identity already exists: " .. id)
 	assert(model, "No model provided")
 	local identity = {
 		id = id,
@@ -77,7 +88,7 @@ function DustAPI.registerIdentity(id, model, duration, process)
 		model = model,
 		process = process or DEFAULT_PROCESS,
 	}
-	identities[id] = identity
+	IDENTITIES[id] = identity
 end
 
 
@@ -86,8 +97,8 @@ end
 ---@param pos Vector3?
 ---@param vel Vector3?
 function DustAPI.spawn(id, pos, vel)
-	assert(identities[id], "No such particle identity: " .. id)
-	local identity = identities[id]
+	assert(IDENTITIES[id], "No such particle identity: " .. id)
+	local identity = IDENTITIES[id]
 	instances[identity] = instances[identity] or {}
 	
 	local instance = {
@@ -128,5 +139,33 @@ events.RENDER:register(function (delta, ctx, matrix)
 	end
 end)
 
+--[────────────────────────-< Utility Functions >-────────────────────────]--
+
+local UP = vec(0,1,0)
+
+---@overload fun(dir: Vector3, spreadAngle: number): Vector3
+---@param x number
+---@param y number
+---@param z number
+---@param spreadAngle number
+---@return Vector3
+function DustAPI.dirRandom(x,y,z,spreadAngle)
+	local dir
+	local spread
+	if type(x) == "Vector3" then
+		dir = x
+		spread = y
+	else
+		dir = vec(x,y,z)
+		spread = spreadAngle
+	end
+	
+	local localFinal = vectors.angleToDir(vec(math.random()*spread+90,math.random()*360))
+	
+	if math.abs(dir.x*dir.z) < 0.0001 then
+		return localFinal * -dir.y
+	end
+	return vectors.rotateAroundAxis(math.deg(math.asin(dir:normalized().y))+90,localFinal,dir:copy():cross(UP))*dir:length()
+end
 
 return DustAPI
