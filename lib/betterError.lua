@@ -140,7 +140,7 @@ local annotation = {
 ---@param line integer
 local function previewLine(path, line, preview_size)
 	local output = {}
-	if require(path) then
+	if pcall(require,path) then
 		preview_size = 2
 		local lines = str.separateLines(getScript(path))
 		output[#output+1] = {text="",color="white"}
