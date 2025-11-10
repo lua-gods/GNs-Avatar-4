@@ -18,7 +18,6 @@ local PROXY = {
 	["minecraft:fire_charge"] = "minecraft:fireball",
 	["minecraft:armor_stand"] = "minecraft:armor_stand",
 	["minecraft:oak_boat"]    = "minecraft:boat",
-	["minecraft:oak_boat"]    = "minecraft:boat",
 }
 
 local BLOCKS = {}
