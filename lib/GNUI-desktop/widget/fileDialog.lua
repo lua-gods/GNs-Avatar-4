@@ -146,7 +146,7 @@ function FileDialogAPI.new(screen)
 	fileNameField.FIELD_CONFIRMED:register(function (name) 
 		self:selectFile(name)
 	end)
-	
+	fileNameField:setVisible(false)
 	
 	local confirmBtn = Button.new(rightSidebar)
 	:setAnchor(0,1,1,1)

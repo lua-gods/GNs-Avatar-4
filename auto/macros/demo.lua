@@ -1,6 +1,6 @@
 ---@type GNsAvatar.Macro
 return {
-	name = "Test Macro",
+	name = ":mci_book_and_quill: Demo Buttons",
 	config = {
 		{
 			text = "Boolean",
@@ -29,6 +29,5 @@ return {
 		}
 	},
 	init=function (events, props)
-		
 	end
 }
