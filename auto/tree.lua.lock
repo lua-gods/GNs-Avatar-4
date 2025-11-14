@@ -1,0 +1,98 @@
+-- fill ~-8 ~ ~-8 ~8 ~64 ~8 air
+function send(...)
+	host:sendChatCommand(table.concat({...},""):gsub("(%s[%s]+)","%s"))
+end
+
+local function makeTree(ppos)
+	---@param x integer
+	---@param y integer
+	---@param z integer
+	---@param block Minecraft.blockID
+	function set(x,y,z,block)
+		send("setblock " .. math.floor(x + ppos.x) .. " " .. math.floor(y + ppos.y) .. " " .. math.floor(z + ppos.z) .. " " .. block)
+	end
+	
+	--send("fill ~-16 ~ ~-16 ~16 ~100 ~16 air")
+	
+	local HEIGHT = math.floor(math.random(20,30)/2)*2+1
+	
+	
+	
+	for i = HEIGHT/4, HEIGHT-HEIGHT/4-1, 2 do
+		local r = math.ceil(math.lerp(4,0,i/HEIGHT))
+		local height = math.lerp(0,2,i/HEIGHT)
+		for x = -r, r, 1 do
+			for z = -r, r, 1 do
+				if vec(x,z):length() <= r then
+					set(x,i,z,dice.randomWeight{
+						{1,"minecraft:spruce_leaves[persistent=true]"},
+						{height-0.5,"minecraft:acacia_leaves[persistent=true]"},
+						{height,"minecraft:birch_leaves[persistent=true]"},
+					})
+				end
+			end
+		end
+	end
+	
+	for i = 0, HEIGHT, 1 do
+		set(0,i,0,dice.randomWeight{{3,"acacia_wood"},{1,"tuff"},{1,"stripped_spruce_log"}})
+	end
+	
+	for i = HEIGHT-HEIGHT/4, HEIGHT+1, 1 do
+		set(0,i,0,"minecraft:mud_brick_wall")
+	end
+	
+	for i = HEIGHT-HEIGHT/4, HEIGHT, 2 do
+		local r = math.ceil(math.lerp(4,0,i/HEIGHT)-0.5)
+		local height = math.lerp(0.5,2,i/HEIGHT)
+		for x = -r, r, 1 do
+			for z = -r, r, 1 do
+				if vec(x,z):length() <= r then
+					set(x,i,z,dice.randomWeight{
+						{1,"minecraft:acacia_leaves[persistent=true]"},
+						{height,"minecraft:azalea_leaves[persistent=true]"},
+					})
+				end
+			end
+		end
+	end
+	
+	for i = 0, HEIGHT/3-1, 1 do
+		set(-1,i,0,dice.randomWeight{
+			{1,"minecraft:spruce_fence"},
+			{1,"minecraft:spruce_button[facing=west]"},
+			{5,"air"},
+		})
+	end
+	
+	for i = 0, HEIGHT/3-1, 1 do
+		set(1,i,0,dice.randomWeight{
+			{1,"minecraft:spruce_fence"},
+			{1,"minecraft:spruce_button[facing=east]"},
+			{5,"air"},
+		})
+	end
+	
+	for i = 0, HEIGHT/3-1, 1 do
+		set(0,i,1,dice.randomWeight{
+			{1,"minecraft:spruce_fence"},
+			{1,"minecraft:spruce_button[facing=south]"},
+			{5,"air"},
+		})
+	end
+	
+	for i = 0, HEIGHT/3-1, 1 do
+		set(0,i,-1,dice.randomWeight{
+			{1,"minecraft:spruce_fence"},
+			{1,"minecraft:spruce_button[facing=north]"},
+			{5,"air"},
+		})
+	end
+end
+
+keybinds:newKeybind("tree","key.mouse.right"):onPress(function ()
+	local ppos = player:getPos():add(0,player:getEyeHeight())
+	local pdir = player:getLookDir()
+	local _,pos = raycast:block(ppos,ppos+pdir*100)
+	makeTree(pos:floor())
+end)
