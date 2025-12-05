@@ -9,8 +9,7 @@ local colors = {
 	vectors.hexToRGB("#0c2e44"),
 }
 
-local function poof(x,y,z,appear)
-	local pos = vec(x,y,z)
+local function poof(pos,appear)
 	particles:newParticle("minecraft:flash",pos):setColor(0.5,1,0.4)
 	local max_pow = 0.5
 	for ci = 1, #colors, 1 do
@@ -42,24 +41,22 @@ local function poof(x,y,z,appear)
 	sounds:playSound("minecraft:entity.generic.extinguish_fire",pos,0.1,0.8)
 	--sounds:playSound("minecraft:entity.allay.item_taken",pos,1,1)
 	for i = 1, 3, 1 do
-		sounds:playSound("minecraft:particle.soul_escape",pos,1,1)
+		sounds:playSound("minecraft:particle.soul_escape",pos,1,0.5)
 	end
 	sounds:playSound("minecraft:entity.ghast.shoot",pos,0.2,.75)
 end
 
-function pings.GNPOOF(x,y,z,appear)
-	poof(x,y,z,appear)
-end
 
-if not host:isHost() then return end
 
-local last_gamemode = nil
-
-events.TICK:register(function ()
-	local gamemode = player:getGamemode()
-	if last_gamemode and last_gamemode ~= gamemode and (gamemode == "SPECTATOR" or last_gamemode == "SPECTATOR") then
-		local pos = player:getPos():add(0,1,0)
-		pings.GNPOOF(pos.x,pos.y,pos.z,gamemode ~= "SPECTATOR")
+local lastPpos = vec(0,0,0)
+local wasPresent = true
+events.WORLD_TICK:register(function ()
+	local isPresent = player:isLoaded()
+	if isPresent then
+		lastPpos = player:getPos()
 	end
-	last_gamemode = gamemode
+	if wasPresent ~= isPresent then
+		wasPresent = isPresent
+		poof(lastPpos, isPresent)
+	end
 end)

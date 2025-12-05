@@ -14,7 +14,7 @@ local function makeTree(ppos)
 	
 	--send("fill ~-16 ~ ~-16 ~16 ~100 ~16 air")
 	
-	local HEIGHT = math.floor(math.random(20,30)/2)*2+1
+	local HEIGHT = math.floor(math.random(20,40)/2)*2
 	
 	
 	
@@ -28,21 +28,43 @@ local function makeTree(ppos)
 						{1,"minecraft:spruce_leaves[persistent=true]"},
 						{height-0.5,"minecraft:acacia_leaves[persistent=true]"},
 						{height,"minecraft:birch_leaves[persistent=true]"},
+						{height,"air"},
 					})
 				end
 			end
 		end
 	end
 	
-	for i = 0, HEIGHT, 1 do
+	for i = HEIGHT/4+1, HEIGHT-HEIGHT/4-4, 2 do
+		local r = math.ceil(math.lerp(4,0,i/HEIGHT))-1.25
+		local height = math.lerp(0,2,i/HEIGHT)
+		for x = -r, r, 1 do
+			for z = -r, r, 1 do
+				if vec(x,z):length() <= r then
+					set(x,i,z,dice.randomWeight{
+						{1,"minecraft:spruce_leaves[persistent=true]"},
+						{height-0.5,"minecraft:acacia_leaves[persistent=true]"},
+						{height,"minecraft:birch_leaves[persistent=true]"},
+						{height,"air"},
+					})
+				end
+			end
+		end
+	end
+	
+	for i = 0, HEIGHT-4, 1 do
 		set(0,i,0,dice.randomWeight{{3,"acacia_wood"},{1,"tuff"},{1,"stripped_spruce_log"}})
 	end
 	
-	for i = HEIGHT-HEIGHT/4, HEIGHT+1, 1 do
+	for i = HEIGHT-HEIGHT/3, HEIGHT-HEIGHT/8, 1 do
 		set(0,i,0,"minecraft:mud_brick_wall")
 	end
 	
-	for i = HEIGHT-HEIGHT/4, HEIGHT, 2 do
+	for i = HEIGHT-HEIGHT/8, HEIGHT-2, 1 do
+		set(0,i,0,"minecraft:spruce_fence")
+	end
+	
+	for i = HEIGHT-HEIGHT/4, HEIGHT-2, 2 do
 		local r = math.ceil(math.lerp(4,0,i/HEIGHT)-0.5)
 		local height = math.lerp(0.5,2,i/HEIGHT)
 		for x = -r, r, 1 do
@@ -56,6 +78,8 @@ local function makeTree(ppos)
 			end
 		end
 	end
+	
+	
 	
 	for i = 0, HEIGHT/3-1, 1 do
 		set(-1,i,0,dice.randomWeight{
@@ -88,11 +112,16 @@ local function makeTree(ppos)
 			{5,"air"},
 		})
 	end
+	
+	set(0,HEIGHT-4,0,"minecraft:azalea_leaves[persistent=true]")
 end
 
 keybinds:newKeybind("tree","key.mouse.right"):onPress(function ()
 	local ppos = player:getPos():add(0,player:getEyeHeight())
 	local pdir = player:getLookDir()
-	local _,pos = raycast:block(ppos,ppos+pdir*100)
+	local block,pos = raycast:block(ppos,ppos+pdir*100)
+	if block.id == "minecraft:grass" or block.id == "minecraft:fern" then
+		pos = pos - vec(0,1,0)
+	end
 	makeTree(pos:floor())
 end)

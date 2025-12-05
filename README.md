@@ -24,8 +24,9 @@ git submodule update
 | textures | its.. where my textures are at                                                                  |
 | .\*      | these are folders that contain files that figura never touches, they serve as my archive        |
 
-# Credits
+# License
 
-| Author                                        | Name            | Path            |
-| --------------------------------------------- | --------------- | --------------- |
-| [Fox(Bitslayn)](https://github.com/Bitslayn/) | Extrude Library | lib/Extrude.lua |
+File|Author|License
+--|--|--
+lib/Extrude.lua|[Bitslayn](https://github.com/Bitslayn)|[MIT](https://github.com/Bitslayn/FOXSkullAPI/blob/main/LICENSE)
+Everything else|[GN](https://github.com/lua-gods)|[MIT](https://github.com/lua-gods/GNs-Avatar-4/blob/main/LICENSE)

@@ -92,6 +92,8 @@ function pings.GNsAvatarMacroToggle(id,toggle)
 end
 
 function pings.GNsAvatarMacroPropSync(id,propID,value)
+	assert(macros[id],"Macro not found id: "..id)
+	assert(macros[id].props[propID],"Property not found id: "..id)
 	macros[id].props[propID].value = value
 	macros[id].props[propID].VALUE_CHANGED:invoke(value)
 end
