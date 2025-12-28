@@ -30,5 +30,54 @@
          "\t${2}",
          "end",
       ]
-   }
+   },
+	"method_vec2": {
+      "prefix": "vec2_method",
+      "body": [
+			"---@overload fun(self: self, x: number, y: number): self",
+			"---@param x number",
+			"---@param y number",
+			"---@generic self",
+			"---@param self self",
+			"---@return self",
+			"function ${1}:${2}(x,y)",
+			"\t---@cast self ${1}",
+			"\treturn self",
+			"end",
+      ]
+   },
+	"method_vec3": {
+		"prefix": "vec3_method",
+		"body": [
+			"---@overload fun(self: self, x: number, y: number, z: number): self",
+			"---@param x number",
+			"---@param y number",
+			"---@param z number",
+			"---@generic self",
+			"---@param self self",
+			"---@return self",
+			"function ${1}:${2}(x,y,z)",
+			"\t---@cast self ${1}",
+			"\treturn self",
+			"end",
+		]
+	},
+	"method_vec4": {
+		"prefix": "vec4_method",
+		"body": [
+			"---@overload fun(self: self, x: number, y: number, z: number, w: number): self",
+			"---@overload fun(self: self, xy: Vector2, zw: Vector2): self",
+			"---@param x number",
+			"---@param y number",
+			"---@param z number",
+			"---@param w number",
+			"---@generic self",
+			"---@param self self",
+			"---@return self",
+			"function ${1}:${2}(x,y,z,w)",
+			"\t---@cast self ${1}",
+			"\treturn self",
+			"end",
+		]
+	},
 }
