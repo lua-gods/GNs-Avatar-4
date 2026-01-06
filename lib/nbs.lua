@@ -4,13 +4,13 @@
 / /_/ / /|  /  desc: allows avatars to load and play .NBS files in their avatar
 \____/_/ |_/ source: https://github.com/lua-gods/GNs-Avatar-4/blob/main/lib/nbs.lua ]]
 
-local hasEvents,Events = pcall(require,"./event")
+local hasEvents, Events = pcall(require, "./event")
 
 --[────────-< CONFIG >-────────]--
-local MAX_NOTES_PER_TICK=64
+local MAX_NOTES_PER_TICK = 64
 -- the maximum amount of notes that can play at the same time
 
-local PROCESS_MODE=1
+local PROCESS_MODE = 1
 -- 0: MODEL RENDER, plays when the player is loaded, runs on RENDER, works on lower permission levels
 -- 1: WORLD RENDER, plays when the avatar is loaded, run on WORLD_RENDER, requires higher permission levels
 ---2: SKULL RENDER, plays when the player head is loaded, runs on RENDER, works on lower permission levels
@@ -50,7 +50,7 @@ local PROCESS_MODE=1
 ---@field notes NBS.Noteblock[]
 ---@field loudest number
 
-local Nbs={}
+local Nbs = {}
 
 ---A representation of a noteblock in Note Block Studio's format
 ---@class NBS.Noteblock
@@ -65,29 +65,29 @@ local Nbs={}
 -- these can be replaced with custom sound IDs.
 -- any entries starting with a dot . will get replaced by minecraft:block.note_block.
 ---@type table<integer,Minecraft.soundID>
-local instruments={
-	[0] =".harp",
-	[1] =".bass",
-	[2] =".basedrum",
-	[3] =".snare",
-	[4] =".hat",
-	[5] =".guitar",
-	[6] =".flute",
-	[7] =".bell",
-	[8] =".chime",
-	[9] =".bell",
-	[10]=".iron_xylophone",
-	[11]=".cow_bell",
-	[12]=".didgeridoo",
-	[13]=".bit",
-	[14]=".banjo",
-	[15]=".pling",
+local instruments = {
+	[0] = ".harp",
+	[1] = ".bass",
+	[2] = ".basedrum",
+	[3] = ".snare",
+	[4] = ".hat",
+	[5] = ".guitar",
+	[6] = ".flute",
+	[7] = ".bell",
+	[8] = ".chime",
+	[9] = ".bell",
+	[10] = ".iron_xylophone",
+	[11] = ".cow_bell",
+	[12] = ".didgeridoo",
+	[13] = ".bit",
+	[14] = ".banjo",
+	[15] = ".pling",
 }
 
 -- prefix inserter
 for i, v in pairs(instruments) do
 	if v:find("^%.") then
-		instruments[i]="minecraft:block.note_block"..v
+		instruments[i] = "minecraft:block.note_block" .. v
 	end
 end
 
@@ -97,41 +97,41 @@ end
 ---@param key integer
 ---@param volume integer
 ---@param attenuation integer
-local function defaultPlay(musicPlayer,instrument,pos,key,volume,attenuation)
-	local pitch=2^(((key-9)/12+musicPlayer.transposition)-3)
+local function defaultPlay(musicPlayer, instrument, pos, key, volume, attenuation)
+	local pitch = 2 ^ (((key - 9) / 12 + musicPlayer.transposition) - 3)
 	sounds[instrument]
-	:pos(pos)
-	:pitch(pitch)
-	:attenuation(attenuation)
-	:volume(volume)
-	:play()
+		 :pos(pos)
+		 :pitch(pitch)
+		 :attenuation(attenuation)
+		 :volume(volume)
+		 :play()
 end
 
 ---@type table<NBS.MusicPlayer, NBS.MusicPlayer>
-local activeMusicPlayers={} -- holds the active playing one to loop ver them
+local activeMusicPlayers = {} -- holds the active playing one to loop ver them
 
-local lastTime=client:getSystemTime()
+local lastTime = client:getSystemTime()
 
 local function process()
-	local time=client:getSystemTime()
-	local delta=(time-lastTime) / 1000
-	lastTime=time
+	local time = client:getSystemTime()
+	local delta = (time - lastTime) / 1000
+	lastTime = time
 	if delta > 1 then delta = 1 end
-	
+
 	---@param mp NBS.MusicPlayer
 	for _, mp in pairs(activeMusicPlayers) do
-		
-		mp.tick=mp.tick+delta * (mp.songTempo or mp.track.songTempo) * mp.speed
-		for i=1, MAX_NOTES_PER_TICK, 1 do
-			local cnote=mp.track.notes[mp.currentNote]
+		mp.tick = mp.tick + delta * (mp.songTempo or mp.track.songTempo) * mp.speed
+		for i = 1, MAX_NOTES_PER_TICK, 1 do
+			local cnote = mp.track.notes[mp.currentNote]
 			if cnote then
-				if math.sign(mp.tick-cnote.tick) - math.sign(mp.speed) == 0 then
-					mp.currentNoteTick=cnote.tick
-					mp.currentNote=mp.currentNote+math.sign(mp.tick-cnote.tick)
+				if math.sign(mp.tick - cnote.tick) - math.sign(mp.speed) == 0 then
+					mp.currentNoteTick = cnote.tick
+					mp.currentNote = mp.currentNote + math.sign(mp.tick - cnote.tick)
 					if mp.loopCount == 0 or mp.track.loopStartTick <= cnote.tick then
 						if instruments[cnote.instrument] then
 							if cnote.volume > 0.01 then
-							mp.playNote(mp,instruments[cnote.instrument],mp.pos,cnote.key,cnote.volume*mp.volume,mp.attenuation)
+								mp.playNote(mp, instruments[cnote.instrument], mp.pos, cnote.key,
+									cnote.volume * mp.volume, mp.attenuation)
 							end
 							if hasEvents then
 								mp.NOTE_PLAYED:invoke(cnote)
@@ -143,35 +143,34 @@ local function process()
 				end
 			end
 		end
-		if mp.track.loop then
+		if mp.track.loop or mp.forceLoop then
 			if mp.speed > 0 then
-				
-				if mp.tick >= mp.track.songLength+1 then
-					mp.tick=mp.tick-mp.track.songLength-1+mp.track.loopStartTick
-					if mp.loopCount >= mp.track.maxLoopCount then 
-						mp:stop()
-						if mp.TRACK_FINISHED then
-							mp.TRACK_FINISHED:invoke()
-						end
-					end
-					mp.currentNote=1
-					mp.loopCount=mp.loopCount+1
-				end
-			else
-				if mp.tick < mp.track.loopStartTick then
-					mp.tick=mp.track.songLength+1
-					mp.currentNote=#mp.track.notes
+				if mp.tick >= mp.track.songLength + 1 then
+					mp.tick = mp.tick - mp.track.songLength - 1 + mp.track.loopStartTick
 					if mp.loopCount >= mp.track.maxLoopCount then
 						mp:stop()
 						if mp.TRACK_FINISHED then
 							mp.TRACK_FINISHED:invoke()
 						end
 					end
-					mp.loopCount=mp.loopCount+1
+					mp.currentNote = 1
+					mp.loopCount = mp.loopCount + 1
+				end
+			else
+				if mp.tick < mp.track.loopStartTick then
+					mp.tick = mp.track.songLength + 1
+					mp.currentNote = #mp.track.notes
+					if mp.loopCount >= mp.track.maxLoopCount then
+						mp:stop()
+						if mp.TRACK_FINISHED then
+							mp.TRACK_FINISHED:invoke()
+						end
+					end
+					mp.loopCount = mp.loopCount + 1
 				end
 			end
 		else
-			if mp.tick >= mp.track.songLength+1 then
+			if mp.tick >= mp.track.songLength + 1 then
 				mp:stop()
 				if mp.TRACK_FINISHED then
 					mp.TRACK_FINISHED:invoke()
@@ -186,10 +185,10 @@ if PROCESS_MODE == 0 then
 	models:newPart("MusicProcessor").midRender = process
 elseif PROCESS_MODE == 1 then
 	events.WORLD_RENDER:register(process)
-elseif	PROCESS_MODE == 2 then
+elseif PROCESS_MODE == 2 then
 	local first = false
-	events.WORLD_RENDER:register(function (delta) first=true end)
-	events.SKULL_RENDER:register(function ()
+	events.WORLD_RENDER:register(function(delta) first = true end)
+	events.SKULL_RENDER:register(function()
 		if first then
 			process()
 			first = false
@@ -211,8 +210,9 @@ end
 ---@field pos Vector3
 ---@field currentNote integer
 ---@field isPlaying boolean
-local MusicPlayer={}
-MusicPlayer.__index=MusicPlayer
+---@field forceLoop boolean
+local MusicPlayer = {}
+MusicPlayer.__index = MusicPlayer
 
 
 
@@ -220,45 +220,44 @@ MusicPlayer.__index=MusicPlayer
 ---@param track NBS.Track?
 ---@return NBS.MusicPlayer
 function Nbs.newMusicPlayer(track)
-	local new={
-		track=track,
-		tick=0,
-		currentNoteTick=0,
-		speed=1,
-		volume=1,
-		attenuation=1,
-		pos=vec(0,-10000,0),
-		transposition=0,
-		loopCount=0,
-		isPlaying=false,
-		currentNote=1,
+	local new = {
+		track = track,
+		tick = 0,
+		currentNoteTick = 0,
+		speed = 1,
+		volume = 1,
+		attenuation = 1,
+		pos = vec(0, -10000, 0),
+		transposition = 0,
+		loopCount = 0,
+		isPlaying = false,
+		currentNote = 1,
 		NOTE_PLAYED = hasEvents and (Events.new()) or nil,
 		TRACK_FINISHED = hasEvents and (Events.new()) or nil,
-		playNote = defaultPlay
+		playNote = defaultPlay,
+		forceLoop = false,
 	}
-	return setmetatable(new,MusicPlayer)
+	return setmetatable(new, MusicPlayer)
 end
-
 
 ---Plays the song / Continues where it stops.
 ---@param reset boolean?
 ---@return NBS.MusicPlayer
 function MusicPlayer:play(reset)
 	if reset then self:stop() end
-	activeMusicPlayers[self]=self
-	self.isPlaying=true
+	activeMusicPlayers[self] = self
+	self.isPlaying = true
 	return self
 end
-
 
 ---Stops the playback of the song, resetting the playback time.
 ---@return NBS.MusicPlayer
 function MusicPlayer:stop()
-	activeMusicPlayers[self]=nil
-	self.isPlaying=false
-	self.loopCount=0
-	self.currentNote=1
-	self.tick=-2
+	activeMusicPlayers[self] = nil
+	self.isPlaying = false
+	self.loopCount = 0
+	self.currentNote = 1
+	self.tick = -2
 	return self
 end
 
@@ -268,12 +267,11 @@ function MusicPlayer:setPlayCallback(callback)
 	self.playNote = callback or defaultPlay
 end
 
-
 ---Stops the playback of the song, without resetting the playback time.
 ---@return NBS.MusicPlayer
 function MusicPlayer:pause()
-	activeMusicPlayers[self]=nil
-	self.isPlaying=false
+	activeMusicPlayers[self] = nil
+	self.isPlaying = false
 	return self
 end
 
@@ -285,7 +283,7 @@ function MusicPlayer:setSpeed(speed)
 	return self
 end
 
----Sets the tempo the songs played will use. leaving it nil will use the song's default tempo.  
+---Sets the tempo the songs played will use. leaving it nil will use the song's default tempo.
 ---NOTE: the tempo is in ticks per second. not Beats per Minute
 ---@param tempo number
 ---@return NBS.MusicPlayer
@@ -302,171 +300,197 @@ function MusicPlayer:setOctaveShift(shift)
 	return self
 end
 
-
 ---@overload fun(self: NBS.MusicPlayer,xyz: Vector3): NBS.MusicPlayer
 ---@param x number
 ---@param y number
 ---@param z number
 ---@return NBS.MusicPlayer
-function MusicPlayer:setPos(x,y,z)
-	local tx,ty,tz=type(x), type(y), type(z)
+function MusicPlayer:setPos(x, y, z)
+	local tx, ty, tz = type(x), type(y), type(z)
 	local pos
 	if (tx == "number" and ty == "number" and tz == "number") then
-		pos = vec(x,y,z)
+		pos = vec(x, y, z)
 	elseif (tx == "Vector3" and ty == "nil" and tz == "nil") then
 		---@cast tx Vector3
 		pos = x
 	else
-		error(("Invalid Vector3 parameter, expected (number, number, number), (Vector3), instead got (%s, %s, %s)"):format(tx,ty,tz),2)
+		error(
+			("Invalid Vector3 parameter, expected (number, number, number), (Vector3), instead got (%s, %s, %s)")
+			:format(tx, ty, tz), 2)
 	end
-	self.pos=pos
+	self.pos = pos
 	return self
 end
-
 
 ---Sets the track to be played.
 ---@param track NBS.Track
 ---@param reset boolean?
 ---@return NBS.MusicPlayer
-function MusicPlayer:setTrack(track,reset)
-	self.track=track
+function MusicPlayer:setTrack(track, reset)
+	self.track = track
 	if reset then
-		self.tick=0
+		self.tick = 0
 	end
 	return self
 end
-
 
 ---Sets the attenuation of the music player.
 ---@param attenuation number
 ---@return NBS.MusicPlayer
 function MusicPlayer:setAttenuation(attenuation)
-	self.attenuation=attenuation
+	self.attenuation = attenuation
 	return self
 end
-
 
 ---Sets the volume of the music player.
 ---@param volume number
 ---@return NBS.MusicPlayer
 function MusicPlayer:setVolume(volume)
-	self.volume=volume
+	self.volume = volume
 	return self
 end
 
 
+---Sets the music player should loop this song, regardless if the song says it does or not.
+---@param forceLoop boolean
+---@return NBS.MusicPlayer
+function MusicPlayer:setForceLoop(forceLoop)
+	self.forceLoop = forceLoop
+	return self
+end
+
+
+
 ---@param buffer Buffer
 local function readString(buffer)
-	local len=buffer:readIntLE()
-	local str=buffer:readString(len)
+	local len = buffer:readIntLE()
+	local str = buffer:readString(len)
 	return str
 end
 
----Loads a given .NBS file into a Music track object.  
+---Loads a given .NBS file into a Music track object.
 ---`NBS.loadFromPath(<path>)` -> `<path>.nbs`
 ---@param path string
 ---@return NBS.Track
 function Nbs.loadFromPath(path)
-	local stream=resources:get(path..".nbs")
-	assert(stream, 'Could not find "'..path..'.nbs"')
-	local buffer=data:createBuffer(stream:available())
+	local stream = resources:get(path .. ".nbs")
+	assert(stream, 'Could not find "' .. path .. '.nbs"')
+	local buffer = data:createBuffer(stream:available())
 	buffer:readFromStream(stream)
 	buffer:setPosition(0)
 	-- check if NBS version is valid
-	
+
+	return Nbs.parseBuffer(buffer)
+end
+
+--Loads the given .NBS file from the figura/data folder as a Music track object.
+--
+--NOTE: the figura/data folder is host only
+--
+-- thankyou Kermir
+function Nbs.loadFromDataFolder(path)
+	assert(true,
+		"Attempted to load a NBS file from the figura/data folder from a non-host environment")
+	local stream = file:openReadStream(path .. ".nbs")
+	assert(stream, 'Could not find figura/data/"' .. path .. '.nbs"')
+	local buffer = data:createBuffer(stream:available())
+	buffer:readFromStream(stream)
+	buffer:setPosition(0)
+
 	return Nbs.parseBuffer(buffer)
 end
 
 ---@param buffer Buffer
 ---@return NBS.Track
 function Nbs.parseBuffer(buffer)
-	assert(buffer:readShort() == 0, 'attempted to load a legacy NBS file')
+	assert(buffer:readShort() == 0, "attempted to load a legacy NBS file")
 	--[────────────────────────-< HEADER >-────────────────────────]--
-	local version=buffer:read()
-	local instrumentCount=buffer:read()
-	local songLength=buffer:readShortLE() -- in ticks, divide by tempo to get in seconds.
-	local layerCount=buffer:readShortLE()
-	local songName=readString(buffer)
-	local songAuthor=readString(buffer)
-	local songOriginalAuthor=readString(buffer)
-	local songDescription=readString(buffer)
-	local songTempo=buffer:readShortLE() / 100 -- The tempo of the song multiplied by 100 (for example, 1225 instead of 12.25). Measured in ticks per second.
+	local version = buffer:read()
+	local instrumentCount = buffer:read()
+	local songLength = buffer:readShortLE() -- in ticks, divide by tempo to get in seconds.
+	local layerCount = buffer:readShortLE()
+	local songName = readString(buffer)
+	local songAuthor = readString(buffer)
+	local songOriginalAuthor = readString(buffer)
+	local songDescription = readString(buffer)
+	local songTempo = buffer:readShortLE() /
+		 100 -- The tempo of the song multiplied by 100 (for example, 1225 instead of 12.25). Measured in ticks per second.
 	buffer:read()
 	buffer:read()
-	local timeSignature=buffer:read() -- The time signature of the song. If this is 3, then the signature is 3/4. Default is 4. This value ranges from 2-8.
+	local timeSignature = buffer:read() -- The time signature of the song. If this is 3, then the signature is 3/4. Default is 4. This value ranges from 2-8.
 	-- skip over unused header information
-	buffer:readInt() -- minutes spent
-	buffer:readInt() -- left clicks
-	buffer:readInt() -- right clicks
-	buffer:readInt() -- noteblocks added
-	buffer:readInt() -- note blocks removed
-	
-	local new={
-		version=version,
-		instrumentCount=instrumentCount,
-		songLength=songLength,
-		layerCount=layerCount,
-		songName=songName,
-		songAuthor=songAuthor,
-		songOriginalAuthor=songOriginalAuthor,
-		songDescription=songDescription,
-		songTempo=songTempo,
-		timeSignature=timeSignature,
-		
+	buffer:readInt()                  -- minutes spent
+	buffer:readInt()                  -- left clicks
+	buffer:readInt()                  -- right clicks
+	buffer:readInt()                  -- noteblocks added
+	buffer:readInt()                  -- note blocks removed
+
+	local new = {
+		version = version,
+		instrumentCount = instrumentCount,
+		songLength = songLength,
+		layerCount = layerCount,
+		songName = songName,
+		songAuthor = songAuthor,
+		songOriginalAuthor = songOriginalAuthor,
+		songDescription = songDescription,
+		songTempo = songTempo,
+		timeSignature = timeSignature,
+
 	}
-	
+
 	readString(buffer) -- Schematic file name
-	local loop=buffer:read() ~= 0 and true or false
-	local maxLoopCount=buffer:read()
-	new.maxLoopCount=maxLoopCount==0 and math.huge or maxLoopCount
-	new.loopStartTick=buffer:read()
-	new.loop=loop
-	
+	local loop = buffer:read() ~= 0 and true or false
+	local maxLoopCount = buffer:read()
+	new.maxLoopCount = maxLoopCount == 0 and math.huge or maxLoopCount
+	new.loopStartTick = buffer:read()
+	new.loop = loop
+
 	--[────────────────────────-< BODY >-────────────────────────]--
-	
-	local c=0
-	local notes={}
-	
-	local tick=-1
+
+	local c = 0
+	local notes = {}
+
+	local tick = -1
 	local loudest = 0
-	
-	for i=1, 100000 do -- tick loop
-		local jump=buffer:readShort()
+
+	for i = 1, 100000 do -- tick loop
+		local jump = buffer:readShort()
 		if jump == 0 then
 			break -- End of note block section
 		end
-		tick=tick+jump
-	
-		local layer=-1 -- reset layer counter per tick
-	
-		for j=1, 100000 do -- layer loop
-			local layerJump=buffer:readShort()
+		tick = tick + jump
+
+		local layer = -1 -- reset layer counter per tick
+
+		for j = 1, 100000 do -- layer loop
+			local layerJump = buffer:readShort()
 			if layerJump == 0 then
 				break -- end of layers for this tick
 			end
-		
-			layer=layer+layerJump -- update layer number
-		
-			local u=buffer:read() -- idk why
-			local instrument=buffer:read()
-			local key=buffer:read()
-			local volume=buffer:read() -- panning (ignored here)
-			local pitch=buffer:readShortLE()
-			c=c+1
-			local noteblock={
-				tick=tick,
-				layer=layer,
-				instrument=instrument,
-				key=key,
-				volume=volume/255,
-				pitch=pitch
+
+			layer = layer + layerJump -- update layer number
+
+			local u = buffer:read() -- idk why
+			local instrument = buffer:read()
+			local key = buffer:read()
+			local volume = buffer:read() -- panning (ignored here)
+			local pitch = buffer:readShortLE()
+			c = c + 1
+			local noteblock = {
+				tick = tick,
+				layer = layer,
+				instrument = instrument,
+				key = key,
+				volume = volume / 255,
+				pitch = pitch,
 			}
 			loudest = math.max(loudest, noteblock.volume)
-			notes[c]=noteblock
+			notes[c] = noteblock
 		end
 	end
 	new.loudest = loudest
-	new.notes=notes
+	new.notes = notes
 	return new
 end
 
