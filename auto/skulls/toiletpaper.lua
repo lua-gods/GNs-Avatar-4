@@ -12,10 +12,10 @@ local SCALE = 0.845
 local identity = {
 	name = "Toiletpaper",
 	id = "toiletpaper",
-	modelBlock = models.info.Item,
-	modelHat = models.info.Item,
+	modelBlock = models.skull.info.Item,
+	modelHat = models.skull.info.Item,
 	modelHud = Skull.makeIcon(textures["textures.item_icons"],0,1),
-	modelEntity = models.info.Item,
+	modelEntity = models.skull.info.Item,
 
 	processEntity = {
 		ON_READY = function (skull, model)
